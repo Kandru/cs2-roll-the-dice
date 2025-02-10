@@ -21,10 +21,8 @@ namespace RollTheDice
         {
             // initialize dices
             InitializeDices();
-            // initialize configuration
-            LoadConfig();
-            UpdateConfig();
-            SaveConfig();
+            // update configuration
+            ReloadConfigFromDisk();
             // initialize sounds
             InitializeEmitSound();
             // register listeners
@@ -132,9 +130,7 @@ namespace RollTheDice
             // set current map
             _currentMap = mapName;
             // update configuration
-            LoadConfig();
-            UpdateConfig();
-            SaveConfig();
+            ReloadConfigFromDisk();
         }
 
         private void OnMapEnd()

@@ -1,9 +1,8 @@
 {
     "core.hotreload": "{purple}[RollTheDice] {default}Hot-Reloaded!",
     "core.unload": "[RollTheDice] Unloaded RollTheDice Plugin!",
-    "core.defaultconfig": "[RollTheDice] Found no map-specific configuration for {mapName}, using default one!",
-    "core.noconfig": "[RollTheDice] No map-specific configuration for {mapName} or default one found. Skipping!",
-    "core.foundconfig": "[RollTheDice] Found {count} matching map-specific configurations for {mapName}!",
+    "core.config": "[RollTheDice] loaded initial config from file",
+    "core.mapconfig": "[RollTheDice] loaded configuration for {mapName}!",
     "core.announcement": "{purple}[RollTheDice] {default}Get a suprise effect by typing {green}!rtd{default}",
     "core.error": "{purple}[RollTheDice] {default}Error: {error}",
     "core.nodicesenabled": "{purple}[RollTheDice] {default}No dices enabled! Please enable at least one dice in the configuration!",

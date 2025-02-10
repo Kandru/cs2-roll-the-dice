@@ -1,5 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Config;
+using CounterStrikeSharp.API.Modules.Extensions;
 using System.IO.Enumeration;
 using System.Reflection;
 using System.Text.Json;
@@ -56,50 +56,44 @@ namespace RollTheDice
 
     public partial class RollTheDice : BasePlugin, IPluginConfig<PluginConfig>
     {
-        public PluginConfig Config { get; set; } = null!;
-        private MapConfig[] _currentMapConfigs = Array.Empty<MapConfig>();
-        private string _configPath = "";
+        public required PluginConfig Config { get; set; }
+        private MapConfig _currentMapConfig = new();
 
-        private void LoadConfig()
+        private void ReloadConfigFromDisk()
         {
-            Config = ConfigManager.Load<PluginConfig>("RollTheDice");
-            _configPath = Path.Combine(ModuleDirectory, $"../../configs/plugins/RollTheDice/RollTheDice.json");
+            try
+            {
+                // load config from disk
+                Config.Reload();
+                // update config with changed dices
+                UpdateConfig();
+                // save config to disk
+                Config.Update();
+            }
+            catch (Exception e)
+            {
+                string message = Localizer["core.error"].Value.Replace("{error}", e.Message);
+                // log error
+                Console.WriteLine(message);
+                // show error to users for transparency (admin needs to notice somehow)
+                SendGlobalChatMessage(message);
+            }
         }
 
         private void InitializeConfig(string mapName)
         {
-            // select map configs whose regexes (keys) match against the map name
-            _currentMapConfigs = (from mapConfig in Config.MapConfigs
-                                  where FileSystemName.MatchesSimpleExpression(mapConfig.Key, mapName)
-                                  select mapConfig.Value).ToArray();
-
-            if (_currentMapConfigs.Length > 0)
-            {
-                if (Config.MapConfigs.TryGetValue("default", out var config))
-                {
-                    // add default configuration
-                    _currentMapConfigs = new[] { config };
-                    Console.WriteLine(Localizer["core.defaultconfig"].Value.Replace("{mapName}", mapName));
-                }
-                else
-                {
-                    // there is no config to apply
-                    Console.WriteLine(Localizer["core.noconfig"].Value.Replace("{mapName}", mapName));
-                }
-            }
-            else
-            {
-                Console.WriteLine(Localizer["core.defaultconfig"].Value.Replace("{mapName}", mapName));
-                // create default configuration
-                Config.MapConfigs.Add(mapName, new MapConfig());
-            }
-            Console.WriteLine(Localizer["core.foundconfig"].Value.Replace("{count}", _currentMapConfigs.Length.ToString()).Replace("{mapName}", mapName));
+            // select map config whose regexes (keys) match against the map name
+            _currentMapConfig = Config.MapConfigs
+                .Where(mapConfig => FileSystemName.MatchesSimpleExpression(mapConfig.Key, mapName))
+                .Select(mapConfig => mapConfig.Value)
+                .FirstOrDefault() ?? new MapConfig();
+            Console.WriteLine(Localizer["core.mapconfig"].Value.Replace("{mapName}", mapName));
         }
 
         public void OnConfigParsed(PluginConfig config)
         {
             Config = config;
-            Console.WriteLine("[RollTheDice] Initialized map configuration!");
+            Console.WriteLine(Localizer["core.config"]);
         }
 
         private void UpdateConfig()
@@ -162,21 +156,12 @@ namespace RollTheDice
             CheckGUIConfig();
         }
 
-        private void SaveConfig()
-        {
-            var jsonString = JsonSerializer.Serialize(Config, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(_configPath, jsonString);
-        }
-
         private Dictionary<string, object> GetDiceConfig(string diceName)
         {
             // first try the map-specific configuration
-            foreach (var mapConfig in _currentMapConfigs)
+            if (_currentMapConfig.Dices.TryGetValue(diceName, out var config))
             {
-                if (mapConfig.Dices.TryGetValue(diceName, out var config))
-                {
-                    return config.ToDictionary(kvp => kvp.Key, kvp => ConvertJsonElement(kvp.Value));
-                }
+                return config.ToDictionary(kvp => kvp.Key, kvp => ConvertJsonElement(kvp.Value));
             }
             // if not available, try the global configuration
             if (Config.Dices.TryGetValue(diceName, out var globalConfig))
