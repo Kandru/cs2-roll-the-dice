@@ -43,7 +43,7 @@ namespace RollTheDice
                     myWeapons.Add(weapon.Value!.Handle);
                 }
             }
-
+            // remove weapons
             foreach (var entry in myWeapons)
             {
                 // get weapon from raw handle
@@ -56,7 +56,13 @@ namespace RollTheDice
                 // remove weapon
                 weapon.AcceptInput("kill");
             }
-
+            // give player one valid weapon in his hands
+            foreach (var weapon in playerPawn.WeaponServices.MyWeapons)
+            {
+                // set player active weapon
+                playerPawn.WeaponServices.ActiveWeapon.Raw = weapon.Raw;
+                break;
+            }
             return new Dictionary<string, string>
             {
                 { "playerName", player.PlayerName}
