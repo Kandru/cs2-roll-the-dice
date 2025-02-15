@@ -15,6 +15,8 @@ namespace RollTheDice
             {
                 RegisterEventHandler<EventPlayerHurt>(EventDiceIncreaseSpeedOnPlayerHurt);
                 RegisterEventHandler<EventPlayerFalldamage>(EventDiceIncreaseSpeedOnPlayerFalldamage);
+                RegisterEventHandler<EventHostageFollows>(EventDiceIncreaseSpeedOnHostageFollow);
+                RegisterEventHandler<EventHostageStopsFollowing>(EventDiceIncreaseSpeedOnHostageStopsFollowing);
             }
             var speedIncrease = _random.NextDouble() * ((float)config["max_speed"] - (float)config["min_speed"]) + (float)config["min_speed"];
             playerPawn.VelocityModifier *= (float)speedIncrease;
@@ -37,6 +39,8 @@ namespace RollTheDice
         {
             DeregisterEventHandler<EventPlayerHurt>(EventDiceIncreaseSpeedOnPlayerHurt);
             DeregisterEventHandler<EventPlayerFalldamage>(EventDiceIncreaseSpeedOnPlayerFalldamage);
+            DeregisterEventHandler<EventHostageFollows>(EventDiceIncreaseSpeedOnHostageFollow);
+            DeregisterEventHandler<EventHostageStopsFollowing>(EventDiceIncreaseSpeedOnHostageStopsFollowing);
             // iterate through all players
             Dictionary<CCSPlayerController, float> _playersWithIncreasedSpeedCopy = new(_playersWithIncreasedSpeed);
             foreach (var kvp in _playersWithIncreasedSpeedCopy)
@@ -118,11 +122,68 @@ namespace RollTheDice
             return HookResult.Continue;
         }
 
+        private HookResult EventDiceIncreaseSpeedOnHostageFollow(EventHostageFollows @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
+            if (player == null) return HookResult.Continue;
+            if (!_playersWithIncreasedSpeed.ContainsKey(player)) return HookResult.Continue;
+            if (player == null
+                || player.PlayerPawn == null
+                || !player.PlayerPawn.IsValid
+                || player.PlayerPawn.Value == null
+                || player.LifeState != (byte)LifeState_t.LIFE_ALIVE) return HookResult.Continue;
+            Dictionary<string, object> config = GetDiceConfig("DiceIncreaseSpeed");
+            if (!(bool)config["reset_on_hostage_rescue"]) return HookResult.Continue;
+            Server.NextFrame(() =>
+            {
+                if (player == null
+                    || !player.IsValid
+                    || player.PlayerPawn == null
+                    || !player.PlayerPawn.IsValid
+                    || !_playersWithIncreasedSpeed.ContainsKey(player)) return;
+                CCSPlayerPawn playerPawn = player.PlayerPawn.Value!;
+                // set player speed
+                playerPawn.VelocityModifier = 1.0f;
+                // set state changed
+                Utilities.SetStateChanged(playerPawn, "CCSPlayerPawn", "m_flVelocityModifier");
+            });
+            return HookResult.Continue;
+        }
+
+        private HookResult EventDiceIncreaseSpeedOnHostageStopsFollowing(EventHostageStopsFollowing @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
+            if (player == null) return HookResult.Continue;
+            if (!_playersWithIncreasedSpeed.ContainsKey(player)) return HookResult.Continue;
+            if (player == null
+                || player.PlayerPawn == null
+                || !player.PlayerPawn.IsValid
+                || player.PlayerPawn.Value == null
+                || player.LifeState != (byte)LifeState_t.LIFE_ALIVE) return HookResult.Continue;
+            Dictionary<string, object> config = GetDiceConfig("DiceIncreaseSpeed");
+            if (!(bool)config["reset_on_hostage_rescue"]) return HookResult.Continue;
+            Server.NextFrame(() =>
+            {
+                if (player == null
+                    || !player.IsValid
+                    || player.PlayerPawn == null
+                    || !player.PlayerPawn.IsValid
+                    || !_playersWithIncreasedSpeed.ContainsKey(player)) return;
+                CCSPlayerPawn playerPawn = player.PlayerPawn.Value!;
+                // set player speed
+                playerPawn.VelocityModifier = _playersWithIncreasedSpeed[player];
+                // set state changed
+                Utilities.SetStateChanged(playerPawn, "CCSPlayerPawn", "m_flVelocityModifier");
+            });
+            return HookResult.Continue;
+        }
+
         private Dictionary<string, object> DiceIncreaseSpeedConfig()
         {
             var config = new Dictionary<string, object>();
             config["min_speed"] = (float)1.5f;
             config["max_speed"] = (float)2.0f;
+            config["reset_on_hostage_rescue"] = true;
             return config;
         }
     }
