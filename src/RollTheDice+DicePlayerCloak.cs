@@ -32,13 +32,24 @@ namespace RollTheDice
             Dictionary<CCSPlayerController, int> _playersWithCloakCopy = new(_playersWithCloak);
             foreach (var (player, visibility) in _playersWithCloakCopy)
             {
-                if (player == null || player.PlayerPawn == null || !player.PlayerPawn.IsValid || player.PlayerPawn.Value == null || player.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
-                // get player pawn
-                var playerPawn = player.PlayerPawn.Value!;
-                // reset player render color
-                playerPawn.Render = Color.FromArgb(255, 255, 255, 255);
-                // set state changed
-                Utilities.SetStateChanged(playerPawn, "CBaseModelEntity", "m_clrRender");
+                try
+                {
+                    if (player == null
+                        || player.PlayerPawn == null
+                        || !player.PlayerPawn.IsValid
+                        || player.PlayerPawn.Value == null
+                        || player.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
+                    // get player pawn
+                    var playerPawn = player.PlayerPawn.Value!;
+                    // reset player render color
+                    playerPawn.Render = Color.FromArgb(255, 255, 255, 255);
+                    // set state changed
+                    Utilities.SetStateChanged(playerPawn, "CBaseModelEntity", "m_clrRender");
+                }
+                catch
+                {
+                    // do nothing
+                }
             }
             _playersWithCloak.Clear();
         }

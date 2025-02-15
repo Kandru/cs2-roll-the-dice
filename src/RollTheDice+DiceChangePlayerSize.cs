@@ -43,16 +43,23 @@ namespace RollTheDice
             List<CCSPlayerPawn> _playersWithChangedModelSizeCopy = new(_playersWithChangedModelSize);
             foreach (CCSPlayerPawn playerPawn in _playersWithChangedModelSizeCopy)
             {
-                if (playerPawn == null) continue;
-                var playerSceneNode = playerPawn.CBodyComponent?.SceneNode;
-                if (playerSceneNode == null) continue;
-                playerSceneNode.GetSkeletonInstance().Scale = 1.0f;
-                playerPawn.AcceptInput("SetScale", null, null, "1.0");
-                Server.NextFrame(() =>
+                try
                 {
-                    if (playerPawn == null) return;
-                    Utilities.SetStateChanged(playerPawn, "CBaseEntity", "m_CBodyComponent");
-                });
+                    if (playerPawn == null) continue;
+                    var playerSceneNode = playerPawn.CBodyComponent?.SceneNode;
+                    if (playerSceneNode == null) continue;
+                    playerSceneNode.GetSkeletonInstance().Scale = 1.0f;
+                    playerPawn.AcceptInput("SetScale", null, null, "1.0");
+                    Server.NextFrame(() =>
+                    {
+                        if (playerPawn == null) return;
+                        Utilities.SetStateChanged(playerPawn, "CBaseEntity", "m_CBodyComponent");
+                    });
+                }
+                catch
+                {
+                    // do nothing
+                }
             }
             _playersWithChangedModelSize.Clear();
         }

@@ -50,10 +50,21 @@ namespace RollTheDice
             Dictionary<CCSPlayerController, (uint, uint)> _playersThatAreGlowingCopy = new(_playersThatAreGlowing);
             foreach (var player in _playersThatAreGlowingCopy.Keys)
             {
-                if (player == null || player.PlayerPawn == null || !player.PlayerPawn.IsValid || player.PlayerPawn.Value == null || player.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
-                var (modelRelayIndex, modelGlowIndex) = _playersThatAreGlowingCopy[player];
-                RemoveProp((int)modelRelayIndex);
-                RemoveProp((int)modelGlowIndex);
+                try
+                {
+                    if (player == null
+                        || player.PlayerPawn == null
+                        || !player.PlayerPawn.IsValid
+                        || player.PlayerPawn.Value == null
+                        || player.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
+                    var (modelRelayIndex, modelGlowIndex) = _playersThatAreGlowingCopy[player];
+                    RemoveProp((int)modelRelayIndex);
+                    RemoveProp((int)modelGlowIndex);
+                }
+                catch
+                {
+                    // do nothing
+                }
             }
             _playersThatAreGlowing.Clear();
         }

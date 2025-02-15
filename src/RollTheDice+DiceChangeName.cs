@@ -52,9 +52,20 @@ namespace RollTheDice
             List<CCSPlayerController> _playersWithChangedNamesCopy = new(_playersWithChangedNames);
             foreach (var player in _playersWithChangedNamesCopy)
             {
-                if (player == null || player.PlayerPawn == null || !player.PlayerPawn.IsValid || player.PlayerPawn.Value == null || player.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
-                // reset player name
-                if (_playersWithChangedNamesOldNames.ContainsKey(player)) player.PlayerName = _playersWithChangedNamesOldNames[player];
+                try
+                {
+                    if (player == null
+                        || player.PlayerPawn == null
+                        || !player.PlayerPawn.IsValid
+                        || player.PlayerPawn.Value == null
+                        || player.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
+                    // reset player name
+                    if (_playersWithChangedNamesOldNames.ContainsKey(player)) player.PlayerName = _playersWithChangedNamesOldNames[player];
+                }
+                catch
+                {
+                    // do nothing
+                }
             }
             _playersWithChangedNames.Clear();
             _playersWithChangedNamesOldNames.Clear();

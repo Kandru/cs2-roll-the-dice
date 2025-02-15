@@ -41,13 +41,24 @@ namespace RollTheDice
             Dictionary<CCSPlayerController, float> _playersWithIncreasedSpeedCopy = new(_playersWithIncreasedSpeed);
             foreach (var kvp in _playersWithIncreasedSpeedCopy)
             {
-                if (kvp.Key == null || kvp.Key.PlayerPawn == null || !kvp.Key.PlayerPawn.IsValid || kvp.Key.PlayerPawn.Value == null || kvp.Key.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
-                // get player pawn
-                var playerPawn = kvp.Key.PlayerPawn.Value!;
-                // reset player speed
-                playerPawn.VelocityModifier = 1.0f;
-                // set state changed
-                Utilities.SetStateChanged(playerPawn, "CCSPlayerPawn", "m_flVelocityModifier");
+                try
+                {
+                    if (kvp.Key == null
+                        || kvp.Key.PlayerPawn == null
+                        || !kvp.Key.PlayerPawn.IsValid
+                        || kvp.Key.PlayerPawn.Value == null
+                        || kvp.Key.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
+                    // get player pawn
+                    var playerPawn = kvp.Key.PlayerPawn.Value!;
+                    // reset player speed
+                    playerPawn.VelocityModifier = 1.0f;
+                    // set state changed
+                    Utilities.SetStateChanged(playerPawn, "CCSPlayerPawn", "m_flVelocityModifier");
+                }
+                catch
+                {
+                    // do nothing
+                }
             }
             _playersWithIncreasedSpeed.Clear();
         }

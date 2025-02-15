@@ -53,14 +53,21 @@ namespace RollTheDice
             Dictionary<CCSPlayerController, CDynamicProp> _playersWithThirdPersonViewCopy = new(_playersWithThirdPersonView);
             foreach (CCSPlayerController player in _playersWithThirdPersonViewCopy.Keys)
             {
-                if (player == null
-                    || player.PlayerPawn == null
-                    || !player.PlayerPawn.IsValid
-                    || player.PlayerPawn.Value == null
-                    || _playersWithThirdPersonViewCopy[player] == null) continue;
-                player!.PlayerPawn!.Value!.CameraServices!.ViewEntity.Raw = uint.MaxValue;
-                Utilities.SetStateChanged(player.PlayerPawn.Value, "CBasePlayerPawn", "m_pCameraServices");
-                _playersWithThirdPersonViewCopy[player].AcceptInput("Kill");
+                try
+                {
+                    if (player == null
+                        || player.PlayerPawn == null
+                        || !player.PlayerPawn.IsValid
+                        || player.PlayerPawn.Value == null
+                        || _playersWithThirdPersonViewCopy[player] == null) continue;
+                    player!.PlayerPawn!.Value!.CameraServices!.ViewEntity.Raw = uint.MaxValue;
+                    Utilities.SetStateChanged(player.PlayerPawn.Value, "CBasePlayerPawn", "m_pCameraServices");
+                    _playersWithThirdPersonViewCopy[player].AcceptInput("Kill");
+                }
+                catch
+                {
+                    // do nothing
+                }
             }
             _playersWithThirdPersonView.Clear();
         }

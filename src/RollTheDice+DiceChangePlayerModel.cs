@@ -38,17 +38,24 @@ namespace RollTheDice
             Dictionary<CCSPlayerController, string> _playersWithChangedPlayerModelCopy = new(_playersWithChangedPlayerModel);
             foreach (var kvp in _playersWithChangedPlayerModelCopy)
             {
-                var player = kvp.Key;
-                var model = kvp.Value;
-                if (player == null
-                    || player.PlayerPawn == null
-                    || !player.PlayerPawn.IsValid
-                    || player.PlayerPawn.Value == null
-                    || player.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
-                // get player pawn
-                var playerPawn = player.PlayerPawn.Value!;
-                // reset player model
-                playerPawn.SetModel(model);
+                try
+                {
+                    var player = kvp.Key;
+                    var model = kvp.Value;
+                    if (player == null
+                        || player.PlayerPawn == null
+                        || !player.PlayerPawn.IsValid
+                        || player.PlayerPawn.Value == null
+                        || player.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
+                    // get player pawn
+                    var playerPawn = player.PlayerPawn.Value!;
+                    // reset player model
+                    playerPawn.SetModel(model);
+                }
+                catch
+                {
+                    // do nothing
+                }
             }
             _playersWithChangedPlayerModel.Clear();
         }

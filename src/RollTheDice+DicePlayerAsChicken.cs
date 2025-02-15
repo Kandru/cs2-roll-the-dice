@@ -48,9 +48,18 @@ namespace RollTheDice
             Dictionary<CCSPlayerController, Dictionary<string, string>> _playersAsChickenCopy = new(_playersAsChicken);
             foreach (CCSPlayerController player in _playersAsChickenCopy.Keys)
             {
-                if (player == null || player.Pawn == null || player.Pawn.Value == null) continue;
-                RemoveProp(int.Parse(_playersAsChicken[player]["prop"]));
-                MakePlayerVisible(player);
+                try
+                {
+                    if (player == null
+                        || player.Pawn == null
+                        || player.Pawn.Value == null) continue;
+                    RemoveProp(int.Parse(_playersAsChicken[player]["prop"]));
+                    MakePlayerVisible(player);
+                }
+                catch
+                {
+                    // do nothing
+                }
             }
             _playersAsChicken.Clear();
         }
