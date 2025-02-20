@@ -393,7 +393,6 @@ namespace RollTheDice
         {
             AddTimer(seconds, () =>
             {
-                Console.WriteLine("RunTimer");
                 if (!_isDuringRound) return;
                 foreach (var player in Utilities.GetPlayers())
                 {
