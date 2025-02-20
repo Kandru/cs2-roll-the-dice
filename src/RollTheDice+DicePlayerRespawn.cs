@@ -38,6 +38,11 @@ namespace RollTheDice
             _playersWithRespawnAbility.Clear();
         }
 
+        private void DicePlayerRespawnResetForPlayer(CCSPlayerController player)
+        {
+            _playersWithRespawnAbility.Remove(player);
+        }
+
         private void EventDicePlayerRespawnOnTick()
         {
             if (_playersWithRespawnAbility.Count() == 0) return;
