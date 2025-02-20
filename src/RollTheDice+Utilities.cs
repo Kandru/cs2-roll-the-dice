@@ -366,5 +366,42 @@ namespace RollTheDice
                 CalculateVelocity(_cameraProp.AbsOrigin!, CalculatePositionInFront(target, -110, 90), 0.1f)
             );
         }
+
+        private void RollTheDiceForPlayer(CCSPlayerController player)
+        {
+            if (player.IsBot
+                || player.PlayerPawn == null
+                || !player.PlayerPawn.IsValid
+                || player.PlayerPawn.Value == null
+                || player.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE
+                || _playersThatRolledTheDice.ContainsKey(player)) return;
+            var diceIndex = GetRandomDice();
+            if (diceIndex == -1)
+            {
+                player.PrintToChat(Localizer["command.givedice.nodicefound"]);
+                return;
+            }
+            // add player to list
+            _playersThatRolledTheDice.Add(player, new Dictionary<string, object> { { "dice", _dices[diceIndex].Method.Name } });
+            // count dice roll
+            _countRolledDices[_dices[diceIndex].Method.Name]++;
+            // execute
+            ExecuteDice(player, diceIndex);
+        }
+
+        private void RollTheDiceEveryXSeconds(int seconds)
+        {
+            AddTimer(seconds, () =>
+            {
+                Console.WriteLine("RunTimer");
+                if (!_isDuringRound) return;
+                foreach (var player in Utilities.GetPlayers())
+                {
+                    ResetDiceForPlayer(player);
+                    RollTheDiceForPlayer(player);
+                }
+                RollTheDiceEveryXSeconds(seconds);
+            });
+        }
     }
 }

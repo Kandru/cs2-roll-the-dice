@@ -35,6 +35,10 @@ namespace RollTheDice
         [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
         // debug prints
         [JsonPropertyName("debug")] public bool Debug { get; set; } = false;
+        // automatically roll the dice on spawn
+        [JsonPropertyName("roll_the_dice_on_round_start")] public bool RollTheDiceOnRoundStart { get; set; } = false;
+        // fun: roll the dice every x seconds (0 to disable)
+        [JsonPropertyName("roll_the_dice_every_x_seconds")] public int RollTheDiceEveryXSeconds { get; set; } = 0;
         // limit !rtd usage to every X rounds (only set one of both)
         [JsonPropertyName("cooldown_rounds")] public int CooldownRounds { get; set; } = 0;
         // limit !rtd usage to every X seconds (only set one of both)

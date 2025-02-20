@@ -88,6 +88,17 @@ namespace RollTheDice
             SendGlobalChatMessage(Localizer["core.announcement"]);
             // allow dice rolls
             _isDuringRound = true;
+            // check if random dice should be rolled
+            if (Config.RollTheDiceOnRoundStart && !(bool)GetGameRule("WarmupPeriod")!)
+            {
+                foreach (CCSPlayerController entry in Utilities.GetPlayers())
+                {
+                    RollTheDiceForPlayer(entry);
+                }
+            }
+            // check if random dice should be rolled every X seconds
+            if (Config.RollTheDiceEveryXSeconds > 0 && !(bool)GetGameRule("WarmupPeriod")!)
+                RollTheDiceEveryXSeconds(Config.RollTheDiceEveryXSeconds);
             // continue event
             return HookResult.Continue;
         }
@@ -122,7 +133,7 @@ namespace RollTheDice
         private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
         {
             CCSPlayerController player = @event.Userid!;
-            ResetDiceForPlayer(player);
+            if (Config.AllowDiceAfterRespawn) ResetDiceForPlayer(player);
             return HookResult.Continue;
         }
 
@@ -222,14 +233,13 @@ namespace RollTheDice
 
         private void ResetDiceForPlayer(CCSPlayerController player)
         {
-            if (!Config.AllowDiceAfterRespawn) return;
             if (player == null || player.Pawn == null || !player.Pawn.IsValid || player.Pawn.Value == null) return;
             DebugPrint($"Resetting dices for {player.PlayerName}");
             if (!_playersThatRolledTheDice.ContainsKey(player)) return;
-            // remove player from list
-            _playersThatRolledTheDice.Remove(player);
             // remove gui from player
             RemoveGUI(player);
+            // remove player from list
+            _playersThatRolledTheDice.Remove(player);
             // iterate through all dices and call their reset method dynamically
             foreach (var dice in _dices)
             {
