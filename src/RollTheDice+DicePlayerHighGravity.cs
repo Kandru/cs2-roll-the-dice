@@ -14,6 +14,15 @@ namespace RollTheDice
             };
         }
 
+        private void DicePlayerHighGravityResetForPlayer(CCSPlayerController player)
+        {
+            if (player == null
+                || player.PlayerPawn == null
+                || !player.PlayerPawn.IsValid
+                || player.PlayerPawn.Value == null) return;
+            player.PlayerPawn.Value.GravityScale = 1.0f;
+        }
+
         private Dictionary<string, object> DicePlayerHighGravityConfig()
         {
             var config = new Dictionary<string, object>();
