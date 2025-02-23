@@ -1,3 +1,4 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using System.Drawing;
 
@@ -5,6 +6,19 @@ namespace RollTheDice
 {
     public partial class RollTheDice : BasePlugin
     {
+        private void ChangeColor(CPointWorldText worldText, string color)
+        {
+            try
+            {
+                worldText.Color = ColorTranslator.FromHtml(color);
+            }
+            catch
+            {
+                worldText.Color = Color.White;
+            }
+            Utilities.SetStateChanged(worldText, "CPointWorldText", "m_Color");
+        }
+
         private void RemoveAllGUIs()
         {
             foreach (CCSPlayerController player in _playersThatRolledTheDice.Keys)
@@ -44,7 +58,8 @@ namespace RollTheDice
                 float MessageBackgroundFactor,
                 string StatusFont,
                 int StatusFontSize,
-                string StatusColor,
+                string StatusColorEnabled,
+                string StatusColorDisabled,
                 float StatusShiftX,
                 float StatusShiftY,
                 bool StatusDrawBackground,
@@ -61,6 +76,7 @@ namespace RollTheDice
                     1.0f,
                     "Arial Black Standard",
                     30,
+                    "green",
                     "red",
                     -2.85f,
                     3.7f,
@@ -84,7 +100,8 @@ namespace RollTheDice
                         MessageBackgroundFactor = position.Value.MessageBackgroundFactor,
                         StatusFont = position.Value.StatusFont,
                         StatusFontSize = position.Value.StatusFontSize,
-                        StatusColor = position.Value.StatusColor,
+                        StatusColorEnabled = position.Value.StatusColorEnabled,
+                        StatusColorDisabled = position.Value.StatusColorDisabled,
                         StatusShiftX = position.Value.StatusShiftX,
                         StatusShiftY = position.Value.StatusShiftY,
                         StatusDrawBackground = position.Value.StatusDrawBackground,

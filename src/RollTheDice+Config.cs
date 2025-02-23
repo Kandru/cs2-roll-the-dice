@@ -18,7 +18,8 @@ namespace RollTheDice
         [JsonPropertyName("message_background_factor")] public float MessageBackgroundFactor { get; set; } = 1.0f;
         [JsonPropertyName("status_font")] public string StatusFont { get; set; } = "Arial Black Standard";
         [JsonPropertyName("status_font_size")] public int StatusFontSize { get; set; } = 30;
-        [JsonPropertyName("status_color")] public string StatusColor { get; set; } = "red";
+        [JsonPropertyName("status_color_enabled")] public string StatusColorEnabled { get; set; } = "green";
+        [JsonPropertyName("status_color_disabled")] public string StatusColorDisabled { get; set; } = "red";
         [JsonPropertyName("status_shift_x")] public float StatusShiftX { get; set; } = -2.85f;
         [JsonPropertyName("status_shift_y")] public float StatusShiftY { get; set; } = 3.7f;
         [JsonPropertyName("status_draw_background")] public bool StatusDrawBackground { get; set; } = true;

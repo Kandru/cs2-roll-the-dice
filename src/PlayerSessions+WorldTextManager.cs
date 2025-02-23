@@ -48,7 +48,7 @@ namespace RollTheDice
             worldText.Enabled = true;
             worldText.FontSize = size;
             worldText.Fullbright = true;
-            worldText.Color = color ?? Color.Aquamarine;
+            worldText.Color = color ?? Color.White;
             worldText.WorldUnitsPerPx = (0.25f / 1050) * size;
             worldText.FontName = font;
             worldText.JustifyHorizontal = PointWorldTextJustifyHorizontal_t.POINT_WORLD_TEXT_JUSTIFY_HORIZONTAL_LEFT;

@@ -304,12 +304,13 @@ namespace RollTheDice
                 Color statusColor;
                 try
                 {
-                    statusColor = ColorTranslator.FromHtml(Config.GUIPositions[Config.GUIPosition].StatusColor);
+                    statusColor = ColorTranslator.FromHtml(Config.GUIPositions[Config.GUIPosition].StatusColorDisabled);
                 }
                 catch
                 {
-                    statusColor = Color.Purple;
+                    statusColor = Color.Red;
                 }
+                statusColor = Color.Red;
                 CPointWorldText? playerGUIStatus = WorldTextManager.Create(
                     player: player,
                     message: "",
