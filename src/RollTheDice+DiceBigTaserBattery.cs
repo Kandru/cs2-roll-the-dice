@@ -1,3 +1,4 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 
 namespace RollTheDice
@@ -28,6 +29,9 @@ namespace RollTheDice
                     var weapon = gun.Value;
                     if (weapon != null && weapon.IsValid && weapon.DesignerName.Contains("taser"))
                     {
+                        // recharge taser
+                        weapon.Clip1 = 1;
+                        Utilities.SetStateChanged(weapon, "CBasePlayerWeapon", "m_iClip1");
                         hasTaser = true;
                         break;
                     }
@@ -74,7 +78,9 @@ namespace RollTheDice
             if (player.Pawn.Value.WeaponServices.ActiveWeapon == null || player.Pawn.Value.WeaponServices.ActiveWeapon.Value == null) return HookResult.Continue;
             if (player.Pawn.Value.WeaponServices.ActiveWeapon.Value!.DesignerName != "weapon_taser") return HookResult.Continue;
             if (_playersWithBigTaserBattery[player] <= 0) return HookResult.Continue;
-            player.Pawn.Value.WeaponServices.ActiveWeapon.Value!.Clip1 = 2;
+            // recharge taser but only if we have at least 2 charges left
+            if (_playersWithBigTaserBattery[player] > 1) player.Pawn.Value.WeaponServices.ActiveWeapon.Value!.Clip1 = 2;
+            // decrease battery size
             _playersWithBigTaserBattery[player]--;
             // update gui if available
             if (_playersThatRolledTheDice.ContainsKey(player)
