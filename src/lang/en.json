@@ -95,7 +95,7 @@
     "DicePlayerMakeFakeGunSoundsWeapon_other": "{purple}[RollTheDice] {green}{playerName} {default}is trying the {green}{weapon}{default}!",
     "DiceBigTaserBattery_player": "{default}You got {green}{batterySize}{default} taser shots!",
     "DiceBigTaserBattery_gui": "{default}{batterySize}x taser shots",
-    "DiceBigTaserBattery_status": "{default}{batterySize}x shots left",
+    "DiceBigTaserBattery_status": "{default}{batterySize}x shot(s) left",
     "DiceBigTaserBattery_other": "{purple}[RollTheDice] {green}{playerName} {default}has {green}{batterySize}{default} taser shots!",
     "DicePlayerCloak_player": "{default}You got a cloak! Stand still!",
     "DicePlayerCloak_gui": "{default}You got a cloak, stand still",
