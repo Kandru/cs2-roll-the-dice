@@ -169,7 +169,7 @@ namespace RollTheDice
                             // inform other players
                             SendGlobalChatMessage(Localizer["DicePlayerDisguiseAsPlant_other"].Value
                             .Replace("{playerName}", player.PlayerName)
-                            .Replace("{model}", nextProp),
+                            .Replace("{model}", Localizer[$"model_{nextProp.ToLower()}"]),
                             player: player);
                             // update status gui
                             if (_playersThatRolledTheDice.ContainsKey(player)
