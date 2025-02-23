@@ -59,10 +59,11 @@ namespace RollTheDice
                         || player.PlayerPawn == null
                         || !player.PlayerPawn.IsValid
                         || player.PlayerPawn.Value == null
-                        || _playersWithThirdPersonViewCopy[player] == null) continue;
+                        || _playersWithThirdPersonView[player] == null
+                        || !_playersWithThirdPersonView[player].IsValid) continue;
                     player!.PlayerPawn!.Value!.CameraServices!.ViewEntity.Raw = uint.MaxValue;
                     Utilities.SetStateChanged(player.PlayerPawn.Value, "CBasePlayerPawn", "m_pCameraServices");
-                    _playersWithThirdPersonViewCopy[player].AcceptInput("Kill");
+                    _playersWithThirdPersonView[player].AcceptInput("Kill");
                 }
                 catch
                 {
@@ -77,7 +78,7 @@ namespace RollTheDice
             if (!_playersWithThirdPersonView.ContainsKey(player)) return;
             player!.PlayerPawn!.Value!.CameraServices!.ViewEntity.Raw = uint.MaxValue;
             Utilities.SetStateChanged(player.PlayerPawn.Value, "CBasePlayerPawn", "m_pCameraServices");
-            _playersWithThirdPersonView[player].AcceptInput("Kill");
+            if (_playersWithThirdPersonView[player].IsValid) _playersWithThirdPersonView[player].AcceptInput("Kill");
             _playersWithThirdPersonView.Remove(player);
         }
 
