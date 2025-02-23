@@ -94,6 +94,7 @@
     "DicePlayerMakeFakeGunSoundsWeapon_other": "{purple}[WürfelSpiel] {green}{playerName} {default}probiert die {green}{weapon}{default}!",
     "DiceBigTaserBattery_player": "{default}Du hast {green}{batterySize} {default}Taser-Schüsse erhalten!",
     "DiceBigTaserBattery_gui": "{default}{batterySize}x Taser-Schüsse",
+    "DiceBigTaserBattery_status": "{default}{batterySize}x Schüsse verbleibend",
     "DiceBigTaserBattery_other": "{purple}[WürfelSpiel] {green}{playerName} {default}hat {green}{batterySize} {default}Taser-Schüsse!",
     "DicePlayerCloak_player": "{default}Du hast einen Tarnmantel! Steh still!",
     "DicePlayerCloak_gui": "{default}Tarnmantel",
