@@ -8,22 +8,22 @@ namespace RollTheDice
         private Dictionary<CCSPlayerController, Dictionary<string, string>> _playersDisguisedAsPlants = new();
         private readonly Dictionary<string, Dictionary<string, object>> _playersDisguisedAsPlantsModels = new()
         {
-            { "Urban Pot", new Dictionary<string, object> { { "model", "models/props_foliage/urban_pot_fancy01.vmdl" } } },
-            { "Airport/Plant", new Dictionary<string, object> { { "model", "models/props_plants/plantairport01.vmdl" } } },
-            { "Office/Plant", new Dictionary<string, object> { { "model", "models/props/cs_office/plant01.vmdl" } } },
-            { "Small Palm", new Dictionary<string, object> { { "model", "models/props_foliage/mall_small_palm01.vmdl" } } },
-            { "Italy/Chair", new Dictionary<string, object> { { "model", "models/cs_italy/seating/chair/wood_chair_1.vmdl" }, { "offset_angle", "180" } } },
+            { "UrbanPot", new Dictionary<string, object> { { "model", "models/props_foliage/urban_pot_fancy01.vmdl" } } },
+            { "AirportPlant", new Dictionary<string, object> { { "model", "models/props_plants/plantairport01.vmdl" } } },
+            { "OfficePlant", new Dictionary<string, object> { { "model", "models/props/cs_office/plant01.vmdl" } } },
+            { "SmallPalm", new Dictionary<string, object> { { "model", "models/props_foliage/mall_small_palm01.vmdl" } } },
+            { "ItalyChair", new Dictionary<string, object> { { "model", "models/cs_italy/seating/chair/wood_chair_1.vmdl" }, { "offset_angle", "180" } } },
             { "Barstool", new Dictionary<string, object> { { "model", "models/generic/barstool_01/barstool_01.vmdl" } } },
             { "Table", new Dictionary<string, object> { { "model", "models/props_c17/furnituretable001a_static.vmdl" }, { "offset_z", "15" } } },
             { "Hostage", new Dictionary<string, object> { { "model", "models/hostage/hostage.vmdl" } } },
             { "Chicken", new Dictionary<string, object> { { "model", "models/chicken/chicken.vmdl" } } },
-            { "Big Flag", new Dictionary<string, object> { { "model", "models/props_fairgrounds/fairgrounds_flagpole01.vmdl" }, { "offset_angle", "180" } } },
+            { "BigFlag", new Dictionary<string, object> { { "model", "models/props_fairgrounds/fairgrounds_flagpole01.vmdl" }, { "offset_angle", "180" } } },
             { "AnubisInfoPanel", new Dictionary<string, object> { { "model", "models/anubis/signs/anubis_info_panel_01.vmdl" } } },
-            { "Copy Machine", new Dictionary<string, object> { { "model", "models/props_interiors/copymachine01.vmdl" }, { "offset_angle", "270" } } },
+            { "CopyMachine", new Dictionary<string, object> { { "model", "models/props_interiors/copymachine01.vmdl" }, { "offset_angle", "270" } } },
             { "FileCabinet", new Dictionary<string, object> { { "model", "models/props_office/file_cabinet_03.vmdl" } } },
             { "MailDropbox", new Dictionary<string, object> { { "model", "models/props_street/mail_dropbox.vmdl" } } },
             { "Pottery", new Dictionary<string, object> { { "model", "models/ar_shoots/shoots_pottery_02.vmdl" } } },
-            { "Trash Can", new Dictionary<string, object> { { "model", "models/props_interiors/trashcan01.vmdl" } } },
+            { "TrashCan", new Dictionary<string, object> { { "model", "models/props_interiors/trashcan01.vmdl" } } },
             { "Trafficcone", new Dictionary<string, object> { { "model", "models/props/de_vertigo/trafficcone_clean.vmdl" }, { "offset_z", "15" } } },
             { "Fireextinguisher", new Dictionary<string, object> { { "model", "models/generic/fire_extinguisher_01/fire_extinguisher_01.vmdl" } } },
         };
@@ -51,7 +51,7 @@ namespace RollTheDice
             return new Dictionary<string, string>
             {
                 { "playerName", player.PlayerName },
-                { "model", randomKey }
+                { "model", Localizer[$"model_{randomKey.ToLower()}"] }
             };
         }
 
@@ -135,7 +135,8 @@ namespace RollTheDice
                             ChangeColor(worldText, Config.GUIPositions[Config.GUIPosition].StatusColorEnabled);
                             string message = playerData["prop_name"];
                             if ((bool)config["allow_model_change"])
-                                message = Localizer["DicePlayerDisguiseAsPlant_status"].Value.Replace("{model}", playerData["prop_name"]);
+                                message = Localizer["DicePlayerDisguiseAsPlant_status"].Value
+                                .Replace("{model}", Localizer[$"model_{playerData["prop_name"].ToLower()}"]);
                             worldText.AcceptInput("SetMessage", worldText, worldText, message);
                         }
                     }
@@ -177,7 +178,7 @@ namespace RollTheDice
                             {
                                 CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
                                 worldText.AcceptInput("SetMessage", worldText, worldText, Localizer["DicePlayerDisguiseAsPlant_status"].Value.Replace(
-                                    "{model}", nextProp
+                                    "{model}", Localizer[$"model_{nextProp.ToLower()}"]
                                 ));
                             }
                         }
@@ -210,7 +211,7 @@ namespace RollTheDice
                         {
                             CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
                             ChangeColor(worldText, Config.GUIPositions[Config.GUIPosition].StatusColorDisabled);
-                            worldText.AcceptInput("SetMessage", worldText, worldText, "Disabled");
+                            worldText.AcceptInput("SetMessage", worldText, worldText, Localizer["DicePlayerDisguiseAsPlant_disabled"]);
                         }
                     }
                     else if (playerData["status"] == "plant")
