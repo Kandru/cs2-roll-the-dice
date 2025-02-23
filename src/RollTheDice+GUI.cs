@@ -35,14 +35,14 @@ namespace RollTheDice
                 && (CPointWorldText)_playersThatRolledTheDice[player]["gui_message"] != null)
             {
                 CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_message"];
-                worldText.AcceptInput("Kill");
+                if (worldText.IsValid) worldText.AcceptInput("Kill");
             }
             // remove gui status
             if (_playersThatRolledTheDice[player].ContainsKey("gui_status")
                 && (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"] != null)
             {
                 CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
-                worldText.AcceptInput("Kill");
+                if (worldText.IsValid) worldText.AcceptInput("Kill");
             }
         }
 
