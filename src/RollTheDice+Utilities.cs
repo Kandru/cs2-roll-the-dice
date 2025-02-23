@@ -68,22 +68,20 @@ namespace RollTheDice
             return countRolledDicesLowest[_random.Next(countRolledDicesLowest.Count)];
         }
 
-        public void SendGlobalChatMessage(string message, float delay = 0, CCSPlayerController? player = null)
+        private void SendGlobalChatMessage(string message, float delay = 0, CCSPlayerController? player = null)
         {
+            DebugPrint(message);
             foreach (CCSPlayerController entry in Utilities.GetPlayers())
             {
-                if (entry.IsBot || entry == player) continue;
-                AddTimer(delay, () => entry.PrintToChat(message));
-            }
-        }
-
-        public void SendGlobalCenterMessage(string message, float delay = 0, bool alert = false, CCSPlayerController? player = null)
-        {
-            foreach (CCSPlayerController entry in Utilities.GetPlayers())
-            {
-                if (entry.IsBot || entry == player) continue;
-                if (alert) AddTimer(delay, () => entry.PrintToCenterAlert(message));
-                else AddTimer(delay, () => entry.PrintToCenterHtml(message));
+                if (entry == null || !entry.IsValid || entry.IsBot || entry == player) continue;
+                if (delay > 0)
+                    AddTimer(delay, () =>
+                    {
+                        if (entry == null || !entry.IsValid) return;
+                        entry.PrintToChat(message);
+                    });
+                else
+                    entry.PrintToChat(message);
             }
         }
 
