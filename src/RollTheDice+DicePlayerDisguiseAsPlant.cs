@@ -19,6 +19,7 @@ namespace RollTheDice
             { "Chicken", new Dictionary<string, object> { { "model", "models/chicken/chicken.vmdl" } } },
             { "Big Flag", new Dictionary<string, object> { { "model", "models/props_fairgrounds/fairgrounds_flagpole01.vmdl" }, { "offset_angle", "180" } } },
             { "AnubisInfoPanel", new Dictionary<string, object> { { "model", "models/anubis/signs/anubis_info_panel_01.vmdl" } } },
+            { "Copy Machine", new Dictionary<string, object> { { "model", "models/props_interiors/copymachine01.vmdl" }, { "offset_angle", "270" } } },
             { "FileCabinet", new Dictionary<string, object> { { "model", "models/props_office/file_cabinet_03.vmdl" } } },
             { "MailDropbox", new Dictionary<string, object> { { "model", "models/props_street/mail_dropbox.vmdl" } } },
             { "Pottery", new Dictionary<string, object> { { "model", "models/ar_shoots/shoots_pottery_02.vmdl" } } },
