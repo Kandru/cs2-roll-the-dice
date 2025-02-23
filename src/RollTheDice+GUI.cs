@@ -5,21 +5,6 @@ namespace RollTheDice
 {
     public partial class RollTheDice : BasePlugin
     {
-        private CPointWorldText? CreateGUI(CCSPlayerController player, string message, int size = 100, Color? color = null, string font = "", float shiftX = 0f, float shiftY = 0f, bool drawBackground = true, float backgroundFactor = 1f)
-        {
-            return WorldTextManager.Create(
-                player,
-                message,
-                size,
-                color,
-                font,
-                shiftX,
-                shiftY,
-                drawBackground,
-                backgroundFactor
-            );
-        }
-
         private void RemoveAllGUIs()
         {
             foreach (CCSPlayerController player in _playersThatRolledTheDice.Keys)
@@ -49,9 +34,39 @@ namespace RollTheDice
 
         private void CheckGUIConfig()
         {
-            var positions = new Dictionary<string, (string MessageFont, int MessageFontSize, string MessageColor, float MessageShiftX, float MessageShiftY, string StatusFont, int StatusFontSize, string StatusColor, float StatusShiftX, float StatusShiftY)>
+            var positions = new Dictionary<string, (
+                string MessageFont,
+                int MessageFontSize,
+                string MessageColor,
+                float MessageShiftX,
+                float MessageShiftY,
+                bool MessageDrawBackground,
+                float MessageBackgroundFactor,
+                string StatusFont,
+                int StatusFontSize,
+                string StatusColor,
+                float StatusShiftX,
+                float StatusShiftY,
+                bool StatusDrawBackground,
+                float StatusBackgroundFactor
+            )>
             {
-                { "top_center", ("Verdana", 40, "Purple",-2.9f, 4.4f, "Verdana", 30, "Red", -2.75f, 4.0f) },
+                { "top_center", (
+                    "Arial Black Standard",
+                    32,
+                    "white",
+                    -2.9f,
+                    4.0f,
+                    true,
+                    1.0f,
+                    "Arial Black Standard",
+                    30,
+                    "red",
+                    -2.85f,
+                    3.7f,
+                    true,
+                    1.0f
+                ) },
             };
 
             foreach (var position in positions)
@@ -65,11 +80,15 @@ namespace RollTheDice
                         MessageColor = position.Value.MessageColor,
                         MessageShiftX = position.Value.MessageShiftX,
                         MessageShiftY = position.Value.MessageShiftY,
+                        MessageDrawBackground = position.Value.MessageDrawBackground,
+                        MessageBackgroundFactor = position.Value.MessageBackgroundFactor,
                         StatusFont = position.Value.StatusFont,
                         StatusFontSize = position.Value.StatusFontSize,
                         StatusColor = position.Value.StatusColor,
                         StatusShiftX = position.Value.StatusShiftX,
                         StatusShiftY = position.Value.StatusShiftY,
+                        StatusDrawBackground = position.Value.StatusDrawBackground,
+                        StatusBackgroundFactor = position.Value.StatusBackgroundFactor
                     };
                 }
             }

@@ -288,7 +288,7 @@ namespace RollTheDice
                 {
                     messageColor = Color.Purple;
                 }
-                CPointWorldText? playerGUIMessage = CreateGUI(
+                CPointWorldText? playerGUIMessage = WorldTextManager.Create(
                     player: player,
                     message: message,
                     size: Config.GUIPositions[Config.GUIPosition].MessageFontSize,
@@ -296,8 +296,8 @@ namespace RollTheDice
                     font: Config.GUIPositions[Config.GUIPosition].MessageFont,
                     shiftX: Config.GUIPositions[Config.GUIPosition].MessageShiftX,
                     shiftY: Config.GUIPositions[Config.GUIPosition].MessageShiftY,
-                    drawBackground: Config.GUIPositions[Config.GUIPosition].DrawBackground,
-                    backgroundFactor: Config.GUIPositions[Config.GUIPosition].BackgroundFactor
+                    drawBackground: Config.GUIPositions[Config.GUIPosition].MessageDrawBackground,
+                    backgroundFactor: Config.GUIPositions[Config.GUIPosition].MessageBackgroundFactor
                 );
                 if (playerGUIMessage != null) _playersThatRolledTheDice[player]["gui_message"] = playerGUIMessage;
                 // create (empty) status gui entity
@@ -310,7 +310,7 @@ namespace RollTheDice
                 {
                     statusColor = Color.Purple;
                 }
-                CPointWorldText? playerGUIStatus = CreateGUI(
+                CPointWorldText? playerGUIStatus = WorldTextManager.Create(
                     player: player,
                     message: "",
                     size: Config.GUIPositions[Config.GUIPosition].StatusFontSize,
@@ -318,8 +318,8 @@ namespace RollTheDice
                     font: Config.GUIPositions[Config.GUIPosition].StatusFont,
                     shiftX: Config.GUIPositions[Config.GUIPosition].StatusShiftX,
                     shiftY: Config.GUIPositions[Config.GUIPosition].StatusShiftY,
-                    drawBackground: Config.GUIPositions[Config.GUIPosition].DrawBackground,
-                    backgroundFactor: Config.GUIPositions[Config.GUIPosition].BackgroundFactor
+                    drawBackground: Config.GUIPositions[Config.GUIPosition].StatusDrawBackground,
+                    backgroundFactor: Config.GUIPositions[Config.GUIPosition].StatusBackgroundFactor
                 );
                 if (playerGUIStatus != null) _playersThatRolledTheDice[player]["gui_status"] = playerGUIStatus;
             }

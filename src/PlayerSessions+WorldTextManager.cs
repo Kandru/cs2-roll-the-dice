@@ -41,11 +41,8 @@ namespace RollTheDice
             float backgroundHeight = 0.01f * backgroundFactor * message.Split('\n').Length;
             if (backgroundHeight == 0) backgroundHeight = 0.05f * backgroundFactor;
             // set background width dynamically by counting the longest line
-            float backgroundWidth = 0.015f * backgroundFactor;
-            foreach (string line in message.Split('\n'))
-            {
-                if (backgroundWidth < line.Length * 0.012f * backgroundFactor) backgroundWidth = line.Length * 0.012f * backgroundFactor;
-            }
+            float backgroundWidth = 0.1f * backgroundFactor;
+            Console.WriteLine(backgroundWidth);
             // create worldText
             CPointWorldText worldText = Utilities.CreateEntityByName<CPointWorldText>("point_worldtext")!;
             worldText.MessageText = message;
