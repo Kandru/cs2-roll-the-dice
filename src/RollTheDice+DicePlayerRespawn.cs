@@ -40,7 +40,12 @@ namespace RollTheDice
 
         private void DicePlayerRespawnResetForPlayer(CCSPlayerController player)
         {
+            // check if player has this dice
+            if (!_playersWithRespawnAbility.ContainsKey(player)) return;
+            // remove player
             _playersWithRespawnAbility.Remove(player);
+            // remove listener if no players have this dice
+            if (_playersWithRespawnAbility.Count == 0) DicePlayerRespawnReset();
         }
 
         private void EventDicePlayerRespawnOnTick()

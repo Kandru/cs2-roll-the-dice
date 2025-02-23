@@ -74,6 +74,8 @@ namespace RollTheDice
             // remove prop
             RemoveProp(prop);
             MakePlayerVisible(player);
+            // remove event listener when no players have this dice
+            if (_playersAsChicken.Count() == 0) DicePlayerAsChickenReset();
         }
 
         private void EventDicePlayerAsChickenOnTick()

@@ -41,6 +41,8 @@ namespace RollTheDice
                 || player.PlayerPawn.Value == null) return;
             if (!_playersWithoutExplosives.Contains(player.PlayerPawn.Value)) return;
             _playersWithoutExplosives.Remove(player.PlayerPawn.Value);
+            // remove listener if no players have this dice
+            if (_playersWithoutExplosives.Count == 0) DiceNoExplosivesReset();
         }
 
         private void DiceNoExplosivesUnload()

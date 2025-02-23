@@ -37,8 +37,12 @@ namespace RollTheDice
 
         private void DiceShowPlayerHealthBarResetForPlayer(CCSPlayerController player)
         {
+            // check if player has this dice
             if (!_playersWithHealthBarShown.ContainsKey(player)) return;
+            // remove player
             _playersWithHealthBarShown.Remove(player);
+            // remove listener if no players have this dice
+            if (_playersWithHealthBarShown.Count == 0) DiceShowPlayerHealthBarReset();
         }
 
         private HookResult EventDiceShowPlayerHealthBarOnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)

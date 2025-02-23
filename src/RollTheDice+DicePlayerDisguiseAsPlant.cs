@@ -85,6 +85,8 @@ namespace RollTheDice
             // remove prop
             RemoveProp(prop);
             MakePlayerVisible(player);
+            // remove event listener when no players have this dice
+            if (_playersDisguisedAsPlants.Count() == 0) DicePlayerDisguiseAsPlantReset();
         }
 
         private void EventDicePlayerDisguiseAsPlantOnTick()

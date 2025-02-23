@@ -65,6 +65,8 @@ namespace RollTheDice
             // set state changed
             Utilities.SetStateChanged(player.PlayerPawn.Value, "CBaseModelEntity", "m_clrRender");
             _playersWithCloak.Remove(player);
+            // remove event listener when no players have this dice
+            if (_playersWithCloak.Count() == 0) DicePlayerCloakReset();
         }
 
         private void EventDicePlayerCloakOnTick()

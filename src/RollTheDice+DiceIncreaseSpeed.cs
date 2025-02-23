@@ -76,6 +76,8 @@ namespace RollTheDice
             player.PlayerPawn.Value.VelocityModifier = 1.0f;
             Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawn", "m_flVelocityModifier");
             _playersWithIncreasedSpeed.Remove(player);
+            // remove event listener when no players have this dice
+            if (_playersWithIncreasedSpeed.Count() == 0) DiceIncreaseSpeedReset();
         }
 
         private HookResult EventDiceIncreaseSpeedOnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)

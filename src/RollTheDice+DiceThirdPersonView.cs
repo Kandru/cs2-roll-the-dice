@@ -75,11 +75,16 @@ namespace RollTheDice
 
         private void DiceThirdPersonViewResetForPlayer(CCSPlayerController player)
         {
+            // check if player has this dice
             if (!_playersWithThirdPersonView.ContainsKey(player)) return;
+            // reset player data
             player!.PlayerPawn!.Value!.CameraServices!.ViewEntity.Raw = uint.MaxValue;
             Utilities.SetStateChanged(player.PlayerPawn.Value, "CBasePlayerPawn", "m_pCameraServices");
             if (_playersWithThirdPersonView[player].IsValid) _playersWithThirdPersonView[player].AcceptInput("Kill");
+            // remove player
             _playersWithThirdPersonView.Remove(player);
+            // remove listener if no players have this dice
+            if (_playersWithThirdPersonView.Count() == 0) DiceThirdPersonViewReset();
         }
 
         private void DiceThirdPersonViewOnTick()

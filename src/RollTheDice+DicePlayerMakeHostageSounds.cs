@@ -40,8 +40,12 @@ namespace RollTheDice
 
         private void DicePlayerMakeHostageSoundsResetForPlayer(CCSPlayerController player)
         {
+            // check if player has this dice
             if (!_playersWithHostageSounds.ContainsKey(player)) return;
+            // remove player
             _playersWithHostageSounds.Remove(player);
+            // remove listener if no players have this dice
+            if (_playersWithHostageSounds.Count == 0) DicePlayerMakeHostageSoundsReset();
         }
 
         private void EventDicePlayerMakeHostageSoundsOnTick()

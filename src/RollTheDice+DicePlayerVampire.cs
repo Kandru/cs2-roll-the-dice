@@ -33,8 +33,12 @@ namespace RollTheDice
 
         private void DicePlayerVampireResetForPlayer(CCSPlayerController player)
         {
+            // check if player has this dice
             if (!_playerVampires.Contains(player)) return;
+            // remove player
             _playerVampires.Remove(player);
+            // remove listener if no players have this dice
+            if (_playerVampires.Count == 0) DicePlayerVampireReset();
         }
 
         private HookResult EventDicePlayerVampireOnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)

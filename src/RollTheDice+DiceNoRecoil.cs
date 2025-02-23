@@ -33,6 +33,8 @@ namespace RollTheDice
         {
             if (!_playersWithoutRecoil.Contains(player)) return;
             _playersWithoutRecoil.Remove(player);
+            // remove listener if no players have this dice
+            if (_playersWithoutRecoil.Count == 0) DiceNoRecoilReset();
         }
 
         private HookResult EventDiceNoRecoilOnWeaponFire(EventWeaponFire @event, GameEventInfo info)

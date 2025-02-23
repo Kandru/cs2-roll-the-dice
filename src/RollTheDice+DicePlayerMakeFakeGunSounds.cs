@@ -45,8 +45,12 @@ namespace RollTheDice
 
         private void DicePlayerMakeFakeGunSoundsResetForPlayer(CCSPlayerController player)
         {
+            // check if player has this dice
             if (!_playersWithFakeGunSounds.ContainsKey(player)) return;
+            // remove player
             _playersWithFakeGunSounds.Remove(player);
+            // remove listener if no players have this dice
+            if (_playersWithFakeGunSounds.Count == 0) DicePlayerMakeFakeGunSoundsReset();
         }
 
         private void EventDicePlayerMakeFakeGunSoundsOnTick()

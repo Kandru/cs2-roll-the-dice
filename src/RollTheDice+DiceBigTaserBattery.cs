@@ -62,10 +62,7 @@ namespace RollTheDice
             // remove player
             _playersWithBigTaserBattery.Remove(player);
             // remove event listener when no players have this dice
-            if (_playersWithBigTaserBattery.Count() == 0)
-            {
-                DeregisterEventHandler<EventWeaponFire>(EventDiceBigTaserBatteryOnWeaponFire);
-            }
+            if (_playersWithBigTaserBattery.Count == 0) DiceBigTaserBatteryReset();
         }
 
         private HookResult EventDiceBigTaserBatteryOnWeaponFire(EventWeaponFire @event, GameEventInfo info)
