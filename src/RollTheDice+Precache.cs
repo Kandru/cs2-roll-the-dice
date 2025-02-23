@@ -28,6 +28,7 @@ namespace RollTheDice
             "models/props_plants/plantairport01.vmdl",
             "models/props_street/mail_dropbox.vmdl",
             "models/props_c17/furnituretable001a_static.vmdl",
+            "models/props_fairgrounds/fairgrounds_flagpole01.vmdl",
         };
 
         private void OnServerPrecacheResources(ResourceManifest manifest)
