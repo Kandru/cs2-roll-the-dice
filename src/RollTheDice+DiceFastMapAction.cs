@@ -68,7 +68,8 @@ namespace RollTheDice
                 {
                     return new Dictionary<string, string>
                     {
-                        {"error", "command.rollthedice.unlucky"}
+                        {"locale", "DiceFastHostageActionUnlucky"},
+                        { "playerName", player.PlayerName }
                     };
                 }
             }
@@ -76,7 +77,8 @@ namespace RollTheDice
             {
                 return new Dictionary<string, string>
                 {
-                    {"error", "command.rollthedice.unlucky"}
+                    {"locale", "DiceFastHostageActionUnlucky"},
+                        { "playerName", player.PlayerName }
                 };
             }
         }
