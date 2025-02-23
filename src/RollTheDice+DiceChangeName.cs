@@ -61,6 +61,7 @@ namespace RollTheDice
                         || player.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
                     // reset player name
                     if (_playersWithChangedNamesOldNames.ContainsKey(player)) player.PlayerName = _playersWithChangedNamesOldNames[player];
+                    Utilities.SetStateChanged(player, "CBasePlayerController", "m_iszPlayerName");
                 }
                 catch
                 {
@@ -76,6 +77,7 @@ namespace RollTheDice
             if (!_playersWithChangedNames.Contains(player)) return;
             // reset player name
             player.PlayerName = _playersWithChangedNamesOldNames[player];
+            Utilities.SetStateChanged(player, "CBasePlayerController", "m_iszPlayerName");
             // remove player from list
             _playersWithChangedNames.Remove(player);
             _playersWithChangedNamesOldNames.Remove(player);
