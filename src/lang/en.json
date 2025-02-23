@@ -80,6 +80,7 @@
     "DiceStripWeapons_other": "{purple}[RollTheDice] {green}{playerName} {default}lost all weapons!",
     "DicePlayerDisguiseAsPlant_player": "{default}You are now a {green}{model} {default} if you do not move!",
     "DicePlayerDisguiseAsPlant_gui": "{default}Disguise as plant",
+    "DicePlayerDisguiseAsPlant_status": "{default}{model} -> change with USE",
     "DicePlayerDisguiseAsPlant_other": "{purple}[RollTheDice] {green}{playerName} {default}becomes a {green}{model} {default}if he does not move!",
     "DicePlayerAsChicken_player": "{default}You are now a big chicken!",
     "DicePlayerAsChicken_gui": "{default}Big chicken",

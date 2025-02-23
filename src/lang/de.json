@@ -80,6 +80,7 @@
     "DiceStripWeapons_other": "{purple}[WürfelSpiel] {green}{playerName} {default}hat alle Waffen verloren!",
     "DicePlayerDisguiseAsPlant_player": "{default}Du bist ein {green}{model} {default}wenn du still stehst!",
     "DicePlayerDisguiseAsPlant_gui": "{default}Versteckt als Pflanze",
+    "DicePlayerDisguiseAsPlant_status": "{default}{model} -> wechseln mit BENUTZEN",
     "DicePlayerDisguiseAsPlant_other": "{purple}[WürfelSpiel] {green}{playerName} {default}ist ein {green}{model} {default}wenn er still steht!",
     "DicePlayerAsChicken_player": "{default}Du bist jetzt ein großes Huhn!",
     "DicePlayerAsChicken_gui": "{default}Großes Huhn",

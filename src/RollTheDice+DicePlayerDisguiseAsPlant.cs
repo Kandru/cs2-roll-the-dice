@@ -1,3 +1,4 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 
 namespace RollTheDice
@@ -31,6 +32,8 @@ namespace RollTheDice
             // add player to list
             _playersDisguisedAsPlants.Add(player, new Dictionary<string, string>());
             _playersDisguisedAsPlants[player]["status"] = "player";
+            _playersDisguisedAsPlants[player]["use_button_down"] = "false";
+            _playersDisguisedAsPlants[player]["last_model_change"] = ((int)Server.CurrentTime).ToString();
             var randomKey = _playersDisguisedAsPlantsModels.Keys.ElementAt(_random.Next(0, _playersDisguisedAsPlantsModels.Count));
             _playersDisguisedAsPlants[player]["prop_name"] = randomKey;
             _playersDisguisedAsPlants[player]["prop"] = SpawnProp(
@@ -105,6 +108,7 @@ namespace RollTheDice
                     || player.PlayerPawn == null || !player.PlayerPawn.IsValid || player.PlayerPawn.Value == null
                     || player.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE
                     || !_playersDisguisedAsPlants.ContainsKey(player)) continue;
+                    Dictionary<string, object> config = GetDiceConfig("DicePlayerDisguiseAsPlant");
                     // change player model if player is not pressing any buttons
                     if (player.Buttons == 0 && playerData["status"] == "player")
                     {
@@ -113,8 +117,8 @@ namespace RollTheDice
                         UpdateProp(
                             player,
                             int.Parse(playerData["prop"]),
-                            int.Parse(_playersDisguisedAsPlants[player]["offset_z"]),
-                            int.Parse(_playersDisguisedAsPlants[player]["offset_angle"])
+                            int.Parse(playerData["offset_z"]),
+                            int.Parse(playerData["offset_angle"])
                         );
                         // update gui if available
                         if (_playersThatRolledTheDice.ContainsKey(player)
@@ -123,10 +127,72 @@ namespace RollTheDice
                         {
                             CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
                             ChangeColor(worldText, Config.GUIPositions[Config.GUIPosition].StatusColorEnabled);
-                            worldText.AcceptInput("SetMessage", worldText, worldText, playerData["prop_name"]);
+                            string message = playerData["prop_name"];
+                            if ((bool)config["allow_model_change"])
+                                message = Localizer["DicePlayerDisguiseAsPlant_status"].Value.Replace("{model}", playerData["prop_name"]);
+                            worldText.AcceptInput("SetMessage", worldText, worldText, message);
                         }
                     }
-                    else if (player.Buttons != 0 && playerData["status"] == "plant")
+                    else if ((bool)config["allow_model_change"]
+                        && player.Buttons != 0
+                        && player.Buttons == PlayerButtons.Use
+                        && playerData["status"] == "plant"
+                        && playerData["use_button_down"] == "false")
+                    {
+                        // disable button for a short time
+                        if (Convert.ToInt32(playerData["last_model_change"]) > (int)Server.CurrentTime) continue;
+                        _playersDisguisedAsPlants[player]["use_button_down"] = "true";
+                        string currentProp = playerData["prop_name"];
+                        // get next prop of list _playersDisguisedAsPlantsModels - start at beginning if end is reached
+                        string nextProp = _playersDisguisedAsPlantsModels.Keys.ElementAt(
+                            (_playersDisguisedAsPlantsModels.Keys.ToList().IndexOf(currentProp) + 1) % _playersDisguisedAsPlantsModels.Count
+                        );
+                        // update prop
+                        CDynamicProp? prop = Utilities.GetEntityFromIndex<CDynamicProp>((int)int.Parse(playerData["prop"]));
+                        if (prop != null
+                            && prop.IsValid)
+                        {
+                            // update model
+                            prop.SetModel(_playersDisguisedAsPlantsModels[nextProp]["model"].ToString()!);
+                            // update model string
+                            _playersDisguisedAsPlants[player]["prop_name"] = nextProp;
+                            // update model offsets
+                            _playersDisguisedAsPlants[player]["offset_z"] = _playersDisguisedAsPlantsModels[nextProp].ContainsKey("offset_z") ? (string)_playersDisguisedAsPlantsModels[nextProp]["offset_z"] : "0";
+                            _playersDisguisedAsPlants[player]["offset_angle"] = _playersDisguisedAsPlantsModels[nextProp].ContainsKey("offset_angle") ? (string)_playersDisguisedAsPlantsModels[nextProp]["offset_angle"] : "0";
+                            // inform other players
+                            SendGlobalChatMessage(Localizer["DicePlayerDisguiseAsPlant_other"].Value
+                            .Replace("{playerName}", player.PlayerName)
+                            .Replace("{model}", nextProp),
+                            player: player);
+                            // update status gui
+                            if (_playersThatRolledTheDice.ContainsKey(player)
+                                && _playersThatRolledTheDice[player].ContainsKey("gui_status")
+                                && (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"] != null)
+                            {
+                                CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
+                                worldText.AcceptInput("SetMessage", worldText, worldText, Localizer["DicePlayerDisguiseAsPlant_status"].Value.Replace(
+                                    "{model}", nextProp
+                                ));
+                            }
+                        }
+                    }
+                    else if ((bool)config["allow_model_change"]
+                        && (player.Buttons == 0
+                        || player.Buttons != PlayerButtons.Use)
+                        && playerData["use_button_down"] == "true")
+                    {
+                        // reset button state
+                        _playersDisguisedAsPlants[player]["use_button_down"] = "false";
+                        _playersDisguisedAsPlants[player]["last_model_change"] = ((int)Server.CurrentTime + 1).ToString();
+                        // update model state
+                        UpdateProp(
+                            player,
+                            int.Parse(playerData["prop"]),
+                            int.Parse(playerData["offset_z"]),
+                            int.Parse(playerData["offset_angle"])
+                        );
+                    }
+                    else if (player.Buttons != 0 && playerData["use_button_down"] == "false" && playerData["status"] == "plant")
                     {
                         _playersDisguisedAsPlants[player]["status"] = "player";
                         MakePlayerVisible(player);
@@ -146,8 +212,8 @@ namespace RollTheDice
                         UpdateProp(
                             player,
                             int.Parse(playerData["prop"]),
-                            int.Parse(_playersDisguisedAsPlants[player]["offset_z"]),
-                            int.Parse(_playersDisguisedAsPlants[player]["offset_angle"])
+                            int.Parse(playerData["offset_z"]),
+                            int.Parse(playerData["offset_angle"])
                         );
                     }
                 }
@@ -171,6 +237,13 @@ namespace RollTheDice
                 _playersDisguisedAsPlants.Remove(player);
             }
             return HookResult.Continue;
+        }
+
+        private Dictionary<string, object> DicePlayerDisguiseAsPlantConfig()
+        {
+            var config = new Dictionary<string, object>();
+            config["allow_model_change"] = (bool)true;
+            return config;
         }
     }
 }
