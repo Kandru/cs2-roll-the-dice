@@ -8,6 +8,7 @@ namespace RollTheDice
         private Dictionary<CCSPlayerController, Dictionary<string, string>> _playersDisguisedAsPlants = new();
         private readonly Dictionary<string, Dictionary<string, object>> _playersDisguisedAsPlantsModels = new()
         {
+            { "Urban Pot", new Dictionary<string, object> { { "model", "models/props_foliage/urban_pot_fancy01.vmdl" } } },
             { "Airport/Plant", new Dictionary<string, object> { { "model", "models/props_plants/plantairport01.vmdl" } } },
             { "Office/Plant", new Dictionary<string, object> { { "model", "models/props/cs_office/plant01.vmdl" } } },
             { "Small Palm", new Dictionary<string, object> { { "model", "models/props_foliage/mall_small_palm01.vmdl" } } },
