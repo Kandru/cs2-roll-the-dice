@@ -27,6 +27,7 @@ namespace RollTheDice
             "models/props_office/file_cabinet_03.vmdl",
             "models/props_plants/plantairport01.vmdl",
             "models/props_street/mail_dropbox.vmdl",
+            "models/props_c17/furnituretable001a_static.vmdl",
         };
 
         private void OnServerPrecacheResources(ResourceManifest manifest)
