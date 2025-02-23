@@ -11,7 +11,6 @@ namespace RollTheDice
         {
             string playerModel = playerPawn.CBodyComponent!.SceneNode!.GetSkeletonInstance().ModelState.ModelName;
             _playersWithChangedPlayerModel.Add(player, playerModel);
-            Console.WriteLine(playerModel);
             // set new player model
             if (playerPawn.TeamNum == (int)CsTeam.Terrorist)
             {
