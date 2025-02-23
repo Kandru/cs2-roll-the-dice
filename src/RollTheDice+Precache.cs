@@ -11,7 +11,6 @@ namespace RollTheDice
             "particles/burning_fx/env_fire_tiny.vpcf",
             "models/food/fruits/banana01a.vmdl",
             "models/food/fruits/watermelon01a.vmdl",
-            "models/food/bread/food_hotdog_1.vmdl",
             "models/food/vegetables/cabbage01a.vmdl",
             "models/food/vegetables/onion01a.vmdl",
             "models/food/vegetables/pepper01a.vmdl",
