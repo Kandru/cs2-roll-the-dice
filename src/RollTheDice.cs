@@ -28,6 +28,7 @@ namespace RollTheDice
             // register listeners
             RegisterEventHandler<EventRoundStart>(OnRoundStart);
             RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
+            RegisterEventHandler<EventPlayerConnectFull>(OnPlayerConnectFull);
             RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
             RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             RegisterListener<Listeners.OnMapStart>(OnMapStart);
@@ -55,6 +56,7 @@ namespace RollTheDice
             // unregister listeners
             DeregisterEventHandler<EventRoundStart>(OnRoundStart);
             DeregisterEventHandler<EventRoundEnd>(OnRoundEnd);
+            DeregisterEventHandler<EventPlayerConnectFull>(OnPlayerConnectFull);
             DeregisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
             DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             RemoveListener<Listeners.OnMapStart>(OnMapStart);
@@ -120,6 +122,16 @@ namespace RollTheDice
                 }
             }
             // continue event
+            return HookResult.Continue;
+        }
+
+        private HookResult OnPlayerConnectFull(EventPlayerConnectFull @event, GameEventInfo info)
+        {
+            CCSPlayerController player = @event.Userid!;
+            if (player == null
+                || !player.IsValid) return HookResult.Continue;
+            // bugfix: show empty worldtext on connect to allow instant display of worldtext entity
+            WorldTextManager.Create(player, "");
             return HookResult.Continue;
         }
 
