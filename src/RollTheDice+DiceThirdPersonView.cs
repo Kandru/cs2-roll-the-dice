@@ -20,7 +20,7 @@ namespace RollTheDice
             {
                 {"error", "command.rollthedice.error"}
             };
-            if (_playersWithThirdPersonView.Count() == 0)
+            if (_playersWithThirdPersonView.Count == 0)
             {
                 RegisterListener<Listeners.OnTick>(DiceThirdPersonViewOnTick);
             }
@@ -84,13 +84,13 @@ namespace RollTheDice
             // remove player
             _playersWithThirdPersonView.Remove(player);
             // remove listener if no players have this dice
-            if (_playersWithThirdPersonView.Count() == 0) DiceThirdPersonViewReset();
+            if (_playersWithThirdPersonView.Count == 0) DiceThirdPersonViewReset();
         }
 
         private void DiceThirdPersonViewOnTick()
         {
             // remove listener if no players to save resources
-            if (_playersWithThirdPersonView.Count() == 0) return;
+            if (_playersWithThirdPersonView.Count == 0) return;
             // worker
             Dictionary<CCSPlayerController, CDynamicProp> _playersWithThirdPersonViewCopy = new(_playersWithThirdPersonView);
             foreach (CCSPlayerController player in _playersWithThirdPersonViewCopy.Keys)

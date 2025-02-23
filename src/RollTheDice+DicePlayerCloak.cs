@@ -11,7 +11,7 @@ namespace RollTheDice
         private Dictionary<string, string> DicePlayerCloak(CCSPlayerController player, CCSPlayerPawn playerPawn)
         {
             // create listener if not exists
-            if (_playersWithCloak.Count() == 0) RegisterListener<Listeners.OnTick>(EventDicePlayerCloakOnTick);
+            if (_playersWithCloak.Count == 0) RegisterListener<Listeners.OnTick>(EventDicePlayerCloakOnTick);
             // add player to list
             _playersWithCloak.Add(player, 255);
             return new Dictionary<string, string>
@@ -66,12 +66,12 @@ namespace RollTheDice
             Utilities.SetStateChanged(player.PlayerPawn.Value, "CBaseModelEntity", "m_clrRender");
             _playersWithCloak.Remove(player);
             // remove event listener when no players have this dice
-            if (_playersWithCloak.Count() == 0) DicePlayerCloakReset();
+            if (_playersWithCloak.Count == 0) DicePlayerCloakReset();
         }
 
         private void EventDicePlayerCloakOnTick()
         {
-            if (_playersWithCloak.Count() == 0) return;
+            if (_playersWithCloak.Count == 0) return;
             // worker
             Dictionary<CCSPlayerController, int> _playersWithCloakCopy = new(_playersWithCloak);
             foreach (var (player, visibility) in _playersWithCloakCopy)

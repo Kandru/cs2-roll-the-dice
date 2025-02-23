@@ -11,7 +11,7 @@ namespace RollTheDice
         private Dictionary<string, string> DiceShowPlayerHealthBar(CCSPlayerController player, CCSPlayerPawn playerPawn)
         {
             // create listener if not exists
-            if (_playersWithHealthBarShown.Count() == 0)
+            if (_playersWithHealthBarShown.Count == 0)
             {
                 RegisterListener<Listeners.OnTick>(DiceShowPlayerHealthBarOnTick);
                 RegisterEventHandler<EventPlayerHurt>(EventDiceShowPlayerHealthBarOnPlayerHurt);
@@ -74,7 +74,7 @@ namespace RollTheDice
 
         private void DiceShowPlayerHealthBarOnTick()
         {
-            if (_playersWithHealthBarShown.Count() == 0) return;
+            if (_playersWithHealthBarShown.Count == 0) return;
             // only every 32 ticks (roughly one second)
             if (Server.TickCount % 8 != 0) return;
             // worker

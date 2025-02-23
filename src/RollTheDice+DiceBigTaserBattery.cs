@@ -10,7 +10,7 @@ namespace RollTheDice
         {
             Dictionary<string, object> config = GetDiceConfig("DiceBigTaserBattery");
             // create listener if not exists
-            if (_playersWithBigTaserBattery.Count() == 0)
+            if (_playersWithBigTaserBattery.Count == 0)
             {
                 RegisterEventHandler<EventWeaponFire>(EventDiceBigTaserBatteryOnWeaponFire);
             }

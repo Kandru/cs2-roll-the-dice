@@ -23,7 +23,7 @@ namespace RollTheDice
         private Dictionary<string, string> DicePlayerMakeFakeGunSounds(CCSPlayerController player, CCSPlayerPawn playerPawn)
         {
             // create listener if not exists
-            if (_playersWithFakeGunSounds.Count() == 0) RegisterListener<Listeners.OnTick>(EventDicePlayerMakeFakeGunSoundsOnTick);
+            if (_playersWithFakeGunSounds.Count == 0) RegisterListener<Listeners.OnTick>(EventDicePlayerMakeFakeGunSoundsOnTick);
             // add player to list
             _playersWithFakeGunSounds.Add(player, (int)Server.CurrentTime + _random.Next(3, 10));
             return new Dictionary<string, string>
@@ -55,7 +55,7 @@ namespace RollTheDice
 
         private void EventDicePlayerMakeFakeGunSoundsOnTick()
         {
-            if (_playersWithFakeGunSounds.Count() == 0) return;
+            if (_playersWithFakeGunSounds.Count == 0) return;
             // worker
             Dictionary<CCSPlayerController, int> _playersWithFakeGunSoundsCopy = new(_playersWithFakeGunSounds);
             foreach (var (player, last_sound) in _playersWithFakeGunSoundsCopy)

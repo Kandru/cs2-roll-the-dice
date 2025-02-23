@@ -14,7 +14,7 @@ namespace RollTheDice
         private Dictionary<string, string> DicePlayerMakeHostageSounds(CCSPlayerController player, CCSPlayerPawn playerPawn)
         {
             // create listener if not exists
-            if (_playersWithHostageSounds.Count() == 0) RegisterListener<Listeners.OnTick>(EventDicePlayerMakeHostageSoundsOnTick);
+            if (_playersWithHostageSounds.Count == 0) RegisterListener<Listeners.OnTick>(EventDicePlayerMakeHostageSoundsOnTick);
             // add player to list
             _playersWithHostageSounds.Add(player, new Dictionary<string, int>
             {
@@ -50,7 +50,7 @@ namespace RollTheDice
 
         private void EventDicePlayerMakeHostageSoundsOnTick()
         {
-            if (_playersWithHostageSounds.Count() == 0) return;
+            if (_playersWithHostageSounds.Count == 0) return;
             // worker
             Dictionary<CCSPlayerController, Dictionary<string, int>> _playersWithHostageSoundsCopy = new(_playersWithHostageSounds);
             foreach (var (player, playerData) in _playersWithHostageSoundsCopy)

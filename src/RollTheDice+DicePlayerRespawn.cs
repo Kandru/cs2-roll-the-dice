@@ -11,7 +11,7 @@ namespace RollTheDice
         private Dictionary<string, string> DicePlayerRespawn(CCSPlayerController player, CCSPlayerPawn playerPawn)
         {
             // create listener if not exists
-            if (_playersWithRespawnAbility.Count() == 0)
+            if (_playersWithRespawnAbility.Count == 0)
             {
                 RegisterEventHandler<EventPlayerDeath>(EventDicePlayerRespawnOnPlayerDeath);
                 RegisterEventHandler<EventPlayerTeam>(EventDicePlayerRespawnOnPlayerTeam);
@@ -50,7 +50,7 @@ namespace RollTheDice
 
         private void EventDicePlayerRespawnOnTick()
         {
-            if (_playersWithRespawnAbility.Count() == 0) return;
+            if (_playersWithRespawnAbility.Count == 0) return;
             // worker
             Dictionary<CCSPlayerController, Dictionary<string, string>> _playersWithRespawnAbilityCopy = new(_playersWithRespawnAbility);
             foreach (var (player, playerData) in _playersWithRespawnAbilityCopy)

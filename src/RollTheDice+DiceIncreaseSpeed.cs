@@ -11,7 +11,7 @@ namespace RollTheDice
         {
             Dictionary<string, object> config = GetDiceConfig("DiceIncreaseSpeed");
             // create listener if not exists
-            if (_playersWithIncreasedSpeed.Count() == 0)
+            if (_playersWithIncreasedSpeed.Count == 0)
             {
                 RegisterEventHandler<EventPlayerHurt>(EventDiceIncreaseSpeedOnPlayerHurt);
                 RegisterEventHandler<EventPlayerFalldamage>(EventDiceIncreaseSpeedOnPlayerFalldamage);
@@ -77,7 +77,7 @@ namespace RollTheDice
             Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawn", "m_flVelocityModifier");
             _playersWithIncreasedSpeed.Remove(player);
             // remove event listener when no players have this dice
-            if (_playersWithIncreasedSpeed.Count() == 0) DiceIncreaseSpeedReset();
+            if (_playersWithIncreasedSpeed.Count == 0) DiceIncreaseSpeedReset();
         }
 
         private HookResult EventDiceIncreaseSpeedOnPlayerHurt(EventPlayerHurt @event, GameEventInfo info)

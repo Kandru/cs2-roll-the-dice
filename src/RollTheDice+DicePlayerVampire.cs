@@ -11,7 +11,7 @@ namespace RollTheDice
         {
             Dictionary<string, object> config = GetDiceConfig("DicePlayerVampire");
             // create listener if not exists
-            if (_playerVampires.Count() == 0) RegisterEventHandler<EventPlayerHurt>(EventDicePlayerVampireOnPlayerHurt);
+            if (_playerVampires.Count == 0) RegisterEventHandler<EventPlayerHurt>(EventDicePlayerVampireOnPlayerHurt);
             _playerVampires.Add(player);
             playerPawn.MaxHealth = Convert.ToInt32(config["max_health"]);
             return new Dictionary<string, string>

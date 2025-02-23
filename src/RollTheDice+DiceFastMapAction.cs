@@ -22,9 +22,9 @@ namespace RollTheDice
             if (bombEntities.Length > 0 || plantetBombEntities.Length > 0)
             {
                 // create listener if not exists
-                if (_playersCanInstantDefuse.Count() == 0
-                    && _playersCanInstantPlant.Count() == 0
-                    && _playersCanInstantRescueHostages.Count() == 0)
+                if (_playersCanInstantDefuse.Count == 0
+                    && _playersCanInstantPlant.Count == 0
+                    && _playersCanInstantRescueHostages.Count == 0)
                 {
                     RegisterEventHandler<EventBombBegindefuse>(DiceFastBombActionEventBeginDefuse);
                     RegisterEventHandler<EventBombBeginplant>(DiceFastBombActionEventBeginPlant);
@@ -108,9 +108,9 @@ namespace RollTheDice
                 && player.PlayerPawn.Value != null
                 && _playersCanInstantRescueHostages.Contains(player.PlayerPawn.Value)) _playersCanInstantRescueHostages.Remove(player.PlayerPawn.Value);
             // remove event listener when no players have this dice
-            if (_playersCanInstantDefuse.Count() == 0
-                    && _playersCanInstantPlant.Count() == 0
-                    && _playersCanInstantRescueHostages.Count() == 0) DiceFastMapActionReset();
+            if (_playersCanInstantDefuse.Count == 0
+                    && _playersCanInstantPlant.Count == 0
+                    && _playersCanInstantRescueHostages.Count == 0) DiceFastMapActionReset();
         }
 
         private HookResult DiceFastBombActionEventBeginDefuse(EventBombBegindefuse @event, GameEventInfo info)
