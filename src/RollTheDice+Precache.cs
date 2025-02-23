@@ -32,6 +32,7 @@ namespace RollTheDice
             "models/props_foliage/mall_small_palm01.vmdl",
             "models/props_foliage/urban_pot_fancy01.vmdl",
             "models/props_interiors/copymachine01.vmdl",
+            "models/props_interiors/trashcan01.vmdl",
         };
 
         private void OnServerPrecacheResources(ResourceManifest manifest)
