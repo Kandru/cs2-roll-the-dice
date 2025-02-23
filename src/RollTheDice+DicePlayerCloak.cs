@@ -110,13 +110,17 @@ namespace RollTheDice
                             && _playersThatRolledTheDice[player].ContainsKey("gui_status")
                             && (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"] != null)
                         {
-                            string percentageVisible = ((_playersWithCloak[player] / 255.0) * 100).ToString("0.#") + "%";
+                            double percentageVisible = _playersWithCloak[player] / 255.0 * 100;
                             CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
+                            if (percentageVisible == 0)
+                                ChangeColor(worldText, Config.GUIPositions[Config.GUIPosition].StatusColorEnabled);
+                            else
+                                ChangeColor(worldText, Config.GUIPositions[Config.GUIPosition].StatusColorDisabled);
                             worldText.AcceptInput(
                                 "SetMessage",
                                 worldText,
                                 worldText,
-                                Localizer["DicePlayerCloak_gui_status"].Value.Replace("{percentage}", percentageVisible)
+                                Localizer["DicePlayerCloak_gui_status"].Value.Replace("{percentage}", percentageVisible.ToString("0.#") + "%")
                             );
                         }
                 }

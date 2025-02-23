@@ -59,23 +59,24 @@ namespace RollTheDice
                 try
                 {
                     // sanity checks
-                    if (player == null
-                    || player.PlayerPawn == null || !player.PlayerPawn.IsValid || player.PlayerPawn.Value == null
-                    || last_sound > (int)Server.CurrentTime
-                    || player.Buttons != 0
-                    || player.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
+                    if (last_sound == 0
+                        || last_sound >= (int)Server.CurrentTime
+                        || player == null
+                        || player.PlayerPawn == null || !player.PlayerPawn.IsValid || player.PlayerPawn.Value == null
+                        || player.Buttons != 0
+                        || player.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
                     // get random gun sound entry
                     var (weaponName, soundName, playTotal, soundLength) = _fakeGunSounds[_random.Next(_fakeGunSounds.Count)];
                     EmitFakeGunSounds(player.Handle, soundName, soundLength, playTotal);
                     // let the player know
                     string message = Localizer["DicePlayerMakeFakeGunSoundsWeapon_player"].Value.Replace("{weapon}", weaponName);
-                    player.PrintToCenter(message);
                     // update gui if available
                     if (_playersThatRolledTheDice.ContainsKey(player)
                         && _playersThatRolledTheDice[player].ContainsKey("gui_status")
                         && (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"] != null)
                     {
                         CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
+                        ChangeColor(worldText, Config.GUIPositions[Config.GUIPosition].StatusColorEnabled);
                         worldText.AcceptInput("SetMessage", worldText, worldText, message);
                     }
                     // let everyone else know
@@ -83,8 +84,8 @@ namespace RollTheDice
                         .Replace("{playerName}", player.PlayerName)
                         .Replace("{weapon}", weaponName),
                         player: player);
-                    // reset timer
-                    _playersWithFakeGunSounds[player] = (int)Server.CurrentTime + _random.Next(playTotal * (int)soundLength + 2, playTotal * (int)soundLength + 3);
+                    // disable fake gun sounds for player
+                    _playersWithFakeGunSounds[player] = 0;
                 }
                 catch (Exception e)
                 {
@@ -102,9 +103,20 @@ namespace RollTheDice
             CCSPlayerController? player = new CCSPlayerController(playerHandle);
             if (player == null
                 || player.PlayerPawn == null || !player.PlayerPawn.IsValid || player.PlayerPawn.Value == null
-                || player.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE) return;
+                || player.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE
+                || !_playersThatRolledTheDice.ContainsKey(player)) return;
             EmitSound(player, soundName);
-            if (playCount >= playTotal) return;
+            if (playCount >= playTotal)
+            {
+                // reset timer
+                _playersWithFakeGunSounds[player] = (int)Server.CurrentTime + _random.Next(2, 10);
+                if (!_playersThatRolledTheDice[player].ContainsKey("gui_status")
+                    || (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"] == null) return;
+                CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
+                worldText.AcceptInput("SetMessage", worldText, worldText, "");
+                return;
+            }
+            ;
             AddTimer(soundLength, () =>
             {
                 float randomDelay = (float)(_random.NextDouble() * (soundLength / 4)) + (soundLength / 3);

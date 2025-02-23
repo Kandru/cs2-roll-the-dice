@@ -120,6 +120,7 @@ namespace RollTheDice
                             && (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"] != null)
                         {
                             CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
+                            ChangeColor(worldText, Config.GUIPositions[Config.GUIPosition].StatusColorEnabled);
                             worldText.AcceptInput("SetMessage", worldText, worldText, playerData["prop_name"]);
                         }
                     }
@@ -134,7 +135,8 @@ namespace RollTheDice
                             && (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"] != null)
                         {
                             CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
-                            worldText.AcceptInput("SetMessage", worldText, worldText, "");
+                            ChangeColor(worldText, Config.GUIPositions[Config.GUIPosition].StatusColorDisabled);
+                            worldText.AcceptInput("SetMessage", worldText, worldText, "Disabled");
                         }
                     }
                     else if (playerData["status"] == "plant")
