@@ -290,12 +290,14 @@ namespace RollTheDice
                 }
                 CPointWorldText? playerGUIMessage = CreateGUI(
                     player: player,
-                    text: message,
+                    message: message,
                     size: Config.GUIPositions[Config.GUIPosition].MessageFontSize,
                     color: messageColor,
                     font: Config.GUIPositions[Config.GUIPosition].MessageFont,
                     shiftX: Config.GUIPositions[Config.GUIPosition].MessageShiftX,
-                    shiftY: Config.GUIPositions[Config.GUIPosition].MessageShiftY
+                    shiftY: Config.GUIPositions[Config.GUIPosition].MessageShiftY,
+                    drawBackground: Config.GUIPositions[Config.GUIPosition].DrawBackground,
+                    backgroundFactor: Config.GUIPositions[Config.GUIPosition].BackgroundFactor
                 );
                 if (playerGUIMessage != null) _playersThatRolledTheDice[player]["gui_message"] = playerGUIMessage;
                 // create (empty) status gui entity
@@ -310,12 +312,14 @@ namespace RollTheDice
                 }
                 CPointWorldText? playerGUIStatus = CreateGUI(
                     player: player,
-                    text: "",
+                    message: "",
                     size: Config.GUIPositions[Config.GUIPosition].StatusFontSize,
                     color: statusColor,
                     font: Config.GUIPositions[Config.GUIPosition].StatusFont,
                     shiftX: Config.GUIPositions[Config.GUIPosition].StatusShiftX,
-                    shiftY: Config.GUIPositions[Config.GUIPosition].StatusShiftY
+                    shiftY: Config.GUIPositions[Config.GUIPosition].StatusShiftY,
+                    drawBackground: Config.GUIPositions[Config.GUIPosition].DrawBackground,
+                    backgroundFactor: Config.GUIPositions[Config.GUIPosition].BackgroundFactor
                 );
                 if (playerGUIStatus != null) _playersThatRolledTheDice[player]["gui_status"] = playerGUIStatus;
             }

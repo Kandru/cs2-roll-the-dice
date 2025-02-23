@@ -19,6 +19,8 @@ namespace RollTheDice
         [JsonPropertyName("status_color")] public string StatusColor { get; set; } = "";
         [JsonPropertyName("status_shift_x")] public float StatusShiftX { get; set; } = 0.0f;
         [JsonPropertyName("status_shift_y")] public float StatusShiftY { get; set; } = 0.0f;
+        [JsonPropertyName("draw_background")] public bool DrawBackground { get; set; } = true;
+        [JsonPropertyName("background_factor")] public float BackgroundFactor { get; set; } = 1.0f;
     }
 
     public class MapConfig
