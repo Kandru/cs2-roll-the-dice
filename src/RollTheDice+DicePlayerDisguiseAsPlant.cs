@@ -44,7 +44,10 @@ namespace RollTheDice
             _playersDisguisedAsPlants[player]["prop_name"] = randomKey;
             _playersDisguisedAsPlants[player]["prop"] = SpawnProp(
                 player,
-                _playersDisguisedAsPlantsModels[randomKey]["model"].ToString()!
+                _playersDisguisedAsPlantsModels[randomKey]["model"].ToString()!,
+                1f,
+                true,
+                true
             ).ToString();
             _playersDisguisedAsPlants[player]["offset_z"] = _playersDisguisedAsPlantsModels[randomKey].ContainsKey("offset_z") ? (string)_playersDisguisedAsPlantsModels[randomKey]["offset_z"] : "0";
             _playersDisguisedAsPlants[player]["offset_angle"] = _playersDisguisedAsPlantsModels[randomKey].ContainsKey("offset_angle") ? (string)_playersDisguisedAsPlantsModels[randomKey]["offset_angle"] : "0";
@@ -213,15 +216,6 @@ namespace RollTheDice
                             ChangeColor(worldText, Config.GUIPositions[Config.GUIPosition].StatusColorDisabled);
                             worldText.AcceptInput("SetMessage", worldText, worldText, Localizer["DicePlayerDisguiseAsPlant_disabled"]);
                         }
-                    }
-                    else if (playerData["status"] == "plant")
-                    {
-                        UpdateProp(
-                            player,
-                            int.Parse(playerData["prop"]),
-                            int.Parse(playerData["offset_z"]),
-                            int.Parse(playerData["offset_angle"])
-                        );
                     }
                 }
                 catch (Exception e)

@@ -118,7 +118,7 @@ namespace RollTheDice
             return null;
         }
 
-        private int SpawnProp(CCSPlayerController player, string model, float scale = 1.0f)
+        private int SpawnProp(CCSPlayerController player, string model, float scale = 1.0f, bool setParent = false, bool animated = false)
         {
             // sanity checks
             if (player == null
@@ -135,8 +135,11 @@ namespace RollTheDice
             // spawn it
             prop.DispatchSpawn();
             prop.SetModel(model);
-            prop.Teleport(new Vector(-999, -999, -999));
-            prop.AnimGraphUpdateEnabled = false;
+            if (setParent)
+                // follow player
+                prop.AcceptInput("SetParent", player.PlayerPawn.Value, player.PlayerPawn.Value, "!activator");
+            prop.Teleport(player.PlayerPawn.Value.AbsOrigin, player.PlayerPawn.Value.AbsRotation);
+            prop.AnimGraphUpdateEnabled = animated;
             prop.CBodyComponent!.SceneNode!.Scale = scale;
             return (int)prop.Index;
         }
