@@ -71,10 +71,12 @@ namespace RollTheDice
             Dictionary<string, object> config = GetDiceConfig("DiceNoExplosives");
             AddTimer(Convert.ToSingle(config["swap_delay"]), () =>
             {
+                if (handle == IntPtr.Zero) return;
                 CSmokeGrenadeProjectile grenade = new(handle);
-                if (!grenade.IsValid || grenade.Handle == IntPtr.Zero || grenade.AbsOrigin == null) return;
+                if (grenade == null || !grenade.IsValid || grenade.Handle == IntPtr.Zero || grenade.AbsOrigin == null) return;
                 CBaseEntity? owner = grenade.OwnerEntity?.Value;
-                if (owner == null) return;
+                if (owner == null
+                    || !owner.IsValid) return;
                 if (_playersWithoutExplosives.Contains(owner))
                 {
                     CreatePhysicsModel(
@@ -96,10 +98,12 @@ namespace RollTheDice
             Dictionary<string, object> config = GetDiceConfig("DiceNoExplosives");
             AddTimer(Convert.ToSingle(config["swap_delay"]), () =>
             {
+                if (handle == IntPtr.Zero) return;
                 CHEGrenadeProjectile grenade = new(handle);
                 if (!grenade.IsValid || grenade.Handle == IntPtr.Zero || grenade.AbsOrigin == null) return;
                 CBaseEntity? owner = grenade.OwnerEntity?.Value;
-                if (owner == null) return;
+                if (owner == null
+                    || !owner.IsValid) return;
                 if (_playersWithoutExplosives.Contains(owner))
                 {
                     CreatePhysicsModel(
@@ -121,10 +125,12 @@ namespace RollTheDice
             Dictionary<string, object> config = GetDiceConfig("DiceNoExplosives");
             AddTimer(Convert.ToSingle(config["swap_delay"]), () =>
             {
+                if (handle == IntPtr.Zero) return;
                 CMolotovProjectile grenade = new(handle);
                 if (!grenade.IsValid || grenade.Handle == IntPtr.Zero || grenade.AbsOrigin == null) return;
                 CBaseEntity? owner = grenade.OwnerEntity?.Value;
-                if (owner == null) return;
+                if (owner == null
+                    || !owner.IsValid) return;
                 if (_playersWithoutExplosives.Contains(owner))
                 {
                     CreatePhysicsModel(
@@ -146,10 +152,12 @@ namespace RollTheDice
             Dictionary<string, object> config = GetDiceConfig("DiceNoExplosives");
             AddTimer(Convert.ToSingle(config["swap_delay"]), () =>
             {
+                if (handle == IntPtr.Zero) return;
                 CDecoyProjectile grenade = new(handle);
                 if (!grenade.IsValid || grenade.Handle == IntPtr.Zero || grenade.AbsOrigin == null) return;
                 CBaseEntity? owner = grenade.OwnerEntity?.Value;
-                if (owner == null) return;
+                if (owner == null
+                    || !owner.IsValid) return;
                 if (_playersWithoutExplosives.Contains(owner))
                 {
                     CreatePhysicsModel(
@@ -171,10 +179,12 @@ namespace RollTheDice
             Dictionary<string, object> config = GetDiceConfig("DiceNoExplosives");
             AddTimer(Convert.ToSingle(config["swap_delay"]), () =>
             {
+                if (handle == IntPtr.Zero) return;
                 CFlashbangProjectile grenade = new(handle);
                 if (!grenade.IsValid || grenade.Handle == IntPtr.Zero || grenade.AbsOrigin == null) return;
                 CBaseEntity? owner = grenade.OwnerEntity?.Value;
-                if (owner == null) return;
+                if (owner == null
+                    || !owner.IsValid) return;
                 if (_playersWithoutExplosives.Contains(owner))
                 {
                     CreatePhysicsModel(

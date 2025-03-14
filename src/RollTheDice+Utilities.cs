@@ -77,7 +77,8 @@ namespace RollTheDice
                 if (delay > 0)
                     AddTimer(delay, () =>
                     {
-                        if (entry == null || !entry.IsValid) return;
+                        if (entry == null
+                            || !entry.IsValid) return;
                         entry.PrintToChat(message);
                     });
                 else

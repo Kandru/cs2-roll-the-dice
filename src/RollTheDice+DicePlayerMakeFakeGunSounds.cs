@@ -127,6 +127,7 @@ namespace RollTheDice
             ;
             AddTimer(soundLength, () =>
             {
+                if (playerHandle == IntPtr.Zero) return;
                 float randomDelay = (float)(_random.NextDouble() * (soundLength / 4)) + (soundLength / 3);
                 EmitFakeGunSounds(playerHandle, soundName, randomDelay, playTotal, playCount);
             });
