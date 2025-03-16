@@ -87,6 +87,8 @@ namespace RollTheDice
                 Config.Reload();
                 // update config with changed dices
                 UpdateConfig();
+                // update player config
+                UpdatePlayerConfig();
                 // save config to disk
                 Config.Update();
             }
@@ -113,8 +115,7 @@ namespace RollTheDice
         public void OnConfigParsed(PluginConfig config)
         {
             Config = config;
-            // load player configs
-            _playerConfigs = Config.PlayerConfigs;
+            Console.WriteLine("OVERWRITTEN!");
             Console.WriteLine(Localizer["core.config"]);
         }
 
@@ -176,8 +177,21 @@ namespace RollTheDice
             }
             // check GUI config
             CheckGUIConfig();
-            // save player config
-            Config.PlayerConfigs = _playerConfigs;
+        }
+
+        private void UpdatePlayerConfig()
+        {
+            // load player config if empty
+            if (_playerConfigs.Count == 0)
+            {
+                // load player configs
+                _playerConfigs = Config.PlayerConfigs;
+            }
+            else
+            {
+                // save player configs
+                Config.PlayerConfigs = _playerConfigs;
+            }
         }
 
         private Dictionary<string, object> GetDiceConfig(string diceName)

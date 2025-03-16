@@ -57,6 +57,8 @@ namespace RollTheDice
             // reset dice rolls on unload
             ResetDices();
             RemoveAllGUIs();
+            // update configuration
+            ReloadConfigFromDisk();
             // unregister listeners
             DeregisterEventHandler<EventRoundStart>(OnRoundStart);
             DeregisterEventHandler<EventRoundEnd>(OnRoundEnd);
@@ -89,7 +91,7 @@ namespace RollTheDice
             ResetDices();
             RemoveAllGUIs();
             // abort if warmup
-            if ((bool)GetGameRule("WarmupPeriod")!) return HookResult.Continue;
+            if (!Config.AllowRtdDuringWarmup && (bool)GetGameRule("WarmupPeriod")!) return HookResult.Continue;
             // announce round start
             SendGlobalChatMessage(Localizer["core.announcement"]);
             // allow dice rolls
@@ -98,10 +100,14 @@ namespace RollTheDice
             foreach (CCSPlayerController entry in Utilities.GetPlayers())
             {
                 // rtd for everyone if enabled or for specific players if they have it enabled
-                if (Config.RollTheDiceOnRoundStart && !(bool)GetGameRule("WarmupPeriod")!
+                if (Config.RollTheDiceOnRoundStart
                     || (_playerConfigs.ContainsKey(entry.NetworkIDString)
                         && _playerConfigs[entry.NetworkIDString].RtdOnSpawn))
-                    RollTheDiceForPlayer(entry);
+                    AddTimer(1f, () =>
+                    {
+                        if (entry == null || !entry.IsValid) return;
+                        RollTheDiceForPlayer(entry);
+                    });
             }
             // check if random dice should be rolled every X seconds
             if (Config.RollTheDiceEveryXSeconds > 0 && !(bool)GetGameRule("WarmupPeriod")!)
