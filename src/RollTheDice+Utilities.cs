@@ -16,6 +16,11 @@ namespace RollTheDice
             }
         }
 
+        private CCSGameRules? GetGameRules()
+        {
+            return Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules").First().GameRules;
+        }
+
         private int GetRandomDice()
         {
             // Filter enabled dices based on map-specific and global configuration

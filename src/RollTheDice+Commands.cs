@@ -121,7 +121,7 @@ namespace RollTheDice
                 return;
             }
             // check if warmup period
-            if ((bool)GetGameRule("WarmupPeriod")!)
+            if (!Config.AllowRtdDuringWarmup && (bool)GetGameRule("WarmupPeriod")!)
             {
                 if (command.CallingContext == CommandCallingContext.Console)
                     player.PrintToChat(Localizer["command.rollthedice.iswarmup"]);
