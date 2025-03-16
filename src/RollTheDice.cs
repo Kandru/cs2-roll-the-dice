@@ -189,7 +189,7 @@ namespace RollTheDice
                 DicePlayerLowGravity,
                 DicePlayerHighGravity,
                 DicePlayerOneHP,
-                DicePlayerDisguiseAsPlant,
+                DicePlayerDisguiseAsProp,
                 DicePlayerAsChicken,
                 DicePlayerMakeHostageSounds,
                 DicePlayerMakeFakeGunSounds,

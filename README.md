@@ -218,7 +218,7 @@ This plugin automatically creates a readable JSON configuration file. This confi
     "DicePlayerOneHP": {
       "enabled": true
     },
-    "DicePlayerDisguiseAsPlant": {
+    "DicePlayerDisguiseAsProp": {
       "enabled": true
     },
     "DicePlayerAsChicken": {

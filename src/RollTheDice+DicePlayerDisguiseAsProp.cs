@@ -27,13 +27,13 @@ namespace RollTheDice
             { "Trafficcone", new Dictionary<string, object> { { "model", "models/props/de_vertigo/trafficcone_clean.vmdl" }, { "offset_z", "15" } } },
             { "Fireextinguisher", new Dictionary<string, object> { { "model", "models/generic/fire_extinguisher_01/fire_extinguisher_01.vmdl" } } },
         };
-        private Dictionary<string, string> DicePlayerDisguiseAsPlant(CCSPlayerController player, CCSPlayerPawn playerPawn)
+        private Dictionary<string, string> DicePlayerDisguiseAsProp(CCSPlayerController player, CCSPlayerPawn playerPawn)
         {
             // create listener if not exists
             if (_playersDisguisedAsPlants.Count == 0)
             {
-                RegisterEventHandler<EventPlayerDeath>(EventDicePlayerDisguiseAsPlantOnPlayerDeath);
-                RegisterListener<Listeners.OnTick>(EventDicePlayerDisguiseAsPlantOnTick);
+                RegisterEventHandler<EventPlayerDeath>(EventDicePlayerDisguiseAsPropOnPlayerDeath);
+                RegisterListener<Listeners.OnTick>(EventDicePlayerDisguiseAsPropOnTick);
             }
             // add player to list
             _playersDisguisedAsPlants.Add(player, new Dictionary<string, string>());
@@ -58,15 +58,15 @@ namespace RollTheDice
             };
         }
 
-        private void DicePlayerDisguiseAsPlantUnload()
+        private void DicePlayerDisguiseAsPropUnload()
         {
-            DicePlayerDisguiseAsPlantReset();
+            DicePlayerDisguiseAsPropReset();
         }
 
-        private void DicePlayerDisguiseAsPlantReset()
+        private void DicePlayerDisguiseAsPropReset()
         {
-            DeregisterEventHandler<EventPlayerDeath>(EventDicePlayerDisguiseAsPlantOnPlayerDeath);
-            RemoveListener<Listeners.OnTick>(EventDicePlayerDisguiseAsPlantOnTick);
+            DeregisterEventHandler<EventPlayerDeath>(EventDicePlayerDisguiseAsPropOnPlayerDeath);
+            RemoveListener<Listeners.OnTick>(EventDicePlayerDisguiseAsPropOnTick);
             // iterate through all players
             Dictionary<CCSPlayerController, Dictionary<string, string>> _playersDisguisedAsPlantsCopy = new(_playersDisguisedAsPlants);
             foreach (CCSPlayerController player in _playersDisguisedAsPlantsCopy.Keys)
@@ -87,7 +87,7 @@ namespace RollTheDice
             _playersDisguisedAsPlants.Clear();
         }
 
-        private void DicePlayerDisguiseAsPlantResetForPlayer(CCSPlayerController player)
+        private void DicePlayerDisguiseAsPropResetForPlayer(CCSPlayerController player)
         {
             if (!_playersDisguisedAsPlants.ContainsKey(player)) return;
             // get prop
@@ -98,10 +98,10 @@ namespace RollTheDice
             RemoveProp(prop);
             MakePlayerVisible(player);
             // remove event listener when no players have this dice
-            if (_playersDisguisedAsPlants.Count == 0) DicePlayerDisguiseAsPlantReset();
+            if (_playersDisguisedAsPlants.Count == 0) DicePlayerDisguiseAsPropReset();
         }
 
-        private void EventDicePlayerDisguiseAsPlantOnTick()
+        private void EventDicePlayerDisguiseAsPropOnTick()
         {
             if (_playersDisguisedAsPlants.Count == 0) return;
             // worker
@@ -117,7 +117,7 @@ namespace RollTheDice
                     || player.PlayerPawn == null || !player.PlayerPawn.IsValid || player.PlayerPawn.Value == null
                     || player.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE
                     || !_playersDisguisedAsPlants.ContainsKey(player)) continue;
-                    Dictionary<string, object> config = GetDiceConfig("DicePlayerDisguiseAsPlant");
+                    Dictionary<string, object> config = GetDiceConfig("DicePlayerDisguiseAsProp");
                     // change player model if player is not pressing any buttons
                     if (player.Buttons == 0 && playerData["status"] == "player")
                     {
@@ -138,7 +138,7 @@ namespace RollTheDice
                             ChangeColor(worldText, Config.GUIPositions[Config.GUIPosition].StatusColorEnabled);
                             string message = playerData["prop_name"];
                             if ((bool)config["allow_model_change"])
-                                message = Localizer["DicePlayerDisguiseAsPlant_status"].Value
+                                message = Localizer["DicePlayerDisguiseAsProp_status"].Value
                                 .Replace("{model}", Localizer[$"model_{playerData["prop_name"].ToLower()}"]);
                             worldText.AcceptInput("SetMessage", worldText, worldText, message);
                         }
@@ -170,7 +170,7 @@ namespace RollTheDice
                             _playersDisguisedAsPlants[player]["offset_z"] = _playersDisguisedAsPlantsModels[nextProp].ContainsKey("offset_z") ? (string)_playersDisguisedAsPlantsModels[nextProp]["offset_z"] : "0";
                             _playersDisguisedAsPlants[player]["offset_angle"] = _playersDisguisedAsPlantsModels[nextProp].ContainsKey("offset_angle") ? (string)_playersDisguisedAsPlantsModels[nextProp]["offset_angle"] : "0";
                             // inform other players
-                            SendGlobalChatMessage(Localizer["DicePlayerDisguiseAsPlant_other"].Value
+                            SendGlobalChatMessage(Localizer["DicePlayerDisguiseAsProp_other"].Value
                             .Replace("{playerName}", player.PlayerName)
                             .Replace("{model}", Localizer[$"model_{nextProp.ToLower()}"]),
                             player: player);
@@ -180,7 +180,7 @@ namespace RollTheDice
                                 && (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"] != null)
                             {
                                 CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
-                                worldText.AcceptInput("SetMessage", worldText, worldText, Localizer["DicePlayerDisguiseAsPlant_status"].Value.Replace(
+                                worldText.AcceptInput("SetMessage", worldText, worldText, Localizer["DicePlayerDisguiseAsProp_status"].Value.Replace(
                                     "{model}", Localizer[$"model_{nextProp.ToLower()}"]
                                 ));
                             }
@@ -214,7 +214,7 @@ namespace RollTheDice
                         {
                             CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
                             ChangeColor(worldText, Config.GUIPositions[Config.GUIPosition].StatusColorDisabled);
-                            worldText.AcceptInput("SetMessage", worldText, worldText, Localizer["DicePlayerDisguiseAsPlant_disabled"]);
+                            worldText.AcceptInput("SetMessage", worldText, worldText, Localizer["DicePlayerDisguiseAsProp_disabled"]);
                         }
                     }
                 }
@@ -228,7 +228,7 @@ namespace RollTheDice
             }
         }
 
-        private HookResult EventDicePlayerDisguiseAsPlantOnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+        private HookResult EventDicePlayerDisguiseAsPropOnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
         {
             CCSPlayerController player = @event.Userid!;
             if (_playersDisguisedAsPlants.ContainsKey(player))
@@ -240,7 +240,7 @@ namespace RollTheDice
             return HookResult.Continue;
         }
 
-        private Dictionary<string, object> DicePlayerDisguiseAsPlantConfig()
+        private Dictionary<string, object> DicePlayerDisguiseAsPropConfig()
         {
             var config = new Dictionary<string, object>();
             config["allow_model_change"] = (bool)true;
