@@ -18,6 +18,8 @@
     "command.rollthedice.unlucky": "{default}You failed to roll the dice :D",
     "command.rollthedice.cooldown.rounds": "{purple}[RollTheDice] {red}Cooldown: {default}wait {green}{rounds} {default}more round(s)!",
     "command.rollthedice.cooldown.seconds": "{purple}[RollTheDice] {red}Cooldown: {default}wait {green}{seconds} {default}more seconds(s)!",
+    "command.rollthedice.rtdonspawn.enabled": "{purple}[RollTheDice] {default}Enabled automatic !rtd on spawn!",
+    "command.rollthedice.rtdonspawn.disabled": "{purple}[RollTheDice] {default}Disabled automatic !rtd on spawn!",
     "command.givedice.noplayers": "{purple}[RollTheDice] {default}No player found!",
     "command.givedice.toomanyplayers": "{purple}[RollTheDice] {default}Too many players found. Please try again!",
     "command.givedice.nodicefound": "{purple}[RollTheDice] {default}Specific Dice not found. Please try again!",

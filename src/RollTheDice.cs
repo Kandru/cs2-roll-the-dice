@@ -91,12 +91,13 @@ namespace RollTheDice
             // allow dice rolls
             _isDuringRound = true;
             // check if random dice should be rolled
-            if (Config.RollTheDiceOnRoundStart && !(bool)GetGameRule("WarmupPeriod")!)
+            foreach (CCSPlayerController entry in Utilities.GetPlayers())
             {
-                foreach (CCSPlayerController entry in Utilities.GetPlayers())
-                {
+                // rtd for everyone if enabled or for specific players if they have it enabled
+                if (Config.RollTheDiceOnRoundStart && !(bool)GetGameRule("WarmupPeriod")!
+                    || (_playerConfigs.ContainsKey(entry.NetworkIDString)
+                        && _playerConfigs[entry.NetworkIDString].RtdOnSpawn))
                     RollTheDiceForPlayer(entry);
-                }
             }
             // check if random dice should be rolled every X seconds
             if (Config.RollTheDiceEveryXSeconds > 0 && !(bool)GetGameRule("WarmupPeriod")!)

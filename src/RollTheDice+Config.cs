@@ -34,6 +34,12 @@ namespace RollTheDice
         [JsonPropertyName("dices")] public Dictionary<string, Dictionary<string, object>> Dices { get; set; } = new();
     }
 
+    public class PlayerConfig
+    {
+        // automatically roll the dice on spawn
+        [JsonPropertyName("rtd_on_spawn")] public bool RtdOnSpawn { get; set; } = false;
+    }
+
     public class PluginConfig : BasePluginConfig
     {
         // disabled
@@ -61,12 +67,15 @@ namespace RollTheDice
         [JsonPropertyName("dices")] public Dictionary<string, Dictionary<string, object>> Dices { get; set; } = new();
         // map configurations
         [JsonPropertyName("maps")] public Dictionary<string, MapConfig> MapConfigs { get; set; } = new Dictionary<string, MapConfig>();
+        // player configuration
+        [JsonPropertyName("players")] public Dictionary<string, PlayerConfig> PlayerConfigs { get; set; } = new Dictionary<string, PlayerConfig>();
     }
 
     public partial class RollTheDice : BasePlugin, IPluginConfig<PluginConfig>
     {
         public required PluginConfig Config { get; set; }
         private MapConfig _currentMapConfig = new();
+        private Dictionary<string, PlayerConfig> _playerConfigs = new();
 
         private void ReloadConfigFromDisk()
         {
@@ -102,6 +111,8 @@ namespace RollTheDice
         public void OnConfigParsed(PluginConfig config)
         {
             Config = config;
+            // load player configs
+            _playerConfigs = Config.PlayerConfigs;
             Console.WriteLine(Localizer["core.config"]);
         }
 
@@ -163,6 +174,8 @@ namespace RollTheDice
             }
             // check GUI config
             CheckGUIConfig();
+            // save player config
+            Config.PlayerConfigs = _playerConfigs;
         }
 
         private Dictionary<string, object> GetDiceConfig(string diceName)

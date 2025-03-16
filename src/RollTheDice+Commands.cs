@@ -89,7 +89,7 @@ namespace RollTheDice
         [ConsoleCommand("rollthedice", "Roll the Dice")]
         [ConsoleCommand("rtd", "Roll the Dice")]
         [ConsoleCommand("dice", "Roll the Dice")]
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY)]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY, minArgs: 0, usage: "!rtd <auto>")]
         public void CommandRollTheDice(CCSPlayerController player, CommandInfo command)
         {
             Config.MapConfigs.TryGetValue(_currentMap, out var mapConfig);
@@ -100,6 +100,24 @@ namespace RollTheDice
                 if (command.CallingContext == CommandCallingContext.Console)
                     player.PrintToChat(Localizer["core.disabled"]);
                 command.ReplyToCommand(Localizer["core.disabled"]);
+                return;
+            }
+            // check if argument is "auto" and change behaviour
+            if (command.GetArg(1) == "auto")
+            {
+                if (!_playerConfigs.ContainsKey(player.NetworkIDString))
+                    _playerConfigs.Add(player.NetworkIDString, new PlayerConfig());
+                // toggle rtd on spawn
+                if (_playerConfigs[player.NetworkIDString].RtdOnSpawn)
+                {
+                    _playerConfigs[player.NetworkIDString].RtdOnSpawn = false;
+                    command.ReplyToCommand(Localizer["command.rollthedice.rtdonspawn.disabled"]);
+                }
+                else
+                {
+                    _playerConfigs[player.NetworkIDString].RtdOnSpawn = true;
+                    command.ReplyToCommand(Localizer["command.rollthedice.rtdonspawn.enabled"]);
+                }
                 return;
             }
             // check if warmup period

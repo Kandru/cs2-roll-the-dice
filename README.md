@@ -62,6 +62,10 @@ This command triggers the dice for a player. To activate the dice with a button 
 bind "o" rtd
 ```
 
+### !dice auto
+
+Enables or disables the automatic !rtd mode on player spawn.
+
 ### !givedice (@rollthedice/admin)
 
 This command triggers the !rtd command for all or specific players. Only available with the correct permission (@rollthedice/admin).
