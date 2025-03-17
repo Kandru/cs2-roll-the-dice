@@ -79,7 +79,9 @@ namespace RollTheDice
                         && _playersThatRolledTheDice[player].ContainsKey("gui_status")
                         && (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"] != null)
                     {
-                        CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
+                        CPointWorldText? worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
+                        if (worldText == null
+                            || !worldText.IsValid) continue;
                         ChangeColor(worldText, Config.GUIPositions[Config.GUIPosition].StatusColorEnabled);
                         worldText.AcceptInput("SetMessage", worldText, worldText, message);
                     }
@@ -120,7 +122,9 @@ namespace RollTheDice
                 );
                 if (!_playersThatRolledTheDice[player].ContainsKey("gui_status")
                     || (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"] == null) return;
-                CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
+                CPointWorldText? worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
+                if (worldText == null
+                    || !worldText.IsValid) return;
                 worldText.AcceptInput("SetMessage", worldText, worldText, "");
                 return;
             }
