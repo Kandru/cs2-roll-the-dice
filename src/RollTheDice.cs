@@ -97,7 +97,9 @@ namespace RollTheDice
             // allow dice rolls
             _isDuringRound = true;
             // check if random dice should be rolled
-            foreach (CCSPlayerController entry in Utilities.GetPlayers())
+            foreach (CCSPlayerController entry in Utilities.GetPlayers()
+                .Where(p => p.IsValid
+                    && !p.IsHLTV))
             {
                 // rtd for everyone if enabled or for specific players if they have it enabled
                 if (Config.RollTheDiceOnRoundStart

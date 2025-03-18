@@ -13,7 +13,7 @@ namespace RollTheDice
             Dictionary<string, object> config = GetDiceConfig("DiceChangeName");
             // random names from users
             List<string> PlayerNames = Utilities.GetPlayers()
-                .Where(p => !p.IsBot)
+                .Where(p => p.IsValid && !p.IsBot && !p.IsHLTV)
                 .Select(p => p.PlayerName)
                 .ToList();
             // set random player name

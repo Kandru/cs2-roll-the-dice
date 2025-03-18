@@ -76,9 +76,9 @@ namespace RollTheDice
         private void SendGlobalChatMessage(string message, float delay = 0, CCSPlayerController? player = null)
         {
             DebugPrint(message);
-            foreach (CCSPlayerController entry in Utilities.GetPlayers())
+            foreach (CCSPlayerController entry in Utilities.GetPlayers().Where(p => p.IsValid && !p.IsBot && !p.IsHLTV))
             {
-                if (entry == null || !entry.IsValid || entry.IsBot || entry == player) continue;
+                if (entry == player) continue;
                 if (delay > 0)
                     AddTimer(delay, () =>
                     {
@@ -401,7 +401,7 @@ namespace RollTheDice
             AddTimer(seconds, () =>
             {
                 if (!_isDuringRound) return;
-                foreach (var player in Utilities.GetPlayers())
+                foreach (var player in Utilities.GetPlayers().Where(p => p.IsValid && !p.IsHLTV))
                 {
                     ResetDiceForPlayer(player);
                     RollTheDiceForPlayer(player);
