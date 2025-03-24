@@ -45,8 +45,9 @@ This plugin lets your players roll the dice each round (at any time during an ro
 ## Plugin Installation
 
 1. Download and extract the latest release from the [GitHub releases page](https://github.com/Kandru/cs2-roll-the-dice/releases/).
-2. Move the "RollTheDice" folder to the `/addons/counterstrikesharp/configs/plugins/` directory of your gameserver.
-3. Restart the server.
+2. Move the "RollTheDice" folder to the `/addons/counterstrikesharp/plugins/` directory of your gameserver.
+3. If you do NOT use german or english please copy the en.json in the *lang*-Folder to your language country code and edit accordingly.
+4. Restart the server.
 
 ## Plugin Update
 
