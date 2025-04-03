@@ -85,6 +85,22 @@ This command triggers the !rtd command for all or specific players. Only availab
 !givedice PlayerName glow
 ```
 
+### rollthedice (Server Console Only)
+
+Ability to run sub-commands:
+
+#### reload
+
+Reloads the configuration.
+
+#### disable
+
+Disables the !rtd command instantly and remembers this state.
+
+#### enable
+
+Enables the !rtd command instantly and remembers this state.
+
 ## Configuration
 
 This plugin automatically creates a readable JSON configuration file. This configuration file can be found in `/addons/counterstrikesharp/configs/plugins/RollTheDice/RollTheDice.json`.
