@@ -65,7 +65,7 @@ bind "o" rtd
 
 ### !dice auto
 
-Enables or disables the automatic !rtd mode on player spawn.
+Enables or disables the automatic !rtd mode (will roll the dice automatically on spawn depending on the settings made inside your configuration).
 
 ### !givedice (@rollthedice/admin)
 
@@ -108,25 +108,50 @@ This plugin automatically creates a readable JSON configuration file. This confi
 ```json
 {
   "enabled": true,
-  "debug": true,
+  "debug": false,
+  "allow_rtd_during_warmup": false,
+  "roll_the_dice_on_round_start": false,
+  "roll_the_dice_every_x_seconds": 0,
   "cooldown_rounds": 0,
   "cooldown_seconds": 0,
-  "sound_command": "sounds/ui/coin_pickup_01.vsnd",
+  "sound_command": "",
   "price_to_dice": 0,
-  "allow_dice_after_respawn": true,
-  "default_gui_position": "top_center",
+  "allow_dice_after_respawn": false,
+  "default_gui_position": "bottom_center",
   "gui_positions": {
     "top_center": {
-      "message_font": "Verdana",
-      "message_font_size": 40,
-      "message_color": "Purple",
+      "message_font": "Arial Black Standard",
+      "message_font_size": 32,
+      "message_color": "#FFFFFF",
       "message_shift_x": -2.9,
-      "message_shift_y": 4.4,
-      "status_font": "Verdana",
+      "message_shift_y": 4,
+      "message_draw_background": true,
+      "message_background_factor": 1,
+      "status_font": "Arial Black Standard",
       "status_font_size": 30,
-      "status_color": "Red",
-      "status_shift_x": -2.75,
-      "status_shift_y": 4
+      "status_color_enabled": "#00FF00",
+      "status_color_disabled": "#FF0000",
+      "status_shift_x": -2.85,
+      "status_shift_y": 3.7,
+      "status_draw_background": true,
+      "status_background_factor": 1
+    },
+    "bottom_center": {
+      "message_font": "Arial Black Standard",
+      "message_font_size": 32,
+      "message_color": "#FFFFFF",
+      "message_shift_x": -2.9,
+      "message_shift_y": -3.8,
+      "message_draw_background": true,
+      "message_background_factor": 1,
+      "status_font": "Arial Black Standard",
+      "status_font_size": 30,
+      "status_color_enabled": "#00FF00",
+      "status_color_disabled": "#FF0000",
+      "status_shift_x": -2.85,
+      "status_shift_y": -4.1,
+      "status_draw_background": true,
+      "status_background_factor": 1
     }
   },
   "dices": {
@@ -143,7 +168,8 @@ This plugin automatically creates a readable JSON configuration file. This confi
     "DiceIncreaseSpeed": {
       "enabled": true,
       "max_speed": 2,
-      "min_speed": 1.5
+      "min_speed": 1.5,
+      "reset_on_hostage_rescue": true
     },
     "DiceChangeName": {
       "enabled": true,
@@ -239,17 +265,18 @@ This plugin automatically creates a readable JSON configuration file. This confi
     "DicePlayerOneHP": {
       "enabled": true
     },
-    "DicePlayerDisguiseAsProp": {
-      "enabled": true
-    },
     "DicePlayerAsChicken": {
       "enabled": true
     },
     "DicePlayerMakeHostageSounds": {
-      "enabled": true
+      "enabled": true,
+      "max_sound_delay": 10,
+      "min_sound_delay": 5
     },
     "DicePlayerMakeFakeGunSounds": {
-      "enabled": true
+      "enabled": true,
+      "max_sound_delay": 15,
+      "min_sound_delay": 5
     },
     "DiceBigTaserBattery": {
       "enabled": true,
@@ -282,8 +309,8 @@ This plugin automatically creates a readable JSON configuration file. This confi
     },
     "DiceChangePlayerSize": {
       "enabled": true,
-      "max_size": 1.5,
-      "min_size": 0.5
+      "max_size": 1.7,
+      "min_size": 1.2
     },
     "DiceIncreaseMoney": {
       "enabled": true,
@@ -297,9 +324,14 @@ This plugin automatically creates a readable JSON configuration file. This confi
     },
     "DiceThirdPersonView": {
       "enabled": true
+    },
+    "DicePlayerDisguiseAsProp": {
+      "allow_model_change": true,
+      "enabled": true
     }
   },
   "maps": {},
+  "players": {},
   "ConfigVersion": 1
 }
 ```
@@ -312,7 +344,19 @@ Whether the plugin is globally enabled or disabled.
 
 ### debug
 
-Whether the debug mode is enabled or disabled.
+Whether the debug mode is enabled or disabled. Only necessary for debugging during development or trouble shooting.
+
+### allow_rtd_during_warmup
+
+Whether to allow !rtd during warmup.
+
+### roll_the_dice_on_round_start
+
+Rolls the dice automatically on round start.
+
+### roll_the_dice_every_x_seconds
+
+Rolls the dice every X seconds.
 
 ### cooldown_rounds
 
@@ -333,6 +377,26 @@ The cost of rolling the dice.
 ### allow_dice_after_respawn
 
 Whether or not to allow to use dice again after respawn.
+
+### default_gui_position
+
+Sets the default GUI position to use to show the current rolled dice.
+
+### gui_positions
+
+Define your own GUI positions and set one of them as the default GUI position. Check this configuration for a default on top or bottom center.
+
+### dices
+
+All settings for all dices. You can globally enable or disable dices here as well as change some settings for each dice.
+
+### maps
+
+Same as dices but for each individual map. Allos to disable dices per map.
+
+### players
+
+All players which have changed settings for the dices will be saved here automatically.
 
 ## Compile Yourself
 
