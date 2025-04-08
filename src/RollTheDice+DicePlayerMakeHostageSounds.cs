@@ -67,7 +67,7 @@ namespace RollTheDice
                         || (playerData["delay"] <= (int)Server.CurrentTime))
                     {
                         // emit sound
-                        EmitSound(player, _hostageSounds[_random.Next(_hostageSounds.Count)]);
+                        player.EmitSound(_hostageSounds[_random.Next(_hostageSounds.Count)]);
                         // set random next sound delay
                         Dictionary<string, object> config = GetDiceConfig("DicePlayerMakeHostageSounds");
                         _playersWithHostageSounds[player]["cooldown"] = -1;

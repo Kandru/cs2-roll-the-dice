@@ -111,7 +111,7 @@ namespace RollTheDice
                 || player.PlayerPawn == null || !player.PlayerPawn.IsValid || player.PlayerPawn.Value == null
                 || player.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE
                 || !_playersThatRolledTheDice.ContainsKey(player)) return;
-            EmitSound(player, soundName);
+            player.EmitSound(soundName);
             if (playCount >= playTotal)
             {
                 // reset timer

@@ -23,8 +23,6 @@ namespace RollTheDice
             InitializeDices();
             // update configuration
             ReloadConfigFromDisk();
-            // initialize sounds
-            InitializeEmitSound();
             // register listeners
             RegisterEventHandler<EventRoundStart>(OnRoundStart);
             RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
