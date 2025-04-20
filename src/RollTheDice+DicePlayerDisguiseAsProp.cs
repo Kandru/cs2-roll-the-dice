@@ -9,7 +9,6 @@ namespace RollTheDice
         private readonly Dictionary<string, Dictionary<string, object>> _playersDisguisedAsPlantsModels = new()
         {
             { "OfficePlant", new Dictionary<string, object> { { "model", "models/props/cs_office/plant01.vmdl" } } },
-            { "ItalyChair", new Dictionary<string, object> { { "model", "models/cs_italy/seating/chair/wood_chair_1.vmdl" }, { "offset_angle", "180" } } },
             { "Barstool", new Dictionary<string, object> { { "model", "models/generic/barstool_01/barstool_01.vmdl" } } },
             { "Table", new Dictionary<string, object> { { "model", "models/props_c17/furnituretable001a_static.vmdl" }, { "offset_z", "15" } } },
             { "Hostage", new Dictionary<string, object> { { "model", "models/hostage/hostage.vmdl" } } },
