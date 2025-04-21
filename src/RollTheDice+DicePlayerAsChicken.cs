@@ -125,7 +125,11 @@ namespace RollTheDice
             // worker
             foreach ((CCheckTransmitInfo info, CCSPlayerController? player) in infoList)
             {
-                if (player == null) continue;
+                // do nothing when player is invalid
+                if (player == null
+                    || !player.IsValid
+                    || player.IsBot) continue;
+                // do nothing when player is not a chicken
                 if (!_playersAsChicken.ContainsKey(player)) continue;
                 var prop = Utilities.GetEntityFromIndex<CDynamicProp>(int.Parse(_playersAsChicken[player]["prop"]));
                 if (prop == null) continue;
