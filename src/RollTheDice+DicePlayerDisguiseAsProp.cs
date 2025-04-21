@@ -38,6 +38,7 @@ namespace RollTheDice
             _playersDisguisedAsPlants[player]["last_model_change"] = ((int)Server.CurrentTime).ToString();
             var randomKey = _playersDisguisedAsPlantsModels.Keys.ElementAt(_random.Next(0, _playersDisguisedAsPlantsModels.Count));
             _playersDisguisedAsPlants[player]["prop_name"] = randomKey;
+            // spawn prop
             _playersDisguisedAsPlants[player]["prop"] = SpawnProp(
                 player,
                 _playersDisguisedAsPlantsModels[randomKey]["model"].ToString()!,
@@ -45,6 +46,9 @@ namespace RollTheDice
                 true,
                 true
             ).ToString();
+            // make prop invisible
+            RemoveProp(int.Parse(_playersDisguisedAsPlants[player]["prop"]), true);
+            // set offsets
             _playersDisguisedAsPlants[player]["offset_z"] = _playersDisguisedAsPlantsModels[randomKey].ContainsKey("offset_z") ? (string)_playersDisguisedAsPlantsModels[randomKey]["offset_z"] : "0";
             _playersDisguisedAsPlants[player]["offset_angle"] = _playersDisguisedAsPlantsModels[randomKey].ContainsKey("offset_angle") ? (string)_playersDisguisedAsPlantsModels[randomKey]["offset_angle"] : "0";
             return new Dictionary<string, string>
