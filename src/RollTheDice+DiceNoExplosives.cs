@@ -83,8 +83,15 @@ namespace RollTheDice
                     List<(string Model, float Scale)> models = [.. ((List<object>)config["models"])
                         .Select(m =>
                         {
-                            Dictionary<string, object> dict = (Dictionary<string, object>)m;
-                            return (Model: (string)dict["Model"], Scale: (float)Convert.ToSingle(dict["Scale"]));
+                            var dict = ((Dictionary<string, object>)m)
+                                .ToDictionary(
+                                    kvp => kvp.Key.ToLowerInvariant(),
+                                    kvp => kvp.Value
+                                );
+                            return (
+                                Model: (string)dict["model"],
+                                Scale: (float)Convert.ToSingle(dict["scale"])
+                            );
                         })];
                     if (models.Count == 0)
                     {
