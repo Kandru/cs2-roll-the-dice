@@ -5,17 +5,10 @@ namespace RollTheDice
 {
     public partial class RollTheDice : BasePlugin
     {
-        private readonly List<string> _precacheModels = new List<string>
-        {
+        private readonly List<string> _precacheModels =
+        [
             "models/chicken/chicken.vmdl",
             "particles/burning_fx/env_fire_tiny.vpcf",
-            "models/food/fruits/banana01a.vmdl",
-            "models/food/fruits/watermelon01a.vmdl",
-            "models/food/vegetables/cabbage01a.vmdl",
-            "models/food/vegetables/onion01a.vmdl",
-            "models/food/vegetables/pepper01a.vmdl",
-            "models/food/vegetables/potato01a.vmdl",
-            "models/food/vegetables/zucchini01a.vmdl",
             "models/props/cs_office/plant01.vmdl",
             "models/props/de_vertigo/trafficcone_clean.vmdl",
             "models/generic/barstool_01/barstool_01.vmdl",
@@ -33,11 +26,26 @@ namespace RollTheDice
             "models/props_foliage/urban_pot_fancy01.vmdl",
             "models/props_interiors/copymachine01.vmdl",
             "models/props_interiors/trashcan01.vmdl",
-        };
+        ];
 
         private void OnServerPrecacheResources(ResourceManifest manifest)
         {
-            foreach (var model in _precacheModels)
+            // check for additional models in DiceNoExplosives config
+            Dictionary<string, object> config = GetDiceConfig("DiceNoExplosives");
+            if (config.TryGetValue("models", out object? modelsObj) && modelsObj is List<object> models)
+            {
+                foreach (object model in models)
+                {
+                    if (model is Dictionary<string, object> modelDict
+                        && modelDict.TryGetValue("Model", out object? modelName)
+                        && modelName is string modelStr)
+                    {
+                        _precacheModels.Add(modelStr);
+                    }
+                }
+            }
+            // precache all models
+            foreach (string model in _precacheModels)
             {
                 manifest.AddResource(model);
             }
