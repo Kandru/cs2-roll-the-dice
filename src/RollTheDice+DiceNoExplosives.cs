@@ -129,5 +129,15 @@ namespace RollTheDice
             prop.Teleport(origin, angles, velocity);
             return prop.Index;
         }
+
+        private Dictionary<string, object> DiceNoExplosivesConfig()
+        {
+            var config = new Dictionary<string, object>
+            {
+                ["swap_delay"] = (float)0.1f,
+                ["models"] = _defaultExplosiveModels.Select(m => new { m.Model, m.Scale }).ToList()
+            };
+            return config;
+        }
     }
 }
