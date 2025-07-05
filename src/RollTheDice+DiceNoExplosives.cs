@@ -88,6 +88,7 @@ namespace RollTheDice
                             grenade.Velocity.Z
                         )
                     );
+                    grenade.EmitSound("StopSoundEvents.StopAllExceptMusic");
                     grenade.AcceptInput("Kill");
                 }
             });
@@ -115,6 +116,7 @@ namespace RollTheDice
                             grenade.Velocity.Z
                         )
                     );
+                    grenade.EmitSound("StopSoundEvents.StopAllExceptMusic");
                     grenade.AcceptInput("Kill");
                 }
             });
@@ -142,6 +144,7 @@ namespace RollTheDice
                             grenade.Velocity.Z
                         )
                     );
+                    grenade.EmitSound("StopSoundEvents.StopAllExceptMusic");
                     grenade.AcceptInput("Kill");
                 }
             });
@@ -169,6 +172,7 @@ namespace RollTheDice
                             grenade.Velocity.Z
                         )
                     );
+                    grenade.EmitSound("StopSoundEvents.StopAllExceptMusic");
                     grenade.AcceptInput("Kill");
                 }
             });
@@ -196,6 +200,7 @@ namespace RollTheDice
                             grenade.Velocity.Z
                         )
                     );
+                    grenade.EmitSound("StopSoundEvents.StopAllExceptMusic");
                     grenade.AcceptInput("Kill");
                 }
             });
