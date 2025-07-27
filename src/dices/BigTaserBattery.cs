@@ -24,7 +24,8 @@ namespace RollTheDice.Dices
             // check if player is valid and has a pawn
             if (player == null
                 || !player.IsValid
-                || player.Pawn?.IsValid == false
+                || player.Pawn?.Value == null
+                || !player.Pawn.Value.IsValid
                 || player.Pawn?.Value?.WeaponServices == null)
             {
                 return;

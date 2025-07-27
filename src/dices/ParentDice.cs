@@ -19,7 +19,11 @@ namespace RollTheDice.Dices
 
         public virtual void Add(CCSPlayerController player)
         {
-            if (player == null || !player.IsValid)
+            // check if player is valid and has a pawn
+            if (player == null
+                || !player.IsValid
+                || player.Pawn?.Value == null
+                || !player.Pawn.Value.IsValid)
             {
                 return;
             }
