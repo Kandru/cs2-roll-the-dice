@@ -33,6 +33,7 @@ namespace RollTheDice
         [JsonPropertyName("change_player_model")] public ChangePlayerModelConfig ChangePlayerModel { get; set; } = new ChangePlayerModelConfig();
         [JsonPropertyName("change_player_size")] public ChangePlayerSizeConfig ChangePlayerSize { get; set; } = new ChangePlayerSizeConfig();
         [JsonPropertyName("chicken_leader")] public ChickenLeaderConfig ChickenLeader { get; set; } = new ChickenLeaderConfig();
+        [JsonPropertyName("decrease_health")] public DecreaseHealthConfig DecreaseHealth { get; set; } = new DecreaseHealthConfig();
     }
 
     public class MapConfig
