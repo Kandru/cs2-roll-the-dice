@@ -1,13 +1,17 @@
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
+using RollTheDice.Utils;
+using System.Drawing;
 
 namespace RollTheDice.Dices
 {
-    public class ParentDice(PluginConfig Config, IStringLocalizer Localizer)
+    public class ParentDice(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer)
     {
-        public readonly PluginConfig _config = Config;
+        public readonly PluginConfig _globalConfig = GlobalConfig;
+        public readonly MapConfig _config = Config;
         public readonly IStringLocalizer _localizer = Localizer;
-        public readonly List<CCSPlayerController> _players = [];
+        public readonly Dictionary<CCSPlayerController, Dictionary<string, CPointWorldText?>> _players = [];
+        public virtual string _className => "ParentDice";
         public virtual List<string> Events => [];
         public virtual List<string> Listeners => [];
         public virtual Dictionary<int, HookMode> UserMessages => [];
@@ -15,23 +19,76 @@ namespace RollTheDice.Dices
 
         public virtual void Add(CCSPlayerController player)
         {
-            // This method can be overridden in derived classes to handle giving the dice
             if (player == null || !player.IsValid)
             {
                 return;
             }
-            _players.Add(player);
+            _players.Add(player, []);
         }
 
         public virtual void Remove(CCSPlayerController player)
         {
-            // This method can be overridden in derived classes to handle giving the dice
-            _players.Remove(player);
+            GUI.RemoveGUIs([.. _players[player].Values.Cast<CPointWorldText>()]);
+            _ = _players.Remove(player);
         }
 
         public virtual void Destroy()
         {
-            // This method can be overridden in derived classes to handle destruction logic
+            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", GetType().Name));
+            // remove all GUIs for all players
+            foreach (KeyValuePair<CCSPlayerController, Dictionary<string, CPointWorldText?>> kvp in _players)
+            {
+                GUI.RemoveGUIs([.. kvp.Value.Values.Cast<CPointWorldText>()]);
+            }
+            _players.Clear();
+        }
+
+        public CPointWorldText? CreateMainGUI(CCSPlayerController player, string dice, Dictionary<string, string> data)
+        {
+            return CreateGUI(player, dice, data, "_gui");
+        }
+
+        public CPointWorldText? CreateStatusGUI(CCSPlayerController player, string dice, Dictionary<string, string> data)
+        {
+            return CreateGUI(player, dice, data, "_status");
+        }
+
+        private CPointWorldText? CreateGUI(CCSPlayerController player, string dice, Dictionary<string, string> data, string suffix)
+        {
+            // check if message and gui position are valid
+            if (_localizer[$"{dice}{suffix}"].ResourceNotFound
+            || !_globalConfig.GUIPositions.TryGetValue(_globalConfig.GUIPosition, out GuiPositionConfig? value))
+            {
+                return null;
+            }
+
+            // create message with data replacement
+            string message = _localizer["command.prefix"].Value + " " + _localizer[$"{dice}{suffix}"].Value;
+            foreach (KeyValuePair<string, string> kvp in data)
+            {
+                message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
+            }
+
+            // set color with fallback
+            Color messageColor = Color.White;
+            try
+            {
+                messageColor = ColorTranslator.FromHtml(value.MessageColor);
+            }
+            catch { }
+
+            // return GUI
+            return GUI.AddGUI(
+            player: player,
+            message: message,
+            size: value.MessageFontSize,
+            color: messageColor,
+            font: value.MessageFont,
+            shiftX: value.MessageShiftX,
+            shiftY: value.MessageShiftY,
+            drawBackground: value.MessageDrawBackground,
+            backgroundFactor: value.MessageBackgroundFactor
+            );
         }
     }
 }

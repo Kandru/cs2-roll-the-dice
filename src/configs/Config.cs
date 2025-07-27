@@ -1,7 +1,7 @@
 ﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Extensions;
+using RollTheDice.Configs;
 using System.IO.Enumeration;
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -26,12 +26,17 @@ namespace RollTheDice
         [JsonPropertyName("status_background_factor")] public float StatusBackgroundFactor { get; set; } = 1.0f;
     }
 
+    public class DicesConfig
+    {
+        [JsonPropertyName("big_taser_battery")] public BigTaserBatteryConfig BigTaserBattery { get; set; } = new BigTaserBatteryConfig();
+    }
+
     public class MapConfig
     {
         // disabled
         [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
         // dices configuration
-        [JsonPropertyName("dices")] public Dictionary<string, Dictionary<string, object>> Dices { get; set; } = new();
+        [JsonPropertyName("dices")] public DicesConfig Dices { get; set; } = new DicesConfig();
     }
 
     public class PlayerConfig
@@ -64,20 +69,20 @@ namespace RollTheDice
         [JsonPropertyName("allow_dice_after_respawn")] public bool AllowDiceAfterRespawn { get; set; } = false;
         // gui positions
         [JsonPropertyName("default_gui_position")] public string GUIPosition { get; set; } = "top_center";
-        [JsonPropertyName("gui_positions")] public Dictionary<string, GuiPositionConfig> GUIPositions { get; set; } = new Dictionary<string, GuiPositionConfig>();
+        [JsonPropertyName("gui_positions")] public Dictionary<string, GuiPositionConfig> GUIPositions { get; set; } = [];
         // dices configuration
-        [JsonPropertyName("dices")] public Dictionary<string, Dictionary<string, object>> Dices { get; set; } = new();
+        [JsonPropertyName("dices")] public DicesConfig Dices { get; set; } = new DicesConfig();
         // map configurations
-        [JsonPropertyName("maps")] public Dictionary<string, MapConfig> MapConfigs { get; set; } = new Dictionary<string, MapConfig>();
+        [JsonPropertyName("maps")] public Dictionary<string, MapConfig> MapConfigs { get; set; } = [];
         // player configuration
-        [JsonPropertyName("players")] public Dictionary<string, PlayerConfig> PlayerConfigs { get; set; } = new Dictionary<string, PlayerConfig>();
+        [JsonPropertyName("players")] public Dictionary<string, PlayerConfig> PlayerConfigs { get; set; } = [];
     }
 
     public partial class RollTheDice : BasePlugin, IPluginConfig<PluginConfig>
     {
         public required PluginConfig Config { get; set; }
         private MapConfig _currentMapConfig = new();
-        private Dictionary<string, PlayerConfig> _playerConfigs = new();
+        private Dictionary<string, PlayerConfig> _playerConfigs = [];
 
         private void ReloadConfigFromDisk()
         {
@@ -85,8 +90,8 @@ namespace RollTheDice
             {
                 // load config from disk
                 Config.Reload();
-                // update config with changed dices
-                UpdateConfig();
+                // update GUI config
+                CheckGUIConfig();
                 // update player config
                 UpdatePlayerConfig();
                 // save config to disk
@@ -102,13 +107,17 @@ namespace RollTheDice
             }
         }
 
-        private void InitializeConfig(string mapName)
+        private void LoadMapConfig(string mapName)
         {
             // select map config whose regexes (keys) match against the map name
+            // use default global config if no map config matches
             _currentMapConfig = Config.MapConfigs
                 .Where(mapConfig => FileSystemName.MatchesSimpleExpression(mapConfig.Key, mapName))
                 .Select(mapConfig => mapConfig.Value)
-                .FirstOrDefault() ?? new MapConfig();
+                .FirstOrDefault() ?? new MapConfig
+                {
+                    Dices = Config.Dices
+                };
             Console.WriteLine(Localizer["core.mapconfig"].Value.Replace("{mapName}", mapName));
         }
 
@@ -117,66 +126,6 @@ namespace RollTheDice
             Config = config;
             Console.WriteLine("OVERWRITTEN!");
             Console.WriteLine(Localizer["core.config"]);
-        }
-
-        private void UpdateConfig()
-        {
-            // iterate through all dices and add them to the configuration file
-            foreach (var dice in _dices)
-            {
-                // create entry for dice if it does not exist
-                if (!Config.Dices.ContainsKey(dice.Method.Name))
-                {
-                    Config.Dices[dice.Method.Name] = new Dictionary<string, object>();
-                }
-                // load current entries for dice
-                var diceConfig = Config.Dices[dice.Method.Name];
-                // Ensure "enabled" key exists
-                if (!diceConfig.ContainsKey("enabled"))
-                {
-                    diceConfig["enabled"] = true;
-                }
-                // Check for further configuration of a dice and add it accordingly
-                var methodName = $"{dice.Method.Name}Config";
-                var method = GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
-                if (method != null)
-                {
-                    var additionalConfig = method.Invoke(this, null) as Dictionary<string, object> ?? new();
-                    // check if configuration does exist
-                    foreach (var kvp in additionalConfig)
-                    {
-                        if (!diceConfig.ContainsKey(kvp.Key))
-                        {
-                            diceConfig[kvp.Key] = ConvertJsonElement(kvp.Value);
-                        }
-                    }
-                    // Remove keys that should not exist anymore, ignoring the "enabled" key
-                    var keysToRemove = diceConfig.Keys.Except(additionalConfig.Keys).Where(key => key != "enabled").ToList();
-                    foreach (var key in keysToRemove)
-                    {
-                        diceConfig.Remove(key);
-                    }
-                    // sort keys by alphabet
-                    var sortedKeys = diceConfig.Keys.OrderBy(key => key).ToList();
-                    var sortedDiceConfig = new Dictionary<string, object>();
-                    foreach (var key in sortedKeys)
-                    {
-                        sortedDiceConfig[key] = diceConfig[key];
-                    }
-                    Config.Dices[dice.Method.Name] = sortedDiceConfig;
-
-                }
-            }
-            // delete all dices that do not exist anymore
-            foreach (var key in Config.Dices.Keys)
-            {
-                if (!_dices.Any(dice => dice.Method.Name == key))
-                {
-                    Config.Dices.Remove(key);
-                }
-            }
-            // check GUI config
-            CheckGUIConfig();
         }
 
         private void UpdatePlayerConfig()
@@ -194,38 +143,21 @@ namespace RollTheDice
             }
         }
 
-        private Dictionary<string, object> GetDiceConfig(string diceName)
+        private static object ConvertJsonElement(object element)
         {
-            // first try the map-specific configuration
-            if (_currentMapConfig.Dices.TryGetValue(diceName, out var config))
-            {
-                return config.ToDictionary(kvp => kvp.Key, kvp => ConvertJsonElement(kvp.Value));
-            }
-            // if not available, try the global configuration
-            if (Config.Dices.TryGetValue(diceName, out var globalConfig))
-            {
-                return globalConfig.ToDictionary(kvp => kvp.Key, kvp => ConvertJsonElement(kvp.Value));
-            }
-            return new Dictionary<string, object>();
-        }
-
-        private object ConvertJsonElement(object element)
-        {
-            if (element is JsonElement jsonElement)
-            {
-                return jsonElement.ValueKind switch
+            return element is JsonElement jsonElement
+                ? jsonElement.ValueKind switch
                 {
                     JsonValueKind.String => (object?)jsonElement.GetString() ?? string.Empty,
-                    JsonValueKind.Number => jsonElement.TryGetSingle(out var number) ? (object)number : 0.0f,
-                    JsonValueKind.True => (object)jsonElement.GetBoolean(),
-                    JsonValueKind.False => (object)jsonElement.GetBoolean(),
-                    JsonValueKind.Object => jsonElement.EnumerateObject().ToDictionary(property => property.Name, property => ConvertJsonElement(property.Value)),
-                    JsonValueKind.Array => jsonElement.EnumerateArray().Select(element => ConvertJsonElement((object)element)).ToList(),
-                    JsonValueKind.Undefined => (object)string.Empty,
-                    _ => (object)string.Empty
-                };
-            }
-            return element;
+                    JsonValueKind.Number => jsonElement.TryGetSingle(out float number) ? number : 0.0f,
+                    JsonValueKind.True => jsonElement.GetBoolean(),
+                    JsonValueKind.False => jsonElement.GetBoolean(),
+                    JsonValueKind.Object => jsonElement.EnumerateObject().ToDictionary(static property => property.Name, static property => ConvertJsonElement(property.Value)),
+                    JsonValueKind.Array => jsonElement.EnumerateArray().Select(static element => ConvertJsonElement(element)).ToList(),
+                    JsonValueKind.Undefined => string.Empty,
+                    _ => string.Empty
+                }
+                : element;
         }
     }
 }

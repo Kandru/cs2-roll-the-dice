@@ -1,30 +1,27 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
+using RollTheDice.Utils;
 
 namespace RollTheDice.Dices
 {
     public class BigTaserBattery : ParentDice
     {
+        public override string _className => "BigTaserBattery";
         public override List<string> Events => [
             "EventWeaponFire"
         ];
         public readonly Random _random = new();
         public readonly Dictionary<CCSPlayerController, int> _ammunition = [];
 
-        public BigTaserBattery(PluginConfig Config, IStringLocalizer Localizer) : base(Config, Localizer)
+        public BigTaserBattery(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
-            Console.WriteLine("[RollTheDice] Initializing BigTaserBattery...");
-        }
-
-        public override void Destroy()
-        {
-            Console.WriteLine("[RollTheDice] Destroying BigTaserBattery...");
-            _players.Clear();
+            Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", _className));
         }
 
         public override void Add(CCSPlayerController player)
         {
+            // check if player is valid and has a pawn
             if (player == null
                 || !player.IsValid
                 || player.Pawn?.IsValid == false
@@ -32,19 +29,30 @@ namespace RollTheDice.Dices
             {
                 return;
             }
+            // get random taser size
             int battery = _random.Next(
                 Convert.ToInt32(_config.Dices.BigTaserBattery.MinAmount),
                 Convert.ToInt32(_config.Dices.BigTaserBattery.MaxAmount) + 1
             );
-            _players.Add(player);
+            // create GUI for player
+            Dictionary<string, string> data = new()
+            {
+                { "batterySize", battery.ToString() }
+            };
+            _players.Add(player, new Dictionary<string, CPointWorldText?>
+            {
+                { "gui", CreateMainGUI(player, _className, data) },
+                { "status", CreateStatusGUI(player, _className, data) }
+            });
+            // add ammuniton for player
             _ammunition.Add(player, battery);
             // give taser if not exists
             if (player.Pawn.Value.WeaponServices.MyWeapons != null)
             {
                 bool hasTaser = false;
-                foreach (var gun in player.Pawn.Value.WeaponServices.MyWeapons)
+                foreach (CounterStrikeSharp.API.Modules.Utils.CHandle<CBasePlayerWeapon> gun in player.Pawn.Value.WeaponServices.MyWeapons)
                 {
-                    var weapon = gun.Value;
+                    CBasePlayerWeapon? weapon = gun.Value;
                     if (weapon != null && weapon.IsValid && weapon.DesignerName.Contains("taser"))
                     {
                         // recharge taser
@@ -56,44 +64,79 @@ namespace RollTheDice.Dices
                 }
                 if (!hasTaser)
                 {
-                    player.GiveNamedItem("weapon_taser");
+                    _ = player.GiveNamedItem("weapon_taser");
                 }
             }
-            return new Dictionary<string, string>
-            {
-                { "playerName", player.PlayerName },
-                { "batterySize", battery.ToString() }
-            };
         }
 
-        private HookResult EventWeaponFire(EventWeaponFire @event, GameEventInfo info)
+        public override void Remove(CCSPlayerController player)
         {
-            CCSPlayerController player = @event.Userid!;
-            if (!_players.Contains(player)) return HookResult.Continue;
-            if (player == null || player.Pawn == null || !player.Pawn.IsValid || player.Pawn.Value == null) return HookResult.Continue;
-            if (player.Pawn.Value.WeaponServices == null || player.Pawn.Value.WeaponServices.ActiveWeapon == null) return HookResult.Continue;
-            if (player.Pawn.Value.WeaponServices.ActiveWeapon == null || player.Pawn.Value.WeaponServices.ActiveWeapon.Value == null) return HookResult.Continue;
-            if (player.Pawn.Value.WeaponServices.ActiveWeapon.Value!.DesignerName != "weapon_taser") return HookResult.Continue;
-            if (_ammunition[player] <= 0) return HookResult.Continue;
-            // recharge taser but only if we have at least 2 charges left
-            if (_ammunition[player] > 1) player.Pawn.Value.WeaponServices.ActiveWeapon.Value!.Clip1 = 2;
-            // decrease battery size
-            _ammunition[player]--;
-            // update gui if available
-            if (_players.Contains(player)
-                && _playersThatRolledTheDice[player].ContainsKey("gui_status")
-                && (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"] != null)
+            GUI.RemoveGUIs([.. _players[player].Values.Cast<CPointWorldText>()]);
+            _ = _players.Remove(player);
+            _ = _ammunition.Remove(player);
+        }
+
+        public override void Destroy()
+        {
+            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", _className));
+            // remove all GUIs for all players
+            foreach (KeyValuePair<CCSPlayerController, Dictionary<string, CPointWorldText?>> kvp in _players)
             {
-                CPointWorldText worldText = (CPointWorldText)_playersThatRolledTheDice[player]["gui_status"];
-                if (_playersWithBigTaserBattery[player] == 0)
-                    ChangeColor(worldText, Config.GUIPositions[Config.GUIPosition].StatusColorDisabled);
-                else
-                    ChangeColor(worldText, Config.GUIPositions[Config.GUIPosition].StatusColorEnabled);
-                worldText.AcceptInput("SetMessage", worldText, worldText, Localizer["DiceBigTaserBattery_status"].Value.Replace(
-                    "{batterySize}", _playersWithBigTaserBattery[player].ToString()
-                ));
+                GUI.RemoveGUIs([.. kvp.Value.Values.Cast<CPointWorldText>()]);
             }
+            _players.Clear();
+            _ammunition.Clear();
+        }
+
+        public HookResult EventWeaponFire(EventWeaponFire @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
+
+            // player validation check
+            if (player?.Pawn?.Value?.WeaponServices?.ActiveWeapon?.Value == null)
+            {
+                return HookResult.Continue;
+            }
+            // player has dice check
+            if (!_players.TryGetValue(player, out Dictionary<string, CPointWorldText?>? playerData))
+            {
+                return HookResult.Continue;
+            }
+            // weapon check
+            CBasePlayerWeapon activeWeapon = player.Pawn.Value.WeaponServices.ActiveWeapon.Value!;
+            if (activeWeapon.DesignerName != "weapon_taser" || _ammunition[player] <= 0)
+            {
+                return HookResult.Continue;
+            }
+            // Recharge taser if we have multiple charges
+            if (_ammunition[player] > 1)
+            {
+                activeWeapon.Clip1 = 2;
+            }
+            // Decrease ammunition and update GUI
+            _ammunition[player]--;
+            UpdateStatusGUI(player, playerData);
+
             return HookResult.Continue;
+        }
+
+        private void UpdateStatusGUI(CCSPlayerController player, Dictionary<string, CPointWorldText?> playerData)
+        {
+            if (_localizer[$"{_className}_status"].ResourceNotFound ||
+            !playerData.TryGetValue("status", out CPointWorldText? worldText) ||
+            worldText == null)
+            {
+                return;
+            }
+
+            bool isEnabled = _ammunition[player] > 0;
+            string color = isEnabled
+            ? _globalConfig.GUIPositions[_globalConfig.GUIPosition].StatusColorEnabled
+            : _globalConfig.GUIPositions[_globalConfig.GUIPosition].StatusColorDisabled;
+
+            GUI.ChangeColor(worldText, color);
+            GUI.ChangeGUI(worldText, _localizer[$"{_className}_status"].Value.Replace(
+            "{batterySize}", _ammunition[player].ToString()));
         }
     }
 }

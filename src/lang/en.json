@@ -12,6 +12,8 @@
     "core.nodicesenabled": "{purple}[RollTheDice] {default}No dices enabled! Please enable at least one dice in the configuration!",
     "core.disabled": "{purple}[RollTheDice] {default}RollTheDice is disabled!",
     "core.debugprint": "{purple}[RollTheDice]{red}[DEBUG] {default}{message}",
+    "dice.class.initialize": "{purple}[RollTheDice] {default}Initialized dice class {name}",
+    "dice.class.destroy": "{purple}[RollTheDice] {default}Destroyed dice class {name}",
     "command.prefix": "{purple}[RollTheDice]",
     "command.rollthedice.iswarmup": "{purple}[RollTheDice] {default}disabled during Warm-Up!",
     "command.rollthedice.noactiveround": "{purple}[RollTheDice] {default}No active round!",

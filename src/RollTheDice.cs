@@ -11,6 +11,7 @@ namespace RollTheDice
 
         private string _currentMap = "";
         private Dictionary<CCSPlayerController, Dictionary<string, object>> _playersThatRolledTheDice = new();
+        private Dictionary<CCSPlayerController, CPointWorldText> _playerGuis = new();
         private Dictionary<string, int> _countRolledDices = new();
         private Dictionary<CCSPlayerController, int> _PlayerCooldown = new();
         private List<Func<CCSPlayerController, CCSPlayerPawn, Dictionary<string, string>>> _dices = new();
@@ -38,7 +39,7 @@ namespace RollTheDice
                 // set current map
                 _currentMap = Server.MapName;
                 // initialize configuration
-                InitializeConfig(_currentMap);
+                LoadMapConfig(_currentMap);
                 Console.WriteLine(Localizer["core.hotreload"]);
                 SendGlobalChatMessage(Localizer["core.hotreload"]);
                 // check if it is during a round (no matter if warmup or not, simply not in between a round or end of match)
@@ -167,6 +168,8 @@ namespace RollTheDice
             _currentMap = mapName;
             // update configuration
             ReloadConfigFromDisk();
+            // load map config
+            LoadMapConfig(mapName);
         }
 
         private void OnMapEnd()

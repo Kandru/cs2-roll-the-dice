@@ -12,6 +12,8 @@
     "core.nodicesenabled": "{purple}[WürfelSpiel] {default}Keine Würfel aktiviert! Bitte aktiviere mindestens einen Würfel in der Konfiguration!",
     "core.disabled": "{purple}[WürfelSpiel] {default}Würfelspiel ist deaktiviert!",
     "core.debugprint": "{purple}[WürfelSpiel]{red}[DEBUG] {default}{message}",
+    "dice.class.initialize": "{purple}[WürfelSpiel] {default}Würfelklasse {name} initialisiert",
+    "dice.class.destroy": "{purple}[WürfelSpiel] {default}Würfelklasse {name} zerstört",
     "command.prefix": "{purple}[WürfelSpiel]{default}",
     "command.rollthedice.iswarmup": "{purple}[WürfelSpiel] {default}Im Warm-Up deaktiviert!",
     "command.rollthedice.noactiveround": "{purple}[WürfelSpiel] {default}Runde ist nicht gestartet!",
