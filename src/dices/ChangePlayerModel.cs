@@ -8,7 +8,7 @@ namespace RollTheDice.Dices
     public class ChangePlayerModel : ParentDice
     {
         public override string _className => "ChangePlayerModel";
-        private Dictionary<CCSPlayerController, string> _oldModels = new();
+        private readonly Dictionary<CCSPlayerController, string> _oldModels = [];
 
         public ChangePlayerModel(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
@@ -70,13 +70,16 @@ namespace RollTheDice.Dices
             _oldModels.Clear();
         }
 
-        private void ChangeModel(CCSPlayerController player, string model)
+        private static void ChangeModel(CCSPlayerController player, string model)
         {
             if (player == null
                 || player.PlayerPawn == null
                 || !player.PlayerPawn.IsValid
                 || player.PlayerPawn.Value == null
-                || player.LifeState != (byte)LifeState_t.LIFE_ALIVE) return;
+                || player.LifeState != (byte)LifeState_t.LIFE_ALIVE)
+            {
+                return;
+            }
             // reset player model
             player.PlayerPawn.Value.SetModel(model);
         }
