@@ -29,6 +29,9 @@ namespace RollTheDice
     public class DicesConfig
     {
         [JsonPropertyName("big_taser_battery")] public BigTaserBatteryConfig BigTaserBattery { get; set; } = new BigTaserBatteryConfig();
+        [JsonPropertyName("change_name")] public ChangeNameConfig ChangeName { get; set; } = new ChangeNameConfig();
+        [JsonPropertyName("change_player_model")] public ChangePlayerModelConfig ChangePlayerModel { get; set; } = new ChangePlayerModelConfig();
+        [JsonPropertyName("change_player_size")] public ChangePlayerSizeConfig ChangePlayerSize { get; set; } = new ChangePlayerSizeConfig();
     }
 
     public class MapConfig
