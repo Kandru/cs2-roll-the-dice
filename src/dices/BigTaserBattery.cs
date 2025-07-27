@@ -7,7 +7,7 @@ namespace RollTheDice.Dices
 {
     public class BigTaserBattery : ParentDice
     {
-        public override string _className => "BigTaserBattery";
+        public override string ClassName => "BigTaserBattery";
         public override List<string> Events => [
             "EventWeaponFire"
         ];
@@ -16,7 +16,7 @@ namespace RollTheDice.Dices
 
         public BigTaserBattery(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
-            Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", _className));
+            Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", ClassName));
         }
 
         public override void Add(CCSPlayerController player)
@@ -41,8 +41,8 @@ namespace RollTheDice.Dices
             };
             _players.Add(player, new Dictionary<string, CPointWorldText?>
             {
-                { "gui", CreateMainGUI(player, _className, data) },
-                { "status", CreateStatusGUI(player, _className, data) }
+                { "gui", CreateMainGUI(player, ClassName, data) },
+                { "status", CreateStatusGUI(player, ClassName, data) }
             });
             // add ammuniton for player
             _ammunition.Add(player, battery);
@@ -78,7 +78,7 @@ namespace RollTheDice.Dices
 
         public override void Destroy()
         {
-            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", _className));
+            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
             // remove all GUIs for all players
             foreach (KeyValuePair<CCSPlayerController, Dictionary<string, CPointWorldText?>> kvp in _players)
             {
@@ -122,7 +122,7 @@ namespace RollTheDice.Dices
 
         private void UpdateStatusGUI(CCSPlayerController player, Dictionary<string, CPointWorldText?> playerData)
         {
-            if (_localizer[$"{_className}_status"].ResourceNotFound ||
+            if (_localizer[$"{ClassName}_status"].ResourceNotFound ||
             !playerData.TryGetValue("status", out CPointWorldText? worldText) ||
             worldText == null)
             {
@@ -135,7 +135,7 @@ namespace RollTheDice.Dices
             : _globalConfig.GUIPositions[_globalConfig.GUIPosition].StatusColorDisabled;
 
             GUI.ChangeColor(worldText, color);
-            GUI.ChangeGUI(worldText, _localizer[$"{_className}_status"].Value.Replace(
+            GUI.ChangeGUI(worldText, _localizer[$"{ClassName}_status"].Value.Replace(
             "{batterySize}", _ammunition[player].ToString()));
         }
     }

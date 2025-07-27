@@ -11,7 +11,7 @@ namespace RollTheDice.Dices
         public readonly MapConfig _config = Config;
         public readonly IStringLocalizer _localizer = Localizer;
         public readonly Dictionary<CCSPlayerController, Dictionary<string, CPointWorldText?>> _players = [];
-        public virtual string _className => "ParentDice";
+        public virtual string ClassName => "ParentDice";
         public virtual List<string> Events => [];
         public virtual List<string> Listeners => [];
         public virtual Dictionary<int, HookMode> UserMessages => [];

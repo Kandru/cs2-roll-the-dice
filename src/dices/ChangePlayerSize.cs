@@ -8,12 +8,12 @@ namespace RollTheDice.Dices
 {
     public class ChangePlayerSize : ParentDice
     {
-        public override string _className => "ChangePlayerSize";
+        public override string ClassName => "ChangePlayerSize";
         public readonly Random _random = new();
 
         public ChangePlayerSize(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
-            Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", _className));
+            Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", ClassName));
         }
 
         public override void Add(CCSPlayerController player)
@@ -26,9 +26,9 @@ namespace RollTheDice.Dices
             {
                 return;
             }
-            float playerSize = float.Round((float)(_random.NextDouble()
+            float playerSize = float.Round((float)((_random.NextDouble()
                 * ((float)_config.Dices.ChangePlayerSize.MaxSize
-                - (float)_config.Dices.ChangePlayerSize.MinSize)
+                - (float)_config.Dices.ChangePlayerSize.MinSize))
                 + (float)_config.Dices.ChangePlayerSize.MinSize)
             , 2);
             ChangeSize(player, playerSize);
@@ -40,7 +40,7 @@ namespace RollTheDice.Dices
             };
             _players.Add(player, new Dictionary<string, CPointWorldText?>
             {
-                { "gui", CreateMainGUI(player, _className, data) }
+                { "gui", CreateMainGUI(player, ClassName, data) }
             });
         }
 
@@ -53,7 +53,7 @@ namespace RollTheDice.Dices
 
         public override void Destroy()
         {
-            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", _className));
+            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
             // remove all GUIs for all players
             foreach (KeyValuePair<CCSPlayerController, Dictionary<string, CPointWorldText?>> kvp in _players)
             {

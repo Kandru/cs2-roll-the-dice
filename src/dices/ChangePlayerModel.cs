@@ -7,12 +7,12 @@ namespace RollTheDice.Dices
 {
     public class ChangePlayerModel : ParentDice
     {
-        public override string _className => "ChangePlayerModel";
+        public override string ClassName => "ChangePlayerModel";
         private readonly Dictionary<CCSPlayerController, string> _oldModels = [];
 
         public ChangePlayerModel(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
-            Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", _className));
+            Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", ClassName));
         }
 
         public override void Add(CCSPlayerController player)
@@ -45,7 +45,7 @@ namespace RollTheDice.Dices
             };
             _players.Add(player, new Dictionary<string, CPointWorldText?>
             {
-                { "gui", CreateMainGUI(player, _className, data) }
+                { "gui", CreateMainGUI(player, ClassName, data) }
             });
         }
 
@@ -59,7 +59,7 @@ namespace RollTheDice.Dices
 
         public override void Destroy()
         {
-            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", _className));
+            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
             // remove all GUIs for all players
             foreach (KeyValuePair<CCSPlayerController, Dictionary<string, CPointWorldText?>> kvp in _players)
             {

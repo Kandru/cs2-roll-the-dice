@@ -2,18 +2,17 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
-using RollTheDice.Utils;
 
 namespace RollTheDice.Dices
 {
     public class ChickenLeader : ParentDice
     {
-        public override string _className => "ChickenLeader";
+        public override string ClassName => "ChickenLeader";
         public readonly Random _random = new();
 
         public ChickenLeader(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
-            Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", _className));
+            Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", ClassName));
         }
 
         public override void Add(CCSPlayerController player)
@@ -35,7 +34,7 @@ namespace RollTheDice.Dices
             };
             _players.Add(player, new Dictionary<string, CPointWorldText?>
             {
-                { "gui", CreateMainGUI(player, _className, data) }
+                { "gui", CreateMainGUI(player, ClassName, data) }
             });
         }
 
@@ -52,7 +51,7 @@ namespace RollTheDice.Dices
                 CChicken? chicken = Utilities.CreateEntityByName<CChicken>("chicken");
                 if (chicken != null)
                 {
-                    Vector offset = new Vector(
+                    Vector offset = new(
                         (float)(100 * Math.Cos(2 * Math.PI * i / _config.Dices.ChickenLeader.Amount)),
                         (float)(100 * Math.Sin(2 * Math.PI * i / _config.Dices.ChickenLeader.Amount)),
                         0
