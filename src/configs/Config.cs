@@ -41,6 +41,7 @@ namespace RollTheDice
         [JsonPropertyName("player_one_hp")] public PlayerOneHPConfig PlayerOneHP { get; set; } = new PlayerOneHPConfig();
         [JsonPropertyName("player_low_gravity")] public PlayerLowGravityConfig PlayerLowGravity { get; set; } = new PlayerLowGravityConfig();
         [JsonPropertyName("player_high_gravity")] public PlayerHighGravityConfig PlayerHighGravity { get; set; } = new PlayerHighGravityConfig();
+        [JsonPropertyName("player_suicide")] public PlayerSuicideConfig PlayerSuicide { get; set; } = new PlayerSuicideConfig();
     }
 
     public class MapConfig
