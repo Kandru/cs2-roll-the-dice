@@ -65,14 +65,14 @@ namespace RollTheDice.Dices
 
         private static void ChangeSize(CCSPlayerController player, float size)
         {
-            if (player?.PlayerPawn?.Value?.CBodyComponent?.SceneNode == null
-                || !player.PlayerPawn.IsValid)
+            if (player?.Pawn?.Value?.CBodyComponent?.SceneNode == null
+                || !player.Pawn.IsValid)
             {
                 return;
             }
-            player.PlayerPawn.Value.CBodyComponent.SceneNode.GetSkeletonInstance().Scale = size;
-            player.PlayerPawn.Value.AcceptInput("SetScale", null, null, size.ToString());
-            Utilities.SetStateChanged(player.PlayerPawn.Value, "CBaseEntity", "m_CBodyComponent");
+            player.Pawn.Value.CBodyComponent.SceneNode.GetSkeletonInstance().Scale = size;
+            player.Pawn.Value.AcceptInput("SetScale", null, null, size.ToString());
+            Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_CBodyComponent");
         }
     }
 }

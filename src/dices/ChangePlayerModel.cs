@@ -73,15 +73,15 @@ namespace RollTheDice.Dices
         private static void ChangeModel(CCSPlayerController player, string model)
         {
             if (player == null
-                || player.PlayerPawn == null
-                || !player.PlayerPawn.IsValid
-                || player.PlayerPawn.Value == null
+                || player.Pawn == null
+                || !player.Pawn.IsValid
+                || player.Pawn.Value == null
                 || player.LifeState != (byte)LifeState_t.LIFE_ALIVE)
             {
                 return;
             }
             // reset player model
-            player.PlayerPawn.Value.SetModel(model);
+            player.Pawn.Value.SetModel(model);
         }
     }
 }
