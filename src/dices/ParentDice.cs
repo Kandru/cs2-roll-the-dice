@@ -45,25 +45,25 @@ namespace RollTheDice.Dices
 
         public CPointWorldText? CreateMainGUI(CCSPlayerController player, string dice, Dictionary<string, string> data)
         {
-            return CreateGUI(player, dice, data, "_gui");
+            return CreateGUI(player, dice, data, "gui");
         }
 
         public CPointWorldText? CreateStatusGUI(CCSPlayerController player, string dice, Dictionary<string, string> data)
         {
-            return CreateGUI(player, dice, data, "_status");
+            return CreateGUI(player, dice, data, "status");
         }
 
         private CPointWorldText? CreateGUI(CCSPlayerController player, string dice, Dictionary<string, string> data, string suffix)
         {
             // check if message and gui position are valid
-            if (_localizer[$"{dice}{suffix}"].ResourceNotFound
+            if (_localizer[$"dice_{dice}_{suffix}"].ResourceNotFound
             || !_globalConfig.GUIPositions.TryGetValue(_globalConfig.GUIPosition, out GuiPositionConfig? value))
             {
                 return null;
             }
 
             // create message with data replacement
-            string message = _localizer["command.prefix"].Value + " " + _localizer[$"{dice}{suffix}"].Value;
+            string message = _localizer["command.prefix"].Value + " " + _localizer[$"dice_{dice}_{suffix}"].Value;
             foreach (KeyValuePair<string, string> kvp in data)
             {
                 message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
