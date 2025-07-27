@@ -27,11 +27,13 @@ namespace RollTheDice.Dices
             {
                 return;
             }
+            // get random player size
             float playerSize = float.Round((float)((_random.NextDouble()
                 * ((float)_config.Dices.ChangePlayerSize.MaxSize
                 - (float)_config.Dices.ChangePlayerSize.MinSize))
                 + (float)_config.Dices.ChangePlayerSize.MinSize)
             , 2);
+            // change player size
             ChangeSize(player, playerSize);
             // create GUI for player
             Dictionary<string, string> data = new()

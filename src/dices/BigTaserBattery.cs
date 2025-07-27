@@ -32,8 +32,8 @@ namespace RollTheDice.Dices
             }
             // get random taser size
             int battery = _random.Next(
-                Convert.ToInt32(_config.Dices.BigTaserBattery.MinAmount),
-                Convert.ToInt32(_config.Dices.BigTaserBattery.MaxAmount) + 1
+                _config.Dices.BigTaserBattery.MinAmount,
+                _config.Dices.BigTaserBattery.MaxAmount + 1
             );
             // create GUI for player
             Dictionary<string, string> data = new()

@@ -24,11 +24,7 @@ namespace RollTheDice.Dices
             {
                 return;
             }
-            // get random player name
-            List<string> PlayerNames = [.. Utilities.GetPlayers()
-                .Where(p => p.IsValid && !p.IsBot && !p.IsHLTV && p != player)
-                .Select(p => p.PlayerName)];
-            // change health
+            // get random amount of health to increase
             int healthIncrease = _random.Next(
                 _config.Dices.IncreaseHealth.MinHealth,
                 _config.Dices.IncreaseHealth.MaxHealth + 1

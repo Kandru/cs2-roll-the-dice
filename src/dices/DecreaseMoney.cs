@@ -25,11 +25,7 @@ namespace RollTheDice.Dices
             {
                 return;
             }
-            // get random player name
-            List<string> PlayerNames = [.. Utilities.GetPlayers()
-                .Where(p => p.IsValid && !p.IsBot && !p.IsHLTV && p != player)
-                .Select(p => p.PlayerName)];
-            // change money
+            // get random amount of money to decrease
             int moneyDecrease = _random.Next(
                 _config.Dices.DecreaseMoney.MinMoney,
                 _config.Dices.DecreaseMoney.MaxMoney + 1
