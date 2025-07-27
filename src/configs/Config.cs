@@ -39,6 +39,7 @@ namespace RollTheDice
         [JsonPropertyName("increase_money")] public IncreaseMoneyConfig IncreaseMoney { get; set; } = new IncreaseMoneyConfig();
         [JsonPropertyName("give_health_shot")] public GiveHealthShotConfig GiveHealthShot { get; set; } = new GiveHealthShotConfig();
         [JsonPropertyName("player_one_hp")] public PlayerOneHPConfig PlayerOneHP { get; set; } = new PlayerOneHPConfig();
+        [JsonPropertyName("player_low_gravity")] public PlayerLowGravityConfig PlayerLowGravity { get; set; } = new PlayerLowGravityConfig();
     }
 
     public class MapConfig
