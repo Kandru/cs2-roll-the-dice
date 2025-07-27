@@ -29,9 +29,9 @@ namespace RollTheDice.Dices
                 .Where(p => p.IsValid && !p.IsBot && !p.IsHLTV && p != player)
                 .Select(p => p.PlayerName)];
             // change health
-            var healthIncrease = _random.Next(
-                Convert.ToInt32(_config.Dices.IncreaseHealth.MinHealth),
-                Convert.ToInt32(_config.Dices.IncreaseHealth.MaxHealth) + 1
+            int healthIncrease = _random.Next(
+                _config.Dices.IncreaseHealth.MinHealth,
+                _config.Dices.IncreaseHealth.MaxHealth + 1
             );
             // increase health
             player.Pawn.Value.Health += healthIncrease;
