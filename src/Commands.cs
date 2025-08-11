@@ -183,7 +183,7 @@ namespace RollTheDice
                 command.ReplyToCommand(Localizer["command.rollthedice.notalive"]);
                 return;
             }
-            // get random dice
+            // roll the dice
             RollTheDiceForPlayer(player);
             // add player to cooldown (if applicable)
             if (Config.CooldownRounds > 0)

@@ -48,7 +48,6 @@ namespace RollTheDice
         {
             // reset dice rolls on unload
             DestroyModules();
-            //RemoveAllGUIs();
             // update configuration
             ReloadConfigFromDisk();
             // unregister listeners
@@ -66,7 +65,7 @@ namespace RollTheDice
             // reset players that rolled the dice
             _playersThatRolledTheDice.Clear();
             // reset dices (necessary after warmup)
-            //ResetDices(); TODO: properly reset dices after round start
+            RemoveDicesForPlayers();
             //RemoveAllGUIs();
             // abort if warmup
             object? warmupPeriodObj = GameRules.Get("WarmupPeriod");
@@ -110,8 +109,7 @@ namespace RollTheDice
 
         private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
         {
-            // ResetDices(); // TODO: properly reset dices after round end
-            //RemoveAllGUIs();
+            RemoveDicesForPlayers();
             // disallow dice rolls
             _isDuringRound = false;
             // reduct cooldown if applicable
@@ -132,8 +130,7 @@ namespace RollTheDice
 
         private HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
         {
-            _ = @event.Userid!;
-            //ResetDiceForPlayer(player); TODO: properly reset dices after player disconnect
+            RemoveDiceForPlayer(@event.Userid);
             return HookResult.Continue;
         }
 
@@ -150,7 +147,7 @@ namespace RollTheDice
         private void OnMapEnd()
         {
             DestroyModules();
-            //RemoveAllGUIs();
+            RemoveDicesForPlayers();
             // disallow dice rolls
             _isDuringRound = false;
             // reset cooldown
@@ -163,12 +160,39 @@ namespace RollTheDice
             {
                 return;
             }
+            // remove old dice first
+            RemoveDiceForPlayer(player);
             // roll the dice for the player - get random dice and add player
             if (_dices.Count > 0)
             {
                 ParentDice randomDice = _dices[_random.Next(_dices.Count)];
-                randomDice.Add(player);
                 Console.WriteLine(randomDice.ClassName);
+                randomDice.Add(player);
+            }
+        }
+
+        private void RemoveDiceForPlayer(CCSPlayerController? player)
+        {
+            if (player == null
+                || !player.IsValid)
+            {
+                return;
+            }
+            // remove the dice for the player (if any)
+            foreach (ParentDice dice in _dices)
+            {
+                if (dice._players.Contains(player))
+                {
+                    dice.Remove(player);
+                }
+            }
+        }
+
+        private void RemoveDicesForPlayers()
+        {
+            foreach (CCSPlayerController player in Utilities.GetPlayers())
+            {
+                RemoveDiceForPlayer(player);
             }
         }
 
