@@ -1,7 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
-using RollTheDice.Utils;
 
 namespace RollTheDice.Dices
 {
@@ -33,8 +32,8 @@ namespace RollTheDice.Dices
                 return;
             }
             // get random amount of speed to increase
-            float speedIncrease = _random.NextSingle() *
-                (_config.Dices.IncreaseSpeed.MaxSpeed - _config.Dices.IncreaseSpeed.MinSpeed) +
+            float speedIncrease = (_random.NextSingle() *
+                (_config.Dices.IncreaseSpeed.MaxSpeed - _config.Dices.IncreaseSpeed.MinSpeed)) +
                 _config.Dices.IncreaseSpeed.MinSpeed;
             // increase speed
             player.PlayerPawn.Value.VelocityModifier *= (float)speedIncrease;
@@ -90,7 +89,9 @@ namespace RollTheDice.Dices
             if (player?.IsValid != true
             || !_players.Contains(player)
             || player.PlayerPawn?.Value?.LifeState != (byte)LifeState_t.LIFE_ALIVE)
+            {
                 return;
+            }
 
             Server.NextFrame(() =>
             {

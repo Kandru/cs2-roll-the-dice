@@ -46,7 +46,7 @@ namespace RollTheDice.Dices
             if (!_localizer[$"dice_{diceName}_all"].ResourceNotFound)
             {
                 string message = _localizer[$"dice_{diceName}_all"].Value;
-                foreach (var kvp in data)
+                foreach (KeyValuePair<string, string> kvp in data)
                 {
                     message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
                 }
@@ -57,7 +57,7 @@ namespace RollTheDice.Dices
             {
                 // send message to others
                 string message = _localizer[$"dice_{diceName}_other"].Value;
-                foreach (var kvp in data)
+                foreach (KeyValuePair<string, string> kvp in data)
                 {
                     message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
                 }
@@ -68,7 +68,7 @@ namespace RollTheDice.Dices
             if (!_localizer[$"dice_{diceName}_player"].ResourceNotFound)
             {
                 string message = _localizer[$"dice_{diceName}_player"].Value;
-                foreach (var kvp in data)
+                foreach (KeyValuePair<string, string> kvp in data)
                 {
                     message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
                 }

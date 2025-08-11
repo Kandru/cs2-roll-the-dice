@@ -81,7 +81,10 @@ namespace RollTheDice.Dices
                 // sanity checks
                 if (player?.PlayerPawn?.Value == null
                     || player.PlayerPawn.Value.LifeState == (byte)LifeState_t.LIFE_ALIVE
-                    || !_players.Contains(player)) return;
+                    || !_players.Contains(player))
+                {
+                    return;
+                }
                 // respawn player
                 player.Respawn();
                 // give weapons next frame to ensure player is respawned
@@ -90,25 +93,25 @@ namespace RollTheDice.Dices
                     // strip all other weapons
                     player.RemoveWeapons();
                     // add default knife to player
-                    player.GiveNamedItem($"weapon_{CsItem.Knife.ToString().ToLower(System.Globalization.CultureInfo.CurrentCulture)}");
+                    _ = player.GiveNamedItem($"weapon_{CsItem.Knife.ToString().ToLower(System.Globalization.CultureInfo.CurrentCulture)}");
                     // give player weapons of attacker (if any)
                     if (tmpWeaponList.Count > 0)
                     {
                         foreach (string weapons in tmpWeaponList)
                         {
-                            player.GiveNamedItem(weapons);
+                            _ = player.GiveNamedItem(weapons);
                         }
                     }
                     else
                     {
                         // give some default loadout if no weapons are available
-                        player.GiveNamedItem(_config.Dices.Respawn.DefaultPrimaryWeapon);
-                        player.GiveNamedItem(_config.Dices.Respawn.DefaultSecondaryWeapon);
+                        _ = player.GiveNamedItem(_config.Dices.Respawn.DefaultPrimaryWeapon);
+                        _ = player.GiveNamedItem(_config.Dices.Respawn.DefaultSecondaryWeapon);
                     }
                     // set armor for player
                     player.PlayerPawn.Value.ArmorValue = 100;
                     // remove player from list to avoid respawning again
-                    _players.Remove(player);
+                    _ = _players.Remove(player);
                 });
             });
             return HookResult.Continue;

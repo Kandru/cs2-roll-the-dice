@@ -1,4 +1,3 @@
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 
@@ -31,7 +30,7 @@ namespace RollTheDice.Dices
             );
             for (int i = 0; i < amount; i++)
             {
-                player.GiveNamedItem("weapon_healthshot");
+                _ = player.GiveNamedItem("weapon_healthshot");
             }
             _players.Add(player);
             NotifyPlayers(player, ClassName, new()
