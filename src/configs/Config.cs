@@ -44,6 +44,7 @@ namespace RollTheDice
         [JsonPropertyName("player_suicide")] public PlayerSuicideConfig PlayerSuicide { get; set; } = new PlayerSuicideConfig();
         [JsonPropertyName("player_increase_speed")] public IncreaseSpeedConfig IncreaseSpeed { get; set; } = new IncreaseSpeedConfig();
         [JsonPropertyName("player_no_recoil")] public NoRecoilConfig NoRecoil { get; set; } = new NoRecoilConfig();
+        [JsonPropertyName("respawn")] public RespawnConfig Respawn { get; set; } = new RespawnConfig();
     }
 
     public class MapConfig
