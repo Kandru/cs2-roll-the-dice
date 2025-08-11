@@ -72,6 +72,7 @@ namespace RollTheDice.Dices
             {
                 message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
             }
+            Console.WriteLine(message);
 
             // set color with fallback
             Color messageColor = Color.White;

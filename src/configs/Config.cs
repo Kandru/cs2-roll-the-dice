@@ -107,7 +107,7 @@ namespace RollTheDice
                 // load config from disk
                 Config.Reload();
                 // update GUI config
-                CheckGUIConfig();
+                //CheckGUIConfig();
                 // update player config
                 UpdatePlayerConfig();
                 // save config to disk
@@ -119,7 +119,7 @@ namespace RollTheDice
                 // log error
                 Console.WriteLine(message);
                 // show error to users for transparency (admin needs to notice somehow)
-                SendGlobalChatMessage(message);
+                //SendGlobalChatMessage(message);
             }
         }
 

@@ -1,27 +1,28 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using System.Reflection;
+using RollTheDice.Dices;
+using RollTheDice.Utils;
 
 namespace RollTheDice
 {
     public partial class RollTheDice : BasePlugin, IPluginConfig<PluginConfig>
     {
         public override string ModuleName => "Roll The Dice";
-        public override string ModuleAuthor => "Jon-Mailes Graeffe <mail@jonni.it> / Kalle <kalle@kandru.de>";
+        public override string ModuleAuthor => "Kalle <kalle@kandru.de>";
 
         private string _currentMap = "";
-        private Dictionary<CCSPlayerController, Dictionary<string, object>> _playersThatRolledTheDice = new();
-        private Dictionary<CCSPlayerController, CPointWorldText> _playerGuis = new();
-        private Dictionary<string, int> _countRolledDices = new();
-        private Dictionary<CCSPlayerController, int> _PlayerCooldown = new();
-        private List<Func<CCSPlayerController, CCSPlayerPawn, Dictionary<string, string>>> _dices = new();
-        private bool _isDuringRound = false;
-        Random _random = new Random(Guid.NewGuid().GetHashCode());
+        private readonly Dictionary<CCSPlayerController, Dictionary<string, object>> _playersThatRolledTheDice = [];
+        private readonly Dictionary<CCSPlayerController, CPointWorldText> _playerGuis = [];
+        private readonly Dictionary<string, int> _countRolledDices = [];
+        private readonly Dictionary<CCSPlayerController, int> _PlayerCooldown = [];
+        private readonly List<ParentDice> _dices = [];
+        private bool _isDuringRound;
+        private readonly Random _random = new(Guid.NewGuid().GetHashCode());
 
         public override void Load(bool hotReload)
         {
             // initialize dices
-            InitializeDices();
+            InitializeModules();
             // update configuration
             ReloadConfigFromDisk();
             // register listeners
@@ -29,7 +30,6 @@ namespace RollTheDice
             RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
             RegisterEventHandler<EventPlayerConnectFull>(OnPlayerConnectFull);
             RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
-            RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             RegisterListener<Listeners.OnMapStart>(OnMapStart);
             RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
             RegisterListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
@@ -41,9 +41,9 @@ namespace RollTheDice
                 // initialize configuration
                 LoadMapConfig(_currentMap);
                 Console.WriteLine(Localizer["core.hotreload"]);
-                SendGlobalChatMessage(Localizer["core.hotreload"]);
-                // check if it is during a round (no matter if warmup or not, simply not in between a round or end of match)
-                if (GetGameRules()?.GamePhase <= 3)
+                // check if it is during a round and not warmup
+                object? gamePhase = GameRules.Get("GamePhase");
+                if (gamePhase is int phase && phase <= 3 || Config.AllowRtdDuringWarmup)
                 {
                     // set variables
                     _isDuringRound = true;
@@ -54,8 +54,8 @@ namespace RollTheDice
         public override void Unload(bool hotReload)
         {
             // reset dice rolls on unload
-            ResetDices();
-            RemoveAllGUIs();
+            DestroyModules();
+            //RemoveAllGUIs();
             // update configuration
             ReloadConfigFromDisk();
             // unregister listeners
@@ -63,36 +63,27 @@ namespace RollTheDice
             DeregisterEventHandler<EventRoundEnd>(OnRoundEnd);
             DeregisterEventHandler<EventPlayerConnectFull>(OnPlayerConnectFull);
             DeregisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
-            DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             RemoveListener<Listeners.OnMapStart>(OnMapStart);
             RemoveListener<Listeners.OnMapEnd>(OnMapEnd);
             RemoveListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
-            // iterate through all dices and call their unload method dynamically
-            foreach (var dice in _dices)
-            {
-                var methodName = $"{dice.Method.Name}Unload";
-                var method = GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
-                if (method != null)
-                {
-                    DebugPrint($"Unloading dice: {methodName}");
-                    method.Invoke(this, null);
-                }
-            }
             Console.WriteLine(Localizer["core.unload"]);
         }
 
         private HookResult OnRoundStart(EventRoundStart @event, GameEventInfo info)
         {
-            DebugPrint("Round started");
             // reset players that rolled the dice
             _playersThatRolledTheDice.Clear();
             // reset dices (necessary after warmup)
-            ResetDices();
-            RemoveAllGUIs();
+            //ResetDices(); TODO: properly reset dices after round start
+            //RemoveAllGUIs();
             // abort if warmup
-            if (!Config.AllowRtdDuringWarmup && (bool)GetGameRule("WarmupPeriod")!) return HookResult.Continue;
+            object? warmupPeriodObj = GameRules.Get("WarmupPeriod");
+            if (!Config.AllowRtdDuringWarmup && warmupPeriodObj is bool warmupPeriod && !warmupPeriod)
+            {
+                return HookResult.Continue;
+            }
             // announce round start
-            SendGlobalChatMessage(Localizer["core.announcement"]);
+            //SendGlobalChatMessage(Localizer["core.announcement"]); TODO: announce round start
             // allow dice rolls
             _isDuringRound = true;
             // check if random dice should be rolled
@@ -104,33 +95,43 @@ namespace RollTheDice
                 if (Config.RollTheDiceOnRoundStart
                     || (_playerConfigs.ContainsKey(entry.NetworkIDString)
                         && _playerConfigs[entry.NetworkIDString].RtdOnSpawn))
-                    AddTimer(1f, () =>
+                {
+                    _ = AddTimer(1f, () =>
                     {
-                        if (entry == null || !entry.IsValid) return;
+                        if (entry == null || !entry.IsValid)
+                        {
+                            return;
+                        }
                         RollTheDiceForPlayer(entry);
                     });
+                }
             }
             // check if random dice should be rolled every X seconds
-            if (Config.RollTheDiceEveryXSeconds > 0 && !(bool)GetGameRule("WarmupPeriod")!)
-                RollTheDiceEveryXSeconds(Config.RollTheDiceEveryXSeconds);
+            // TODO: re-implement rolling every X seconds
+            //if (Config.RollTheDiceEveryXSeconds > 0)
+            //{
+            //RollTheDiceEveryXSeconds(Config.RollTheDiceEveryXSeconds);
+            //}
             // continue event
             return HookResult.Continue;
         }
 
         private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
         {
-            DebugPrint("Round ended");
-            ResetDices();
-            RemoveAllGUIs();
+            // ResetDices(); // TODO: properly reset dices after round end
+            //RemoveAllGUIs();
             // disallow dice rolls
             _isDuringRound = false;
             // reduct cooldown if applicable
             if (Config.CooldownRounds > 0)
             {
-                foreach (var kvp in _PlayerCooldown)
+                foreach (KeyValuePair<CCSPlayerController, int> kvp in _PlayerCooldown)
                 {
                     // remove one round per player
-                    if (_PlayerCooldown[kvp.Key] > 0) _PlayerCooldown[kvp.Key] -= 1;
+                    if (_PlayerCooldown[kvp.Key] > 0)
+                    {
+                        _PlayerCooldown[kvp.Key] -= 1;
+                    }
                 }
             }
             // continue event
@@ -141,29 +142,24 @@ namespace RollTheDice
         {
             CCSPlayerController player = @event.Userid!;
             if (player == null
-                || !player.IsValid) return HookResult.Continue;
+                || !player.IsValid)
+            {
+                return HookResult.Continue;
+            }
             // bugfix: show empty worldtext on connect to allow instant display of worldtext entity
-            WorldTextManager.Create(player, "");
+            _ = WorldTextManager.Create(player, "");
             return HookResult.Continue;
         }
 
         private HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
         {
-            CCSPlayerController player = @event.Userid!;
-            ResetDiceForPlayer(player);
-            return HookResult.Continue;
-        }
-
-        private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
-        {
-            CCSPlayerController player = @event.Userid!;
-            if (Config.AllowDiceAfterRespawn) ResetDiceForPlayer(player);
+            _ = @event.Userid!;
+            //ResetDiceForPlayer(player); TODO: properly reset dices after player disconnect
             return HookResult.Continue;
         }
 
         private void OnMapStart(string mapName)
         {
-            DebugPrint($"Map started: {mapName}");
             // set current map
             _currentMap = mapName;
             // update configuration
@@ -174,109 +170,222 @@ namespace RollTheDice
 
         private void OnMapEnd()
         {
-            DebugPrint($"Map ended: {_currentMap}");
-            ResetDices();
-            RemoveAllGUIs();
+            DestroyModules();
+            //RemoveAllGUIs();
             // disallow dice rolls
             _isDuringRound = false;
             // reset cooldown
             _PlayerCooldown.Clear();
         }
 
-        private void InitializeDices()
+        private void RollTheDiceForPlayer(CCSPlayerController? player)
         {
-            DebugPrint("Initializing dices");
-            // create dynamic list containing functions to execute for each dice
-            _dices = new List<Func<CCSPlayerController, CCSPlayerPawn, Dictionary<string, string>>>
+            if (player == null || !player.IsValid)
             {
-                DiceIncreaseHealth,
-                DiceDecreaseHealth,
-                DiceIncreaseSpeed,
-                DiceChangeName,
-                DicePlayerInvisible,
-                DicePlayerSuicide,
-                DicePlayerRespawn,
-                DiceStripWeapons,
-                DiceChickenLeader,
-                DiceFastMapAction,
-                DicePlayerVampire,
-                DicePlayerLowGravity,
-                DicePlayerHighGravity,
-                DicePlayerOneHP,
-                DicePlayerDisguiseAsProp,
-                DicePlayerAsChicken,
-                DicePlayerMakeHostageSounds,
-                DicePlayerMakeFakeGunSounds,
-                DiceBigTaserBattery,
-                DicePlayerCloak,
-                DiceGiveHealthShot,
-                DiceNoExplosives,
-                DiceChangePlayerModel,
-                DicePlayerGlow,
-                DiceShowPlayerHealthBar,
-                DiceNoRecoil,
-                DiceChangePlayerSize,
-                DiceIncreaseMoney,
-                DiceDecreaseMoney,
-                DiceThirdPersonView,
-            };
-            // initialize dice counter
-            foreach (var dice in _dices)
-            {
-                _countRolledDices[dice.Method.Name] = 0;
+                return;
             }
-            // run all dices' initialization methods
-            // TODO: check after each map load and unload if dice is enabled
-            // and run load and unload methods dynamically
-            // iterate through all dices and call their reset method dynamically
-            foreach (var dice in _dices)
+            // roll the dice for the player - get random dice and add player
+            if (_dices.Count > 0)
             {
-                var methodName = $"{dice.Method.Name}Load";
-                var method = GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
-                if (method != null)
+                ParentDice randomDice = _dices[_random.Next(_dices.Count)];
+                randomDice.Add(player);
+                Console.WriteLine(randomDice.ClassName);
+            }
+        }
+
+        private void InitializeModules()
+        {
+            if (_dices.Count > 0)
+            {
+                return;
+            }
+            // skip if globally disabled
+            if (!_currentMapConfig.Enabled)
+            {
+                return;
+            }
+            // initialize BigTaserBattery module
+            if (_currentMapConfig.Dices.BigTaserBattery.Enabled)
+            {
+                _dices.Add(new BigTaserBattery(Config, _currentMapConfig, Localizer));
+            }
+            // initialize ChangeName module
+            if (_currentMapConfig.Dices.ChangeName.Enabled)
+            {
+                _dices.Add(new ChangeName(Config, _currentMapConfig, Localizer));
+            }
+            // initialize ChangePlayerModel module
+            if (_currentMapConfig.Dices.ChangePlayerModel.Enabled)
+            {
+                _dices.Add(new ChangePlayerModel(Config, _currentMapConfig, Localizer));
+            }
+            // initialize ChangePlayerSize module
+            if (_currentMapConfig.Dices.ChangePlayerSize.Enabled)
+            {
+                _dices.Add(new ChangePlayerSize(Config, _currentMapConfig, Localizer));
+            }
+            // initialize ChickenLeader module
+            if (_currentMapConfig.Dices.ChickenLeader.Enabled)
+            {
+                _dices.Add(new ChickenLeader(Config, _currentMapConfig, Localizer));
+            }
+            // initialize DecreaseHealth module
+            if (_currentMapConfig.Dices.DecreaseHealth.Enabled)
+            {
+                _dices.Add(new DecreaseHealth(Config, _currentMapConfig, Localizer));
+            }
+            // initialize IncreaseHealth module
+            if (_currentMapConfig.Dices.IncreaseHealth.Enabled)
+            {
+                _dices.Add(new IncreaseHealth(Config, _currentMapConfig, Localizer));
+            }
+            // initialize DecreaseMoney module
+            if (_currentMapConfig.Dices.DecreaseMoney.Enabled)
+            {
+                _dices.Add(new DecreaseMoney(Config, _currentMapConfig, Localizer));
+            }
+            // initialize IncreaseMoney module
+            if (_currentMapConfig.Dices.IncreaseMoney.Enabled)
+            {
+                _dices.Add(new IncreaseMoney(Config, _currentMapConfig, Localizer));
+            }
+            // initialize GiveHealthShot module
+            if (_currentMapConfig.Dices.GiveHealthShot.Enabled)
+            {
+                _dices.Add(new GiveHealthShot(Config, _currentMapConfig, Localizer));
+            }
+            // initialize PlayerOneHP module
+            if (_currentMapConfig.Dices.PlayerOneHP.Enabled)
+            {
+                _dices.Add(new PlayerOneHP(Config, _currentMapConfig, Localizer));
+            }
+            // initialize PlayerLowGravity module
+            if (_currentMapConfig.Dices.PlayerLowGravity.Enabled)
+            {
+                _dices.Add(new PlayerLowGravity(Config, _currentMapConfig, Localizer));
+            }
+            // initialize PlayerHighGravity module
+            if (_currentMapConfig.Dices.PlayerHighGravity.Enabled)
+            {
+                _dices.Add(new PlayerHighGravity(Config, _currentMapConfig, Localizer));
+            }
+            // initialize PlayerSuicide module
+            if (_currentMapConfig.Dices.PlayerSuicide.Enabled)
+            {
+                _dices.Add(new PlayerSuicide(Config, _currentMapConfig, Localizer));
+            }
+            // initialize IncreaseSpeed module
+            if (_currentMapConfig.Dices.IncreaseSpeed.Enabled)
+            {
+                _dices.Add(new IncreaseSpeed(Config, _currentMapConfig, Localizer));
+            }
+            // initialize NoRecoil module
+            if (_currentMapConfig.Dices.NoRecoil.Enabled)
+            {
+                _dices.Add(new NoRecoil(Config, _currentMapConfig, Localizer));
+            }
+            // initialize Respawn module
+            if (_currentMapConfig.Dices.Respawn.Enabled)
+            {
+                _dices.Add(new Respawn(Config, _currentMapConfig, Localizer));
+            }
+            // register listeners
+            RegisterListeners();
+            RegisterEventHandlers();
+            RegisterUserMessageHooks();
+        }
+
+        private void RegisterListeners()
+        {
+            foreach (ParentDice module in _dices)
+            {
+                //DebugPrint($"Initializing listener for module {module.GetType().Name}");
+                foreach (string listenerName in module.Listeners)
                 {
-                    DebugPrint($"Loading dice: {methodName}");
-                    method.Invoke(this, null);
+                    //DebugPrint($"- {listenerName}");
+                    DynamicHandlers.RegisterModuleListener(this, listenerName, module);
                 }
             }
         }
 
-        private void ResetDices()
+        private void DeregisterListeners()
         {
-            DebugPrint("Resetting dices");
-            // iterate through all dices and call their reset method dynamically
-            foreach (var dice in _dices)
+            foreach (ParentDice module in _dices)
             {
-                var methodName = $"{dice.Method.Name}Reset";
-                var method = GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
-                if (method != null)
+                //DebugPrint($"Destroying listener for module {module.GetType().Name}");
+                foreach (string listenerName in module.Listeners)
                 {
-                    DebugPrint($"Resetting dice: {methodName}");
-                    method.Invoke(this, null);
+                    //DebugPrint($"- {listenerName}");
+                    DynamicHandlers.DeregisterModuleListener(this, listenerName, module);
                 }
             }
         }
 
-        private void ResetDiceForPlayer(CCSPlayerController player)
+        private void RegisterEventHandlers()
         {
-            if (player == null || player.Pawn == null || !player.Pawn.IsValid || player.Pawn.Value == null) return;
-            DebugPrint($"Resetting dices for {player.PlayerName}");
-            if (!_playersThatRolledTheDice.ContainsKey(player)) return;
-            // remove gui from player
-            RemoveGUI(player);
-            // remove player from list
-            _playersThatRolledTheDice.Remove(player);
-            // iterate through all dices and call their reset method dynamically
-            foreach (var dice in _dices)
+            foreach (ParentDice module in _dices)
             {
-                var methodName = $"{dice.Method.Name}ResetForPlayer";
-                var method = GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
-                if (method != null)
+                //DebugPrint($"Initializing event handlers for module {module.GetType().Name}");
+                foreach (string eventName in module.Events)
                 {
-                    DebugPrint($"Resetting dice: {methodName} for {player.PlayerName}");
-                    method.Invoke(this, [player]);
+                    //DebugPrint($"- {eventName}");
+                    DynamicHandlers.RegisterModuleEventHandler(this, eventName, module);
                 }
             }
+        }
+
+        private void DeregisterEventHandlers()
+        {
+            foreach (ParentDice module in _dices)
+            {
+                //DebugPrint($"Destroying event handlers for module {module.GetType().Name}");
+                foreach (string eventName in module.Events)
+                {
+                    //DebugPrint($"- {eventName}");
+                    DynamicHandlers.DeregisterModuleEventHandler(this, eventName, module);
+                }
+            }
+        }
+
+        private void RegisterUserMessageHooks()
+        {
+            foreach (ParentDice module in _dices)
+            {
+                //DebugPrint($"Registering user messages for module {module.GetType().Name}");
+                foreach ((int userMessageId, HookMode hookMode) in module.UserMessages)
+                {
+                    //DebugPrint($"- UserMessage ID: {userMessageId}, HookMode: {hookMode}");
+                    DynamicHandlers.RegisterUserMessageHook(this, userMessageId, module, hookMode);
+                }
+            }
+        }
+
+        private void DeregisterUserMessageHooks()
+        {
+            foreach (ParentDice module in _dices)
+            {
+                //DebugPrint($"Deregistering user messages for module {module.GetType().Name}");
+                foreach ((int userMessageId, HookMode hookMode) in module.UserMessages)
+                {
+                    //DebugPrint($"- UserMessage ID: {userMessageId}, HookMode: {hookMode}");
+                    DynamicHandlers.DeregisterUserMessageHook(this, userMessageId, module, hookMode);
+                }
+            }
+        }
+
+        private void DestroyModules()
+        {
+            //DebugPrint("Destroying all modules...");
+            // deregister listeners
+            DeregisterListeners();
+            DeregisterEventHandlers();
+            DeregisterUserMessageHooks();
+            // destroy all cosmetics modules
+            foreach (ParentDice module in _dices)
+            {
+                module.Destroy();
+            }
+            _dices.Clear();
         }
     }
 }
