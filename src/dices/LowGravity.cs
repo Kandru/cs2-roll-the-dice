@@ -1,3 +1,4 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 
@@ -24,12 +25,37 @@ namespace RollTheDice.Dices
                 return;
             }
             // set low gravity
-            player.Pawn.Value.GravityScale = _config.Dices.LowGravity.GravityScale;
+            ChangePlayerGravity(player, _config.Dices.LowGravity.GravityScale);
             _players.Add(player);
             NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName }
             });
+        }
+
+        public override void Remove(CCSPlayerController player)
+        {
+            ChangePlayerGravity(player, 1f);
+            _ = _players.Remove(player);
+        }
+
+        public override void Destroy()
+        {
+            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
+            foreach (CCSPlayerController player in _players)
+            {
+                ChangePlayerGravity(player, 1f);
+            }
+            _players.Clear();
+        }
+
+        private void ChangePlayerGravity(CCSPlayerController player, float gravityScale)
+        {
+            if (player.Pawn?.Value != null && player.Pawn.Value.IsValid)
+            {
+                player.Pawn.Value.ActualGravityScale = gravityScale;
+                Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_flActualGravityScale");
+            }
         }
     }
 }

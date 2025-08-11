@@ -5,5 +5,9 @@ namespace RollTheDice.Configs
     public class ChangeNameConfig
     {
         [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        [JsonPropertyName("player_names")]
+        public List<string> PlayerNames { get; set; } = [
+            "Anonymous", "Player", "Gamer", "Warrior", "Hero", "Legend", "Champion", "Stranger"
+        ];
     }
 }

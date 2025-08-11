@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
+using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
 
 namespace RollTheDice.Dices
@@ -10,8 +11,7 @@ namespace RollTheDice.Dices
         public override string ClassName => "Respawn";
         public readonly Random _random = new();
         public override List<string> Events => [
-            "EventWeaponFire",
-            "EventPlayerTeam"
+            "EventPlayerDeath"
         ];
 
         public Respawn(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
@@ -80,8 +80,7 @@ namespace RollTheDice.Dices
             {
                 // sanity checks
                 if (player?.PlayerPawn?.Value == null
-                    || player.PlayerPawn.Value.LifeState == (byte)LifeState_t.LIFE_ALIVE
-                    || !_players.Contains(player))
+                    || player.PlayerPawn.Value.LifeState == (byte)LifeState_t.LIFE_ALIVE)
                 {
                     return;
                 }
@@ -90,10 +89,25 @@ namespace RollTheDice.Dices
                 // give weapons next frame to ensure player is respawned
                 Server.NextFrame(() =>
                 {
+                    // sanity checks
+                    if (player?.PlayerPawn?.Value == null
+                        || player?.PlayerPawn?.Value.ItemServices == null
+                        || player.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE)
+                    {
+                        return;
+                    }
                     // strip all other weapons
                     player.RemoveWeapons();
                     // add default knife to player
-                    _ = player.GiveNamedItem($"weapon_{CsItem.Knife.ToString().ToLower(System.Globalization.CultureInfo.CurrentCulture)}");
+                    _ = player.GiveNamedItem($"weapon_knife");
+                    // give defuser if player is CT
+                    if (player.Team == CsTeam.CounterTerrorist)
+                    {
+                        CCSPlayer_ItemServices itemServices = new CCSPlayer_ItemServices(player.PlayerPawn.Value.ItemServices.Handle)
+                        {
+                            HasDefuser = true
+                        };
+                    }
                     // give player weapons of attacker (if any)
                     if (tmpWeaponList.Count > 0)
                     {

@@ -32,7 +32,17 @@ namespace RollTheDice.Dices
             // save old name
             _oldNames[player] = player.PlayerName;
             // set random player name
-            ChangePlayerName(player, PlayerNames[_random.Next(PlayerNames.Count)]);
+            if (PlayerNames.Count > 0)
+            {
+                ChangePlayerName(player, PlayerNames[_random.Next(PlayerNames.Count)]);
+            }
+            else if (_config.Dices.ChangeName.PlayerNames.Count > 0)
+            {
+                string[] randomNames = [.. _config.Dices.ChangeName.PlayerNames];
+                if (randomNames.Length == 0) return;
+                ChangePlayerName(player, randomNames[_random.Next(randomNames.Length)]);
+            }
+
             _players.Add(player);
             NotifyPlayers(player, ClassName, new()
             {

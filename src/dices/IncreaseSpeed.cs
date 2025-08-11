@@ -35,11 +35,10 @@ namespace RollTheDice.Dices
             float speedIncrease = (_random.NextSingle() *
                 (_config.Dices.IncreaseSpeed.MaxSpeed - _config.Dices.IncreaseSpeed.MinSpeed)) +
                 _config.Dices.IncreaseSpeed.MinSpeed;
-            // increase speed
-            player.PlayerPawn.Value.VelocityModifier *= (float)speedIncrease;
-            Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawn", "m_flVelocityModifier");
             _playerSpeed.Add(player, speedIncrease);
             _players.Add(player);
+            // increase speed
+            SetPlayerSpeed(player);
             NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName },
@@ -49,6 +48,11 @@ namespace RollTheDice.Dices
 
         public override void Remove(CCSPlayerController player)
         {
+            // check if player is valid and has a pawn
+            if (player.PlayerPawn?.Value?.IsValid == true)
+            {
+                SetPlayerSpeed(player, 1f);
+            }
             _ = _playerSpeed.Remove(player);
             _ = _players.Remove(player);
         }
@@ -58,6 +62,13 @@ namespace RollTheDice.Dices
             Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
             _playerSpeed.Clear();
             _players.Clear();
+            foreach (CCSPlayerController player in _players)
+            {
+                if (player.PlayerPawn?.Value?.IsValid == true)
+                {
+                    SetPlayerSpeed(player, 1f);
+                }
+            }
         }
 
         public HookResult EventPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
@@ -84,7 +95,7 @@ namespace RollTheDice.Dices
             return HookResult.Continue;
         }
 
-        private void SetPlayerSpeed(CCSPlayerController? player)
+        private void SetPlayerSpeed(CCSPlayerController? player, float speed = -1f)
         {
             if (player?.IsValid != true
             || !_players.Contains(player)
@@ -97,7 +108,7 @@ namespace RollTheDice.Dices
             {
                 if (player.PlayerPawn?.Value?.IsValid == true)
                 {
-                    player.PlayerPawn.Value.VelocityModifier = _playerSpeed[player];
+                    player.PlayerPawn.Value.VelocityModifier = speed >= 0 ? speed : _playerSpeed[player];
                     Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawn", "m_flVelocityModifier");
                 }
             });
