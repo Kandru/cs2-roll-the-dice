@@ -3,12 +3,12 @@ using Microsoft.Extensions.Localization;
 
 namespace RollTheDice.Dices
 {
-    public class PlayerSuicide : ParentDice
+    public class Suicide : ParentDice
     {
-        public override string ClassName => "PlayerSuicide";
+        public override string ClassName => "Suicide";
         public readonly Random _random = new();
 
-        public PlayerSuicide(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
+        public Suicide(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
             Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", ClassName));
         }

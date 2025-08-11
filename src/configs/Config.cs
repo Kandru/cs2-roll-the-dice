@@ -38,12 +38,12 @@ namespace RollTheDice
         [JsonPropertyName("decrease_money")] public DecreaseMoneyConfig DecreaseMoney { get; set; } = new DecreaseMoneyConfig();
         [JsonPropertyName("increase_money")] public IncreaseMoneyConfig IncreaseMoney { get; set; } = new IncreaseMoneyConfig();
         [JsonPropertyName("give_health_shot")] public GiveHealthShotConfig GiveHealthShot { get; set; } = new GiveHealthShotConfig();
-        [JsonPropertyName("player_one_hp")] public PlayerOneHPConfig PlayerOneHP { get; set; } = new PlayerOneHPConfig();
-        [JsonPropertyName("player_low_gravity")] public PlayerLowGravityConfig PlayerLowGravity { get; set; } = new PlayerLowGravityConfig();
-        [JsonPropertyName("player_high_gravity")] public PlayerHighGravityConfig PlayerHighGravity { get; set; } = new PlayerHighGravityConfig();
-        [JsonPropertyName("player_suicide")] public PlayerSuicideConfig PlayerSuicide { get; set; } = new PlayerSuicideConfig();
-        [JsonPropertyName("player_increase_speed")] public IncreaseSpeedConfig IncreaseSpeed { get; set; } = new IncreaseSpeedConfig();
-        [JsonPropertyName("player_no_recoil")] public NoRecoilConfig NoRecoil { get; set; } = new NoRecoilConfig();
+        [JsonPropertyName("one_hp")] public OneHPConfig OneHP { get; set; } = new OneHPConfig();
+        [JsonPropertyName("low_gravity")] public LowGravityConfig LowGravity { get; set; } = new LowGravityConfig();
+        [JsonPropertyName("high_gravity")] public HighGravityConfig HighGravity { get; set; } = new HighGravityConfig();
+        [JsonPropertyName("suicide")] public SuicideConfig Suicide { get; set; } = new SuicideConfig();
+        [JsonPropertyName("increase_speed")] public IncreaseSpeedConfig IncreaseSpeed { get; set; } = new IncreaseSpeedConfig();
+        [JsonPropertyName("no_recoil")] public NoRecoilConfig NoRecoil { get; set; } = new NoRecoilConfig();
         [JsonPropertyName("respawn")] public RespawnConfig Respawn { get; set; } = new RespawnConfig();
     }
 

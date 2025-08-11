@@ -2,9 +2,9 @@
 
 namespace RollTheDice.Configs
 {
-    public class PlayerHighGravityConfig
+    public class LowGravityConfig
     {
         [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
-        [JsonPropertyName("gravity_scale")] public float GravityScale { get; set; } = 4f;
+        [JsonPropertyName("gravity_scale")] public float GravityScale { get; set; } = 0.4f;
     }
 }

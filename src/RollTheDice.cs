@@ -233,25 +233,25 @@ namespace RollTheDice
             {
                 _dices.Add(new GiveHealthShot(Config, _currentMapConfig, Localizer));
             }
-            // initialize PlayerOneHP module
-            if (_currentMapConfig.Dices.PlayerOneHP.Enabled)
+            // initialize OneHP module
+            if (_currentMapConfig.Dices.OneHP.Enabled)
             {
-                _dices.Add(new PlayerOneHP(Config, _currentMapConfig, Localizer));
+                _dices.Add(new OneHP(Config, _currentMapConfig, Localizer));
             }
-            // initialize PlayerLowGravity module
-            if (_currentMapConfig.Dices.PlayerLowGravity.Enabled)
+            // initialize LowGravity module
+            if (_currentMapConfig.Dices.LowGravity.Enabled)
             {
-                _dices.Add(new PlayerLowGravity(Config, _currentMapConfig, Localizer));
+                _dices.Add(new LowGravity(Config, _currentMapConfig, Localizer));
             }
-            // initialize PlayerHighGravity module
-            if (_currentMapConfig.Dices.PlayerHighGravity.Enabled)
+            // initialize HighGravity module
+            if (_currentMapConfig.Dices.HighGravity.Enabled)
             {
-                _dices.Add(new PlayerHighGravity(Config, _currentMapConfig, Localizer));
+                _dices.Add(new HighGravity(Config, _currentMapConfig, Localizer));
             }
-            // initialize PlayerSuicide module
-            if (_currentMapConfig.Dices.PlayerSuicide.Enabled)
+            // initialize Suicide module
+            if (_currentMapConfig.Dices.Suicide.Enabled)
             {
-                _dices.Add(new PlayerSuicide(Config, _currentMapConfig, Localizer));
+                _dices.Add(new Suicide(Config, _currentMapConfig, Localizer));
             }
             // initialize IncreaseSpeed module
             if (_currentMapConfig.Dices.IncreaseSpeed.Enabled)

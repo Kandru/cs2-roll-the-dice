@@ -3,12 +3,12 @@ using Microsoft.Extensions.Localization;
 
 namespace RollTheDice.Dices
 {
-    public class PlayerHighGravity : ParentDice
+    public class LowGravity : ParentDice
     {
-        public override string ClassName => "PlayerHighGravity";
+        public override string ClassName => "LowGravity";
         public readonly Random _random = new();
 
-        public PlayerHighGravity(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
+        public LowGravity(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
             Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", ClassName));
         }
@@ -23,8 +23,8 @@ namespace RollTheDice.Dices
             {
                 return;
             }
-            // set high gravity
-            player.Pawn.Value.GravityScale = _config.Dices.PlayerHighGravity.GravityScale;
+            // set low gravity
+            player.Pawn.Value.GravityScale = _config.Dices.LowGravity.GravityScale;
             _players.Add(player);
             NotifyPlayers(player, ClassName, new()
             {

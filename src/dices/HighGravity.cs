@@ -1,15 +1,14 @@
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 
 namespace RollTheDice.Dices
 {
-    public class PlayerOneHP : ParentDice
+    public class HighGravity : ParentDice
     {
-        public override string ClassName => "PlayerOneHP";
+        public override string ClassName => "HighGravity";
         public readonly Random _random = new();
 
-        public PlayerOneHP(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
+        public HighGravity(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
             Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", ClassName));
         }
@@ -24,9 +23,8 @@ namespace RollTheDice.Dices
             {
                 return;
             }
-            // set player health to 1
-            player.Pawn.Value.Health = 1;
-            Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iHealth");
+            // set high gravity
+            player.Pawn.Value.GravityScale = _config.Dices.HighGravity.GravityScale;
             _players.Add(player);
             NotifyPlayers(player, ClassName, new()
             {

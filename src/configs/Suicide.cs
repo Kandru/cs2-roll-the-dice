@@ -2,7 +2,7 @@
 
 namespace RollTheDice.Configs
 {
-    public class PlayerOneHPConfig
+    public class SuicideConfig
     {
         [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
     }
