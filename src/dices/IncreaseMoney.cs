@@ -33,15 +33,11 @@ namespace RollTheDice.Dices
             // increase money
             player.InGameMoneyServices.Account += moneyIncrease;
             Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInGameMoneyServices");
-            // create GUI for player
-            Dictionary<string, string> data = new()
+            _players.Add(player);
+            NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName },
                 { "money", moneyIncrease.ToString() }
-            };
-            _players.Add(player, new Dictionary<string, CPointWorldText?>
-            {
-                //{ "gui", CreateMainGUI(player, ClassName, data) }
             });
         }
     }

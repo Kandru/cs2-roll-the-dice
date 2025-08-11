@@ -40,15 +40,11 @@ namespace RollTheDice.Dices
             player.PlayerPawn.Value.VelocityModifier *= (float)speedIncrease;
             Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawn", "m_flVelocityModifier");
             _playerSpeed.Add(player, speedIncrease);
-            // create GUI for player
-            Dictionary<string, string> data = new()
+            _players.Add(player);
+            NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName },
                 { "percentageIncrease", Math.Round((speedIncrease - 1.0) * 100, 2).ToString() }
-            };
-            _players.Add(player, new Dictionary<string, CPointWorldText?>
-            {
-                //{ "gui", CreateMainGUI(player, ClassName, data) }
             });
         }
 
@@ -92,7 +88,7 @@ namespace RollTheDice.Dices
         private void SetPlayerSpeed(CCSPlayerController? player)
         {
             if (player?.IsValid != true
-            || !_players.ContainsKey(player)
+            || !_players.Contains(player)
             || player.PlayerPawn?.Value?.LifeState != (byte)LifeState_t.LIFE_ALIVE)
                 return;
 

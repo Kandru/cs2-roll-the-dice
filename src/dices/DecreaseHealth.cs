@@ -38,15 +38,11 @@ namespace RollTheDice.Dices
             // decrease health
             player.Pawn.Value.Health -= healthDecrease;
             Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iHealth");
-            // create GUI for player
-            Dictionary<string, string> data = new()
+            _players.Add(player);
+            NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName },
                 { "healthDecrease", healthDecrease.ToString() }
-            };
-            _players.Add(player, new Dictionary<string, CPointWorldText?>
-            {
-                //{ "gui", CreateMainGUI(player, ClassName, data) }
             });
         }
     }

@@ -34,15 +34,11 @@ namespace RollTheDice.Dices
             player.Pawn.Value.MaxHealth = player.Pawn.Value.Health;
             Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iHealth");
             Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iMaxHealth");
-            // create GUI for player
-            Dictionary<string, string> data = new()
+            _players.Add(player);
+            NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName },
                 { "healthIncrease", healthIncrease.ToString() }
-            };
-            _players.Add(player, new Dictionary<string, CPointWorldText?>
-            {
-                //{ "gui", CreateMainGUI(player, ClassName, data) }
             });
         }
     }

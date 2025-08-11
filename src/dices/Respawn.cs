@@ -29,14 +29,10 @@ namespace RollTheDice.Dices
             {
                 return;
             }
-            // create GUI for player
-            Dictionary<string, string> data = new()
+            _players.Add(player);
+            NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName }
-            };
-            _players.Add(player, new Dictionary<string, CPointWorldText?>
-            {
-                //{ "gui", CreateMainGUI(player, ClassName, data) }
             });
         }
 
@@ -44,7 +40,7 @@ namespace RollTheDice.Dices
         {
             CCSPlayerController? player = @event.Userid;
             if (player == null
-                || !_players.ContainsKey(player)
+                || !_players.Contains(player)
                 || player.PlayerPawn?.Value?.WeaponServices == null)
             {
                 return HookResult.Continue;
@@ -85,7 +81,7 @@ namespace RollTheDice.Dices
                 // sanity checks
                 if (player?.PlayerPawn?.Value == null
                     || player.PlayerPawn.Value.LifeState == (byte)LifeState_t.LIFE_ALIVE
-                    || !_players.ContainsKey(player)) return;
+                    || !_players.Contains(player)) return;
                 // respawn player
                 player.Respawn();
                 // give weapons next frame to ensure player is respawned

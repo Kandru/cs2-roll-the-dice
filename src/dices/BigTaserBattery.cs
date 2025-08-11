@@ -35,15 +35,10 @@ namespace RollTheDice.Dices
                 _config.Dices.BigTaserBattery.MinAmount,
                 _config.Dices.BigTaserBattery.MaxAmount + 1
             );
-            // create GUI for player
-            Dictionary<string, string> data = new()
+            _players.Add(player);
+            NotifyPlayers(player, ClassName, new()
             {
                 { "batterySize", battery.ToString() }
-            };
-            _players.Add(player, new Dictionary<string, CPointWorldText?>
-            {
-                //{ "gui", CreateMainGUI(player, ClassName, data) },
-                //{ "status", CreateStatusGUI(player, ClassName, data) }
             });
             // add ammuniton for player
             _ammunition.Add(player, battery);
@@ -93,7 +88,7 @@ namespace RollTheDice.Dices
                 return HookResult.Continue;
             }
             // player has dice check
-            if (!_players.TryGetValue(player, out Dictionary<string, CPointWorldText?>? playerData))
+            if (!_players.Contains(player))
             {
                 return HookResult.Continue;
             }

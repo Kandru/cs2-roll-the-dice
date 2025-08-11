@@ -27,14 +27,10 @@ namespace RollTheDice.Dices
             // set player health to 1
             player.Pawn.Value.Health = 1;
             Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iHealth");
-            // create GUI for player
-            Dictionary<string, string> data = new()
+            _players.Add(player);
+            NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName }
-            };
-            _players.Add(player, new Dictionary<string, CPointWorldText?>
-            {
-                //{ "gui", CreateMainGUI(player, ClassName, data) }
             });
         }
     }

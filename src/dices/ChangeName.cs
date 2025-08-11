@@ -34,15 +34,11 @@ namespace RollTheDice.Dices
             _oldNames[player] = player.PlayerName;
             // set random player name
             ChangePlayerName(player, PlayerNames[_random.Next(PlayerNames.Count)]);
-            // create GUI for player
-            Dictionary<string, string> data = new()
+            _players.Add(player);
+            NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", _oldNames[player] },
                 { "randomName", player.PlayerName }
-            };
-            _players.Add(player, new Dictionary<string, CPointWorldText?>
-            {
-                //{ "gui", CreateMainGUI(player, ClassName, data) }
             });
         }
 
@@ -56,10 +52,9 @@ namespace RollTheDice.Dices
         public override void Destroy()
         {
             Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
-            // remove all GUIs for all players
-            foreach (KeyValuePair<CCSPlayerController, Dictionary<string, CPointWorldText?>> kvp in _players)
+            foreach (CCSPlayerController player in _players)
             {
-                ChangePlayerName(kvp.Key, _oldNames[kvp.Key]);
+                ChangePlayerName(player, _oldNames[player]);
             }
             _players.Clear();
             _oldNames.Clear();

@@ -35,15 +35,11 @@ namespace RollTheDice.Dices
             , 2);
             // change player size
             ChangeSize(player, playerSize);
-            // create GUI for player
-            Dictionary<string, string> data = new()
+            _players.Add(player);
+            NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName },
                 { "playerSize", playerSize.ToString() }
-            };
-            _players.Add(player, new Dictionary<string, CPointWorldText?>
-            {
-                //{ "gui", CreateMainGUI(player, ClassName, data) }
             });
         }
 
@@ -56,10 +52,9 @@ namespace RollTheDice.Dices
         public override void Destroy()
         {
             Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
-            // remove all GUIs for all players
-            foreach (KeyValuePair<CCSPlayerController, Dictionary<string, CPointWorldText?>> kvp in _players)
+            foreach (CCSPlayerController player in _players)
             {
-                ChangeSize(kvp.Key, 1f);
+                ChangeSize(player, 1f);
             }
             _players.Clear();
         }

@@ -25,14 +25,10 @@ namespace RollTheDice.Dices
             }
             // set low gravity
             player.Pawn.Value.GravityScale = _config.Dices.PlayerLowGravity.GravityScale;
-            // create GUI for player
-            Dictionary<string, string> data = new()
+            _players.Add(player);
+            NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName }
-            };
-            _players.Add(player, new Dictionary<string, CPointWorldText?>
-            {
-                //{ "gui", CreateMainGUI(player, ClassName, data) }
             });
         }
     }
