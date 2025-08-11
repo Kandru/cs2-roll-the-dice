@@ -34,7 +34,7 @@ namespace RollTheDice.Dices
             };
             _players.Add(player, new Dictionary<string, CPointWorldText?>
             {
-                { "gui", CreateMainGUI(player, ClassName, data) }
+                //{ "gui", CreateMainGUI(player, ClassName, data) }
             });
         }
     }

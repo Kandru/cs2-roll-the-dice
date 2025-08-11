@@ -42,13 +42,12 @@ namespace RollTheDice.Dices
             };
             _players.Add(player, new Dictionary<string, CPointWorldText?>
             {
-                { "gui", CreateMainGUI(player, ClassName, data) }
+                //{ "gui", CreateMainGUI(player, ClassName, data) }
             });
         }
 
         public override void Remove(CCSPlayerController player)
         {
-            GUI.RemoveGUIs([.. _players[player].Values.Cast<CPointWorldText>()]);
             ChangePlayerName(player, _oldNames[player]);
             _ = _players.Remove(player);
             _ = _oldNames.Remove(player);
@@ -61,7 +60,6 @@ namespace RollTheDice.Dices
             foreach (KeyValuePair<CCSPlayerController, Dictionary<string, CPointWorldText?>> kvp in _players)
             {
                 ChangePlayerName(kvp.Key, _oldNames[kvp.Key]);
-                GUI.RemoveGUIs([.. kvp.Value.Values.Cast<CPointWorldText>()]);
             }
             _players.Clear();
             _oldNames.Clear();

@@ -42,8 +42,8 @@ namespace RollTheDice.Dices
             };
             _players.Add(player, new Dictionary<string, CPointWorldText?>
             {
-                { "gui", CreateMainGUI(player, ClassName, data) },
-                { "status", CreateStatusGUI(player, ClassName, data) }
+                //{ "gui", CreateMainGUI(player, ClassName, data) },
+                //{ "status", CreateStatusGUI(player, ClassName, data) }
             });
             // add ammuniton for player
             _ammunition.Add(player, battery);
@@ -72,7 +72,6 @@ namespace RollTheDice.Dices
 
         public override void Remove(CCSPlayerController player)
         {
-            GUI.RemoveGUIs([.. _players[player].Values.Cast<CPointWorldText>()]);
             _ = _players.Remove(player);
             _ = _ammunition.Remove(player);
         }
@@ -80,11 +79,6 @@ namespace RollTheDice.Dices
         public override void Destroy()
         {
             Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
-            // remove all GUIs for all players
-            foreach (KeyValuePair<CCSPlayerController, Dictionary<string, CPointWorldText?>> kvp in _players)
-            {
-                GUI.RemoveGUIs([.. kvp.Value.Values.Cast<CPointWorldText>()]);
-            }
             _players.Clear();
             _ammunition.Clear();
         }
@@ -116,28 +110,9 @@ namespace RollTheDice.Dices
             }
             // Decrease ammunition and update GUI
             _ammunition[player]--;
-            UpdateStatusGUI(player, playerData);
+            //UpdateStatusGUI(player, playerData); TODO: show how many charges are left
 
             return HookResult.Continue;
-        }
-
-        private void UpdateStatusGUI(CCSPlayerController player, Dictionary<string, CPointWorldText?> playerData)
-        {
-            if (_localizer[$"{ClassName}_status"].ResourceNotFound ||
-            !playerData.TryGetValue("status", out CPointWorldText? worldText) ||
-            worldText == null)
-            {
-                return;
-            }
-
-            bool isEnabled = _ammunition[player] > 0;
-            string color = isEnabled
-            ? _globalConfig.GUIPositions[_globalConfig.GUIPosition].StatusColorEnabled
-            : _globalConfig.GUIPositions[_globalConfig.GUIPosition].StatusColorDisabled;
-
-            GUI.ChangeColor(worldText, color);
-            GUI.ChangeGUI(worldText, _localizer[$"{ClassName}_status"].Value.Replace(
-            "{batterySize}", _ammunition[player].ToString()));
         }
     }
 }
