@@ -40,13 +40,7 @@ namespace RollTheDice
                 // initialize configuration
                 LoadMapConfig(_currentMap);
                 Console.WriteLine(Localizer["core.hotreload"]);
-                // check if it is during a round and not warmup
-                object? gamePhase = GameRules.Get("GamePhase");
-                if (gamePhase is int phase && phase <= 3 || Config.AllowRtdDuringWarmup)
-                {
-                    // set variables
-                    _isDuringRound = true;
-                }
+                _isDuringRound = true;
             }
         }
 
