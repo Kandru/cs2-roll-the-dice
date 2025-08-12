@@ -83,9 +83,6 @@ namespace RollTheDice
         [JsonPropertyName("price_to_dice")] public int PriceToDice { get; set; } = 0;
         // allow re-dice after respawn
         [JsonPropertyName("allow_dice_after_respawn")] public bool AllowDiceAfterRespawn { get; set; } = false;
-        // gui positions
-        [JsonPropertyName("default_gui_position")] public string GUIPosition { get; set; } = "top_center";
-        [JsonPropertyName("gui_positions")] public Dictionary<string, GuiPositionConfig> GUIPositions { get; set; } = [];
         // dices configuration
         [JsonPropertyName("dices")] public DicesConfig Dices { get; set; } = new DicesConfig();
         // map configurations
