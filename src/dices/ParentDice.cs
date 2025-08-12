@@ -64,8 +64,10 @@ namespace RollTheDice.Dices
                 {
                     message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
                 }
-                // TODO: exclude player from message
-                Server.PrintToChatAll(message);
+                foreach (CCSPlayerController entry in Utilities.GetPlayers().Where(p => p != player))
+                {
+                    entry.PrintToChat(message);
+                }
             }
             // if player should get a message
             if (!_localizer[$"dice_{diceName}_player"].ResourceNotFound)
