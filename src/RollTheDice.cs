@@ -19,8 +19,6 @@ namespace RollTheDice
 
         public override void Load(bool hotReload)
         {
-            // initialize dices
-            InitializeModules();
             // update configuration
             ReloadConfigFromDisk();
             // register listeners
@@ -40,6 +38,8 @@ namespace RollTheDice
                 Console.WriteLine(Localizer["core.hotreload"]);
                 _isDuringRound = true;
             }
+            // initialize dice modules
+            InitializeModules();
         }
 
         public override void Unload(bool hotReload)
@@ -133,13 +133,14 @@ namespace RollTheDice
 
         private void OnMapStart(string mapName)
         {
-            InitializeModules();
-            // set current map
-            _currentMap = mapName;
             // update configuration
             ReloadConfigFromDisk();
             // load map config
             LoadMapConfig(mapName);
+            // initialize dice modules
+            InitializeModules();
+            // set current map
+            _currentMap = mapName;
         }
 
         private void OnMapEnd()
