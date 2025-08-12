@@ -1,8 +1,10 @@
 {
     "admin.unknown_command": "[RollTheDice] Unknown command.",
-    "admin.reload:": "[RollTheDice] Reloaded Configuration.",
+    "admin.reload": "[RollTheDice] Reloaded Configuration.",
     "admin.disable": "[RollTheDice] Disabled RollTheDice.",
     "admin.enable": "[RollTheDice] Enabled RollTheDice.",
+    "admin.mapconfig.created": "[RollTheDice] Created map configuration for {mapName}.",
+    "admin.mapconfig.deleted": "[RollTheDice] Deleted map configuration for {mapName}.",
     "core.hotreload": "{purple}[RollTheDice] {default}Hot-Reloaded!",
     "core.unload": "[RollTheDice] Unloaded RollTheDice Plugin!",
     "core.config": "[RollTheDice] loaded initial config from file",

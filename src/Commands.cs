@@ -45,7 +45,6 @@ namespace RollTheDice
             }
         }
 
-        [ConsoleCommand("rollthedice", "Roll the Dice")]
         [ConsoleCommand("rtd", "Roll the Dice")]
         [ConsoleCommand("dice", "Roll the Dice")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY, minArgs: 0, usage: "!rtd <auto>")]
@@ -236,6 +235,7 @@ namespace RollTheDice
             {
                 case "reload":
                     Config.Reload();
+                    LoadMapConfig(_currentMap);
                     command.ReplyToCommand(Localizer["admin.reload"]);
                     break;
                 case "disable":
@@ -247,6 +247,18 @@ namespace RollTheDice
                     Config.Enabled = true;
                     Config.Update();
                     command.ReplyToCommand(Localizer["admin.enable"]);
+                    break;
+                case "createmapconfig":
+                    // save _currentMapConfig to disk
+                    Config.MapConfigs[_currentMap] = _currentMapConfig;
+                    Config.Update();
+                    command.ReplyToCommand(Localizer["admin.mapconfig.created"].Value.Replace("{mapName}", _currentMap));
+                    break;
+                case "deletemapconfig":
+                    // delete _currentMapConfig from disk
+                    Config.MapConfigs.Remove(_currentMap);
+                    Config.Update();
+                    command.ReplyToCommand(Localizer["admin.mapconfig.deleted"].Value.Replace("{mapName}", _currentMap));
                     break;
                 default:
                     command.ReplyToCommand(Localizer["admin.unknown_command"].Value

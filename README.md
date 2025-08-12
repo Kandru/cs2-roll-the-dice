@@ -105,6 +105,14 @@ Disables the !rtd command instantly and remembers this state.
 
 Enables the !rtd command instantly and remembers this state.
 
+#### createmapconfig
+
+Creates a map-specific configuration for the current map in the config file from the global defaults for further editing.
+
+#### deletemapconfig
+
+Deletes a map-specific configuration for the current map in the config file and loads the global defaults.
+
 ## Configuration
 
 This plugin automatically creates a readable JSON configuration file. This configuration file can be found in `/addons/counterstrikesharp/configs/plugins/RollTheDice/RollTheDice.json`.
