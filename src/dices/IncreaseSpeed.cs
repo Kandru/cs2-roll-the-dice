@@ -85,7 +85,7 @@ namespace RollTheDice.Dices
 
         public HookResult EventHostageFollows(EventHostageFollows @event, GameEventInfo info)
         {
-            SetPlayerSpeed(@event.Userid);
+            SetPlayerSpeed(@event.Userid, 1f);
             return HookResult.Continue;
         }
 
