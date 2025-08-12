@@ -104,8 +104,6 @@ namespace RollTheDice.Dices
             }
             // Decrease ammunition and update GUI
             _ammunition[player]--;
-            //UpdateStatusGUI(player, playerData); TODO: show how many charges are left
-
             return HookResult.Continue;
         }
     }
