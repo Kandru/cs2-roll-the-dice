@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 using RollTheDice.Dices;
 using RollTheDice.Utils;
 
@@ -171,14 +172,28 @@ namespace RollTheDice
                     ParentDice? foundDice = matchingDices.Count == 1 ? matchingDices.First() : _dices.FirstOrDefault(d => string.Equals(d.ClassName, diceName, StringComparison.OrdinalIgnoreCase));
                     if (foundDice != null)
                     {
+                        // execute dice
                         foundDice.Add(player);
+                        // emit sound for the player
+                        var recipientFilter = new RecipientFilter
+                        {
+                            player
+                        };
+                        player.EmitSound($"RollTheDice.{foundDice.ClassName}", recipientFilter);
                         return (foundDice.ClassName, foundDice.Description);
                     }
                 }
                 else
                 {
                     ParentDice randomDice = _dices[_random.Next(_dices.Count)];
+                    // execute dice
                     randomDice.Add(player);
+                    // emit sound for the player
+                    var recipientFilter = new RecipientFilter
+                    {
+                        player
+                    };
+                    player.EmitSound($"RollTheDice.{randomDice.ClassName}", recipientFilter);
                     return (randomDice.ClassName, randomDice.Description);
                 }
             }
