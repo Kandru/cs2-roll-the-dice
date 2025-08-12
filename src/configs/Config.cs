@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API;
+using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Extensions;
 using RollTheDice.Configs;
 using System.IO.Enumeration;
@@ -84,8 +85,6 @@ namespace RollTheDice
             {
                 // load config from disk
                 Config.Reload();
-                // update GUI config
-                //CheckGUIConfig();
                 // update player config
                 UpdatePlayerConfig();
                 // save config to disk
@@ -97,7 +96,7 @@ namespace RollTheDice
                 // log error
                 Console.WriteLine(message);
                 // show error to users for transparency (admin needs to notice somehow)
-                //SendGlobalChatMessage(message);
+                Server.PrintToChatAll(message);
             }
         }
 
@@ -118,7 +117,6 @@ namespace RollTheDice
         public void OnConfigParsed(PluginConfig config)
         {
             Config = config;
-            Console.WriteLine("OVERWRITTEN!");
             Console.WriteLine(Localizer["core.config"]);
         }
 

@@ -64,7 +64,6 @@ namespace RollTheDice
             _playersThatRolledTheDice.Clear();
             // reset dices (necessary after warmup)
             RemoveDicesForPlayers();
-            //RemoveAllGUIs();
             // abort if warmup
             object? warmupPeriodObj = GameRules.Get("WarmupPeriod");
             if (!Config.AllowRtdDuringWarmup && warmupPeriodObj is bool warmupPeriod && warmupPeriod)
@@ -72,7 +71,7 @@ namespace RollTheDice
                 return HookResult.Continue;
             }
             // announce round start
-            //SendGlobalChatMessage(Localizer["core.announcement"]); TODO: announce round start
+            Server.PrintToChatAll(Localizer["core.announcement"]);
             // allow dice rolls
             _isDuringRound = true;
             // check if random dice should be rolled
@@ -91,7 +90,7 @@ namespace RollTheDice
                         {
                             return;
                         }
-                        RollTheDiceForPlayer(entry);
+                        _ = RollTheDiceForPlayer(entry);
                     });
                 }
             }
@@ -134,6 +133,7 @@ namespace RollTheDice
 
         private void OnMapStart(string mapName)
         {
+            InitializeModules();
             // set current map
             _currentMap = mapName;
             // update configuration
@@ -145,10 +145,9 @@ namespace RollTheDice
         private void OnMapEnd()
         {
             DestroyModules();
-            RemoveDicesForPlayers();
-            // disallow dice rolls
+            // reset states
             _isDuringRound = false;
-            // reset cooldown
+            _playersThatRolledTheDice.Clear();
             _PlayerCooldown.Clear();
         }
 
@@ -166,7 +165,7 @@ namespace RollTheDice
                 if (diceName != null)
                 {
                     // find dice by name
-                    var matchingDices = _dices.Where(d => d.ClassName.Contains(diceName, StringComparison.OrdinalIgnoreCase)).ToList();
+                    List<ParentDice> matchingDices = [.. _dices.Where(d => d.ClassName.Contains(diceName, StringComparison.OrdinalIgnoreCase))];
                     ParentDice? foundDice = matchingDices.Count == 1 ? matchingDices.First() : _dices.FirstOrDefault(d => string.Equals(d.ClassName, diceName, StringComparison.OrdinalIgnoreCase));
                     if (foundDice != null)
                     {

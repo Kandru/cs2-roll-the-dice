@@ -86,27 +86,37 @@ namespace RollTheDice.Dices
                 || !player.IsValid
                 || player.PlayerPawn?.Value == null
                 || !player.PlayerPawn.Value.IsValid)
+            {
                 return;
+            }
 
             // replicate convar
             player.ReplicateConVar("weapon_accuracy_nospread", "1");
 
             // Get active weapon and apply weapon-specific control
-            var activeWeapon = player.PlayerPawn.Value.WeaponServices?.ActiveWeapon?.Value;
-            if (activeWeapon == null) return;
+            CBasePlayerWeapon? activeWeapon = player.PlayerPawn.Value.WeaponServices?.ActiveWeapon?.Value;
+            if (activeWeapon == null)
+            {
+                return;
+            }
 
-            var weapon = activeWeapon.As<CCSWeaponBase>();
-            if (weapon == null) return;
+            CCSWeaponBase weapon = activeWeapon.As<CCSWeaponBase>();
+            if (weapon == null)
+            {
+                return;
+            }
 
             // Get weapon class name to check weapon type
-            string weaponName = weapon.DesignerName.ToLower();
+            string weaponName = weapon.DesignerName.ToLower(System.Globalization.CultureInfo.CurrentCulture);
 
             // Skip specific shotguns
             if (weaponName.Contains("mag7") ||
                 weaponName.Contains("nova") ||
                 weaponName.Contains("sawedoff") ||
                 weaponName.Contains("xm1014"))
+            {
                 return;
+            }
 
             // Handle Deagle and Revolver differently
             if (weaponName.Contains("deagle") || weaponName.Contains("revolver"))

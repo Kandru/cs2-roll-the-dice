@@ -36,7 +36,7 @@ namespace RollTheDice
             {
                 foreach (CCSPlayerController entry in availablePlayers)
                 {
-                    RollTheDiceForPlayer(entry, diceName);
+                    _ = RollTheDiceForPlayer(entry, diceName);
                 }
             }
             else
@@ -67,20 +67,20 @@ namespace RollTheDice
             // check if argument is "auto" and change behaviour
             if (command.GetArg(1) == "auto")
             {
-                if (!_playerConfigs.TryGetValue(player.NetworkIDString, out PlayerConfig? value))
+                if (!_playerConfigs.TryGetValue(player.NetworkIDString, out PlayerConfig? playerConfig))
                 {
-                    value = new PlayerConfig();
-                    _playerConfigs.Add(player.NetworkIDString, value);
+                    playerConfig = new PlayerConfig();
+                    _playerConfigs.Add(player.NetworkIDString, playerConfig);
                 }
                 // toggle rtd on spawn
-                if (value.RtdOnSpawn)
+                if (playerConfig.RtdOnSpawn)
                 {
-                    value.RtdOnSpawn = false;
+                    playerConfig.RtdOnSpawn = false;
                     command.ReplyToCommand(Localizer["command.rollthedice.rtdonspawn.disabled"]);
                 }
                 else
                 {
-                    value.RtdOnSpawn = true;
+                    playerConfig.RtdOnSpawn = true;
                     command.ReplyToCommand(Localizer["command.rollthedice.rtdonspawn.enabled"]);
                 }
                 return;
@@ -109,15 +109,15 @@ namespace RollTheDice
                 return;
             }
             // check if player already rolled the dice
-            if (_playersThatRolledTheDice.ContainsKey(player))
+            if (_playersThatRolledTheDice.TryGetValue(player, out string? value))
             {
                 string message = Localizer["command.rollthedice.alreadyrolled"].Value
-                        .Replace("{dice}", _playersThatRolledTheDice[player]);
+                        .Replace("{dice}", value);
                 if (command.CallingContext == CommandCallingContext.Console)
                 {
                     player.PrintToChat(message);
                 }
-                player.PrintToCenter(_playersThatRolledTheDice[player]);
+                player.PrintToCenter(value);
                 command.ReplyToCommand(message);
                 return;
             }
@@ -186,7 +186,7 @@ namespace RollTheDice
             // roll the dice
             (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(player);
             // check if rolledDice is null or empty
-            if (rolledDice == null || rolledDice == "")
+            if (rolledDice is null or "")
             {
                 if (command.CallingContext == CommandCallingContext.Console)
                 {

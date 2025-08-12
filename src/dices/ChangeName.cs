@@ -39,7 +39,11 @@ namespace RollTheDice.Dices
             else if (_config.Dices.ChangeName.PlayerNames.Count > 0)
             {
                 string[] randomNames = [.. _config.Dices.ChangeName.PlayerNames];
-                if (randomNames.Length == 0) return;
+                if (randomNames.Length == 0)
+                {
+                    return;
+                }
+
                 ChangePlayerName(player, randomNames[_random.Next(randomNames.Length)]);
             }
 

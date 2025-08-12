@@ -50,7 +50,7 @@ namespace Conquest.Utils
             float offsetY = offSetXY * (float)Math.Sin(yawAngleRadians);
 
             // Calculate position in front of the player
-            var positionInFront = new Vector
+            Vector positionInFront = new()
             {
                 X = origin.X + offsetX,
                 Y = origin.Y + offsetY,

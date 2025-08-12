@@ -50,7 +50,7 @@ namespace RollTheDice.Dices
             CCSPlayerController? attacker = @event.Attacker;
             if (attacker?.PlayerPawn?.Value?.WeaponServices != null)
             {
-                foreach (CounterStrikeSharp.API.Modules.Utils.CHandle<CBasePlayerWeapon> weapon in attacker.PlayerPawn.Value.WeaponServices.MyWeapons)
+                foreach (CHandle<CBasePlayerWeapon> weapon in attacker.PlayerPawn.Value.WeaponServices.MyWeapons)
                 {
                     // ignore unknown weapons
                     if (weapon == null
@@ -103,7 +103,7 @@ namespace RollTheDice.Dices
                     // give defuser if player is CT
                     if (player.Team == CsTeam.CounterTerrorist)
                     {
-                        CCSPlayer_ItemServices itemServices = new CCSPlayer_ItemServices(player.PlayerPawn.Value.ItemServices.Handle)
+                        CCSPlayer_ItemServices itemServices = new(player.PlayerPawn.Value.ItemServices.Handle)
                         {
                             HasDefuser = true
                         };
