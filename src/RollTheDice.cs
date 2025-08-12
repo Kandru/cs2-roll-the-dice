@@ -204,9 +204,10 @@ namespace RollTheDice
 
         private void RemoveDicesForPlayers()
         {
-            foreach (CCSPlayerController player in Utilities.GetPlayers())
+            // reset all dices for all players
+            foreach (ParentDice dice in _dices)
             {
-                RemoveDiceForPlayer(player);
+                dice.Destroy();
             }
         }
 
