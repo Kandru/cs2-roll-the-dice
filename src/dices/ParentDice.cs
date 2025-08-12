@@ -76,7 +76,7 @@ namespace RollTheDice.Dices
                     message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
                 }
                 player.PrintToCenter(message);
-                player.PrintToChat(message);
+                player.PrintToChat(_localizer["command.prefix"].Value + message);
                 // update description if available
                 Description = message;
             }
