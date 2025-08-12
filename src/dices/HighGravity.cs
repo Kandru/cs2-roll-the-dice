@@ -54,7 +54,6 @@ namespace RollTheDice.Dices
             if (player.Pawn?.Value != null && player.Pawn.Value.IsValid)
             {
                 player.Pawn.Value.ActualGravityScale = gravityScale;
-                Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_flActualGravityScale");
             }
         }
     }
