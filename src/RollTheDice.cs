@@ -11,9 +11,7 @@ namespace RollTheDice
         public override string ModuleAuthor => "Kalle <kalle@kandru.de>";
 
         private string _currentMap = "";
-        private readonly Dictionary<CCSPlayerController, Dictionary<string, object>> _playersThatRolledTheDice = [];
-        private readonly Dictionary<CCSPlayerController, CPointWorldText> _playerGuis = [];
-        private readonly Dictionary<string, int> _countRolledDices = [];
+        private readonly Dictionary<CCSPlayerController, string> _playersThatRolledTheDice = [];
         private readonly Dictionary<CCSPlayerController, int> _PlayerCooldown = [];
         private readonly List<ParentDice> _dices = [];
         private bool _isDuringRound;
@@ -154,21 +152,36 @@ namespace RollTheDice
             _PlayerCooldown.Clear();
         }
 
-        private void RollTheDiceForPlayer(CCSPlayerController? player)
+        private (string?, string?) RollTheDiceForPlayer(CCSPlayerController? player, string? diceName = null)
         {
             if (player == null || !player.IsValid)
             {
-                return;
+                return (null, null);
             }
             // remove old dice first
             RemoveDiceForPlayer(player);
             // roll the dice for the player - get random dice and add player
             if (_dices.Count > 0)
             {
-                ParentDice randomDice = _dices[_random.Next(_dices.Count)];
-                Console.WriteLine(randomDice.ClassName);
-                randomDice.Add(player);
+                if (diceName != null)
+                {
+                    // find dice by name
+                    var matchingDices = _dices.Where(d => d.ClassName.Contains(diceName, StringComparison.OrdinalIgnoreCase)).ToList();
+                    ParentDice? foundDice = matchingDices.Count == 1 ? matchingDices.First() : _dices.FirstOrDefault(d => string.Equals(d.ClassName, diceName, StringComparison.OrdinalIgnoreCase));
+                    if (foundDice != null)
+                    {
+                        foundDice.Add(player);
+                        return (foundDice.ClassName, foundDice.Description);
+                    }
+                }
+                else
+                {
+                    ParentDice randomDice = _dices[_random.Next(_dices.Count)];
+                    randomDice.Add(player);
+                    return (randomDice.ClassName, randomDice.Description);
+                }
             }
+            return (null, null);
         }
 
         private void RemoveDiceForPlayer(CCSPlayerController? player)

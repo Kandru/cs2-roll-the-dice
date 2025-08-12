@@ -36,7 +36,7 @@ namespace RollTheDice
             {
                 foreach (CCSPlayerController entry in availablePlayers)
                 {
-                    RollTheDiceForPlayer(entry);
+                    RollTheDiceForPlayer(entry, diceName);
                 }
             }
             else
@@ -51,10 +51,10 @@ namespace RollTheDice
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY, minArgs: 0, usage: "!rtd <auto>")]
         public void CommandRollTheDice(CCSPlayerController player, CommandInfo command)
         {
-            _ = Config.MapConfigs.TryGetValue(_currentMap, out MapConfig? mapConfig);
             // check if config is enabled
-            if ((!Config.Enabled)
-                || (Config.Enabled && mapConfig != null && !mapConfig.Enabled))
+            if (!Config.Enabled
+                || !_currentMapConfig.Enabled
+                || _dices.Count == 0)
             {
                 if (command.CallingContext == CommandCallingContext.Console)
                 {
@@ -111,17 +111,14 @@ namespace RollTheDice
             // check if player already rolled the dice
             if (_playersThatRolledTheDice.ContainsKey(player))
             {
-                if (_playersThatRolledTheDice[player].TryGetValue("message", out object? value))
+                string message = Localizer["command.rollthedice.alreadyrolled"].Value
+                        .Replace("{dice}", _playersThatRolledTheDice[player]);
+                if (command.CallingContext == CommandCallingContext.Console)
                 {
-                    string message = Localizer["command.rollthedice.alreadyrolled"].Value
-                            .Replace("{dice}", (string)value);
-                    if (command.CallingContext == CommandCallingContext.Console)
-                    {
-                        player.PrintToChat(message);
-                    }
-
-                    command.ReplyToCommand(message);
+                    player.PrintToChat(message);
                 }
+                player.PrintToCenter(_playersThatRolledTheDice[player]);
+                command.ReplyToCommand(message);
                 return;
             }
             // check if player is in cooldown
@@ -173,7 +170,10 @@ namespace RollTheDice
                     Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInGameMoneyServices");
                 }
             }
-            if (player.PlayerPawn == null || !player.PlayerPawn.IsValid || player.PlayerPawn.Value == null || player.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE)
+
+            // check if player is alive
+            if (!player.PlayerPawn?.IsValid == true
+                || player.PlayerPawn?.Value?.LifeState != (byte)LifeState_t.LIFE_ALIVE)
             {
                 if (command.CallingContext == CommandCallingContext.Console)
                 {
@@ -184,7 +184,20 @@ namespace RollTheDice
                 return;
             }
             // roll the dice
-            RollTheDiceForPlayer(player);
+            (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(player);
+            // check if rolledDice is null or empty
+            if (rolledDice == null || rolledDice == "")
+            {
+                if (command.CallingContext == CommandCallingContext.Console)
+                {
+                    player.PrintToChat(Localizer["command.rollthedice.unlucky"]);
+                }
+
+                command.ReplyToCommand(Localizer["command.rollthedice.unlucky"]);
+                return;
+            }
+            // add player to the list of players that rolled the dice
+            _playersThatRolledTheDice[player] = diceDescription ?? rolledDice;
             // add player to cooldown (if applicable)
             if (Config.CooldownRounds > 0)
             {

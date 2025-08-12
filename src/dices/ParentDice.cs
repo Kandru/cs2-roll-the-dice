@@ -10,6 +10,7 @@ namespace RollTheDice.Dices
         public readonly MapConfig _config = Config;
         public readonly IStringLocalizer _localizer = Localizer;
         public readonly List<CCSPlayerController> _players = [];
+        public virtual string Description { get; private set; } = "Unknown Dice";
         public virtual string ClassName => "ParentDice";
         public virtual List<string> Events => [];
         public virtual List<string> Listeners => [];
@@ -51,6 +52,8 @@ namespace RollTheDice.Dices
                     message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
                 }
                 Server.PrintToChatAll(message);
+                // update description if available
+                Description = message;
             }
             // send message to other players (and maybe player)
             else if (!_localizer[$"dice_{diceName}_other"].ResourceNotFound)
@@ -74,6 +77,8 @@ namespace RollTheDice.Dices
                 }
                 player.PrintToCenter(message);
                 player.PrintToChat(message);
+                // update description if available
+                Description = message;
             }
         }
     }
