@@ -87,7 +87,7 @@ namespace RollTheDice
             }
             // check if warmup period
             object? warmupPeriodObj = GameRules.Get("WarmupPeriod");
-            if (!Config.AllowRtdDuringWarmup && warmupPeriodObj is bool warmupPeriod && !warmupPeriod)
+            if (!Config.AllowRtdDuringWarmup && warmupPeriodObj is bool warmupPeriod && warmupPeriod)
             {
                 if (command.CallingContext == CommandCallingContext.Console)
                 {

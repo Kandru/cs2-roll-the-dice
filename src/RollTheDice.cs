@@ -67,7 +67,7 @@ namespace RollTheDice
             //RemoveAllGUIs();
             // abort if warmup
             object? warmupPeriodObj = GameRules.Get("WarmupPeriod");
-            if (!Config.AllowRtdDuringWarmup && warmupPeriodObj is bool warmupPeriod && !warmupPeriod)
+            if (!Config.AllowRtdDuringWarmup && warmupPeriodObj is bool warmupPeriod && warmupPeriod)
             {
                 return HookResult.Continue;
             }
