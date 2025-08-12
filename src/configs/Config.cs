@@ -7,25 +7,6 @@ using System.Text.Json.Serialization;
 
 namespace RollTheDice
 {
-    public class GuiPositionConfig
-    {
-        [JsonPropertyName("message_font")] public string MessageFont { get; set; } = "Arial Black Standard";
-        [JsonPropertyName("message_font_size")] public int MessageFontSize { get; set; } = 32;
-        [JsonPropertyName("message_color")] public string MessageColor { get; set; } = "#FFFFFF";
-        [JsonPropertyName("message_shift_x")] public float MessageShiftX { get; set; } = -2.9f;
-        [JsonPropertyName("message_shift_y")] public float MessageShiftY { get; set; } = 4f;
-        [JsonPropertyName("message_draw_background")] public bool MessageDrawBackground { get; set; } = true;
-        [JsonPropertyName("message_background_factor")] public float MessageBackgroundFactor { get; set; } = 1.0f;
-        [JsonPropertyName("status_font")] public string StatusFont { get; set; } = "Arial Black Standard";
-        [JsonPropertyName("status_font_size")] public int StatusFontSize { get; set; } = 30;
-        [JsonPropertyName("status_color_enabled")] public string StatusColorEnabled { get; set; } = "#00FF00";
-        [JsonPropertyName("status_color_disabled")] public string StatusColorDisabled { get; set; } = "#FF0000";
-        [JsonPropertyName("status_shift_x")] public float StatusShiftX { get; set; } = -2.85f;
-        [JsonPropertyName("status_shift_y")] public float StatusShiftY { get; set; } = 3.7f;
-        [JsonPropertyName("status_draw_background")] public bool StatusDrawBackground { get; set; } = true;
-        [JsonPropertyName("status_background_factor")] public float StatusBackgroundFactor { get; set; } = 1.0f;
-    }
-
     public class DicesConfig
     {
         [JsonPropertyName("big_taser_battery")] public BigTaserBatteryConfig BigTaserBattery { get; set; } = new BigTaserBatteryConfig();
