@@ -67,10 +67,10 @@ namespace RollTheDice
             // check if argument is "auto" and change behaviour
             if (command.GetArg(1) == "auto")
             {
-                if (!_playerConfigs.TryGetValue(player.NetworkIDString, out PlayerConfig? playerConfig))
+                if (!_playerConfigs.TryGetValue(player.SteamID, out PlayerConfig? playerConfig))
                 {
                     playerConfig = new PlayerConfig();
-                    _playerConfigs.Add(player.NetworkIDString, playerConfig);
+                    _playerConfigs.Add(player.SteamID, playerConfig);
                 }
                 // toggle rtd on spawn
                 if (playerConfig.RtdOnSpawn)

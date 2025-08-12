@@ -70,14 +70,14 @@ namespace RollTheDice
         // map configurations
         [JsonPropertyName("maps")] public Dictionary<string, MapConfig> MapConfigs { get; set; } = [];
         // player configuration
-        [JsonPropertyName("players")] public Dictionary<string, PlayerConfig> PlayerConfigs { get; set; } = [];
+        [JsonPropertyName("player_configs")] public Dictionary<ulong, PlayerConfig> PlayerConfigs { get; set; } = [];
     }
 
     public partial class RollTheDice : BasePlugin, IPluginConfig<PluginConfig>
     {
         public required PluginConfig Config { get; set; }
         private MapConfig _currentMapConfig = new();
-        private Dictionary<string, PlayerConfig> _playerConfigs = [];
+        private Dictionary<ulong, PlayerConfig> _playerConfigs = [];
 
         private void ReloadConfigFromDisk()
         {

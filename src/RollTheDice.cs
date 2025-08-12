@@ -81,8 +81,8 @@ namespace RollTheDice
             {
                 // rtd for everyone if enabled or for specific players if they have it enabled
                 if (Config.RollTheDiceOnRoundStart
-                    || (_playerConfigs.ContainsKey(entry.NetworkIDString)
-                        && _playerConfigs[entry.NetworkIDString].RtdOnSpawn))
+                    || (_playerConfigs.ContainsKey(entry.SteamID)
+                        && _playerConfigs[entry.SteamID].RtdOnSpawn))
                 {
                     _ = AddTimer(1f, () =>
                     {
