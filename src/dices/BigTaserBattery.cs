@@ -37,6 +37,7 @@ namespace RollTheDice.Dices
             _players.Add(player);
             NotifyPlayers(player, ClassName, new()
             {
+                { "playerName", player.PlayerName },
                 { "batterySize", battery.ToString() }
             });
             // add ammuniton for player
