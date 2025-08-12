@@ -1,3 +1,7 @@
+> [!CAUTION]
+> This plug-in is in BETA-TEST since the latest big CS2 update! Not all dices and features are currently implemented. Use at your own risk and look for updates weekly. Breaking changes are also done in the config during the BETA-UPDATES! So backup before (or just update manually afterwards).
+
+
 # CounterstrikeSharp - Roll The Dice
 
 [![UpdateManager Compatible](https://img.shields.io/badge/CS2-UpdateManager-darkgreen)](https://github.com/Kandru/cs2-update-manager/)
