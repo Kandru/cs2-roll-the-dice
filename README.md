@@ -119,7 +119,6 @@ This plugin automatically creates a readable JSON configuration file. This confi
 
 ```json
 {
-{
   "enabled": true,
   "debug": false,
   "allow_rtd_during_warmup": false,
