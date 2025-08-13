@@ -14,7 +14,7 @@ namespace RollTheDice
         private string _currentMap = "";
         private readonly Dictionary<CCSPlayerController, string> _playersThatRolledTheDice = [];
         private readonly Dictionary<CCSPlayerController, int> _PlayerCooldown = [];
-        private readonly List<ParentDice> _dices = [];
+        private readonly List<DiceBlueprint> _dices = [];
         private bool _isDuringRound;
         private readonly Random _random = new(Guid.NewGuid().GetHashCode());
 
@@ -168,8 +168,8 @@ namespace RollTheDice
                 if (diceName != null)
                 {
                     // find dice by name
-                    List<ParentDice> matchingDices = [.. _dices.Where(d => d.ClassName.Contains(diceName, StringComparison.OrdinalIgnoreCase))];
-                    ParentDice? foundDice = matchingDices.Count == 1 ? matchingDices.First() : _dices.FirstOrDefault(d => string.Equals(d.ClassName, diceName, StringComparison.OrdinalIgnoreCase));
+                    List<DiceBlueprint> matchingDices = [.. _dices.Where(d => d.ClassName.Contains(diceName, StringComparison.OrdinalIgnoreCase))];
+                    DiceBlueprint? foundDice = matchingDices.Count == 1 ? matchingDices.First() : _dices.FirstOrDefault(d => string.Equals(d.ClassName, diceName, StringComparison.OrdinalIgnoreCase));
                     if (foundDice != null)
                     {
                         // execute dice
@@ -185,7 +185,7 @@ namespace RollTheDice
                 }
                 else
                 {
-                    ParentDice randomDice = _dices[_random.Next(_dices.Count)];
+                    DiceBlueprint randomDice = _dices[_random.Next(_dices.Count)];
                     // execute dice
                     randomDice.Add(player);
                     // emit sound for the player
@@ -208,7 +208,7 @@ namespace RollTheDice
                 return;
             }
             // remove the dice for the player (if any)
-            foreach (ParentDice dice in _dices)
+            foreach (DiceBlueprint dice in _dices)
             {
                 if (dice._players.Contains(player))
                 {
@@ -220,7 +220,7 @@ namespace RollTheDice
         private void RemoveDicesForPlayers()
         {
             // reset all dices for all players
-            foreach (ParentDice dice in _dices)
+            foreach (DiceBlueprint dice in _dices)
             {
                 dice.Destroy();
             }
@@ -331,7 +331,7 @@ namespace RollTheDice
 
         private void RegisterListeners()
         {
-            foreach (ParentDice module in _dices)
+            foreach (DiceBlueprint module in _dices)
             {
                 //DebugPrint($"Initializing listener for module {module.GetType().Name}");
                 foreach (string listenerName in module.Listeners)
@@ -344,7 +344,7 @@ namespace RollTheDice
 
         private void DeregisterListeners()
         {
-            foreach (ParentDice module in _dices)
+            foreach (DiceBlueprint module in _dices)
             {
                 //DebugPrint($"Destroying listener for module {module.GetType().Name}");
                 foreach (string listenerName in module.Listeners)
@@ -357,7 +357,7 @@ namespace RollTheDice
 
         private void RegisterEventHandlers()
         {
-            foreach (ParentDice module in _dices)
+            foreach (DiceBlueprint module in _dices)
             {
                 //DebugPrint($"Initializing event handlers for module {module.GetType().Name}");
                 foreach (string eventName in module.Events)
@@ -370,7 +370,7 @@ namespace RollTheDice
 
         private void DeregisterEventHandlers()
         {
-            foreach (ParentDice module in _dices)
+            foreach (DiceBlueprint module in _dices)
             {
                 //DebugPrint($"Destroying event handlers for module {module.GetType().Name}");
                 foreach (string eventName in module.Events)
@@ -383,7 +383,7 @@ namespace RollTheDice
 
         private void RegisterUserMessageHooks()
         {
-            foreach (ParentDice module in _dices)
+            foreach (DiceBlueprint module in _dices)
             {
                 //DebugPrint($"Registering user messages for module {module.GetType().Name}");
                 foreach ((int userMessageId, HookMode hookMode) in module.UserMessages)
@@ -396,7 +396,7 @@ namespace RollTheDice
 
         private void DeregisterUserMessageHooks()
         {
-            foreach (ParentDice module in _dices)
+            foreach (DiceBlueprint module in _dices)
             {
                 //DebugPrint($"Deregistering user messages for module {module.GetType().Name}");
                 foreach ((int userMessageId, HookMode hookMode) in module.UserMessages)
@@ -415,7 +415,7 @@ namespace RollTheDice
             DeregisterEventHandlers();
             DeregisterUserMessageHooks();
             // destroy all cosmetics modules
-            foreach (ParentDice module in _dices)
+            foreach (DiceBlueprint module in _dices)
             {
                 module.Destroy();
             }

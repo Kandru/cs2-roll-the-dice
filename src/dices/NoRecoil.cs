@@ -3,7 +3,7 @@ using Microsoft.Extensions.Localization;
 
 namespace RollTheDice.Dices
 {
-    public class NoRecoil : ParentDice
+    public class NoRecoil : DiceBlueprint
     {
         public override string ClassName => "NoRecoil";
         public override List<string> Events => [

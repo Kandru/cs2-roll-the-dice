@@ -6,7 +6,7 @@ using Microsoft.Extensions.Localization;
 
 namespace RollTheDice.Dices
 {
-    public class Respawn : ParentDice
+    public class Respawn : DiceBlueprint
     {
         public override string ClassName => "Respawn";
         public readonly Random _random = new();

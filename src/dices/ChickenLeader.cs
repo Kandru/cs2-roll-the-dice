@@ -5,7 +5,7 @@ using Microsoft.Extensions.Localization;
 
 namespace RollTheDice.Dices
 {
-    public class ChickenLeader : ParentDice
+    public class ChickenLeader : DiceBlueprint
     {
         public override string ClassName => "ChickenLeader";
         public readonly Random _random = new();

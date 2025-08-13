@@ -4,7 +4,7 @@ using Microsoft.Extensions.Localization;
 
 namespace RollTheDice.Dices
 {
-    public class ChangePlayerModel : ParentDice
+    public class ChangePlayerModel : DiceBlueprint
     {
         public override string ClassName => "ChangePlayerModel";
         private readonly Dictionary<CCSPlayerController, string> _oldModels = [];

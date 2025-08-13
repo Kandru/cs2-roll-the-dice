@@ -3,7 +3,7 @@ using Microsoft.Extensions.Localization;
 
 namespace RollTheDice.Dices
 {
-    public class Suicide : ParentDice
+    public class Suicide : DiceBlueprint
     {
         public override string ClassName => "Suicide";
         public readonly Random _random = new();

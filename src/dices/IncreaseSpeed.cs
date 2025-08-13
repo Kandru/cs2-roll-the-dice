@@ -4,7 +4,7 @@ using Microsoft.Extensions.Localization;
 
 namespace RollTheDice.Dices
 {
-    public class IncreaseSpeed : ParentDice
+    public class IncreaseSpeed : DiceBlueprint
     {
         public override string ClassName => "IncreaseSpeed";
         public override List<string> Events => [

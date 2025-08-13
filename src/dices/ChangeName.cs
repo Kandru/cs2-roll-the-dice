@@ -4,7 +4,7 @@ using Microsoft.Extensions.Localization;
 
 namespace RollTheDice.Dices
 {
-    public class ChangeName : ParentDice
+    public class ChangeName : DiceBlueprint
     {
         public override string ClassName => "ChangeName";
         public readonly Random _random = new();

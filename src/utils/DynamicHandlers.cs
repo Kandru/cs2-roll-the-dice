@@ -7,7 +7,7 @@ namespace RollTheDice.Utils
 {
     public static class DynamicHandlers
     {
-        public static void RegisterModuleListener(BasePlugin basePlugin, string listenerName, ParentDice dice)
+        public static void RegisterModuleListener(BasePlugin basePlugin, string listenerName, DiceBlueprint dice)
         {
             // get the listener type from CounterStrikeSharp.API.Core.Listeners
             Type? listenerType = typeof(Listeners).GetNestedType(listenerName);
@@ -34,7 +34,7 @@ namespace RollTheDice.Utils
             _ = genericRegisterMethod.Invoke(basePlugin, [handler]);
         }
 
-        public static void DeregisterModuleListener(BasePlugin basePlugin, string listenerName, ParentDice dice)
+        public static void DeregisterModuleListener(BasePlugin basePlugin, string listenerName, DiceBlueprint dice)
         {
             // get the listener type from CounterStrikeSharp.API.Core.Listeners
             Type? listenerType = typeof(Listeners).GetNestedType(listenerName);
@@ -61,7 +61,7 @@ namespace RollTheDice.Utils
             _ = genericRemoveMethod.Invoke(basePlugin, [handler]);
         }
 
-        public static void RegisterModuleEventHandler(BasePlugin basePlugin, string eventName, ParentDice dice)
+        public static void RegisterModuleEventHandler(BasePlugin basePlugin, string eventName, DiceBlueprint dice)
         {
             // get the event type from CounterStrikeSharp.API.Core
             Type? eventType = typeof(BasePlugin).Assembly.GetType($"CounterStrikeSharp.API.Core.{eventName}");
@@ -92,7 +92,7 @@ namespace RollTheDice.Utils
             _ = genericRegisterMethod.Invoke(basePlugin, [handler, HookMode.Pre]);
         }
 
-        public static void DeregisterModuleEventHandler(BasePlugin basePlugin, string eventName, ParentDice module)
+        public static void DeregisterModuleEventHandler(BasePlugin basePlugin, string eventName, DiceBlueprint module)
         {
             // get the event type from CounterStrikeSharp.API.Core
             Type? eventType = typeof(BasePlugin).Assembly.GetType($"CounterStrikeSharp.API.Core.{eventName}");
@@ -123,7 +123,7 @@ namespace RollTheDice.Utils
             _ = genericDeregisterMethod.Invoke(basePlugin, [handler, HookMode.Pre]);
         }
 
-        public static void RegisterUserMessageHook(BasePlugin basePlugin, int messageId, ParentDice dice, HookMode hookMode)
+        public static void RegisterUserMessageHook(BasePlugin basePlugin, int messageId, DiceBlueprint dice, HookMode hookMode)
         {
             // get the method from the module
             MethodInfo? method = dice.GetType().GetMethod($"HookUserMessage{messageId}");
@@ -148,7 +148,7 @@ namespace RollTheDice.Utils
             _ = hookMethod.Invoke(basePlugin, [messageId, handler, hookMode]);
         }
 
-        public static void DeregisterUserMessageHook(BasePlugin basePlugin, int messageId, ParentDice module, HookMode hookMode)
+        public static void DeregisterUserMessageHook(BasePlugin basePlugin, int messageId, DiceBlueprint module, HookMode hookMode)
         {
             // get the method from the module
             MethodInfo? method = module.GetType().GetMethod($"HookUserMessage{messageId}");

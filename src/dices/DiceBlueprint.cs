@@ -4,14 +4,14 @@ using Microsoft.Extensions.Localization;
 
 namespace RollTheDice.Dices
 {
-    public class ParentDice(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer)
+    public class DiceBlueprint(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer)
     {
         public readonly PluginConfig _globalConfig = GlobalConfig;
         public readonly MapConfig _config = Config;
         public readonly IStringLocalizer _localizer = Localizer;
         public readonly List<CCSPlayerController> _players = [];
         public virtual string Description { get; private set; } = "Unknown Dice";
-        public virtual string ClassName => "ParentDice";
+        public virtual string ClassName => "DiceBlueprint";
         public virtual List<string> Events => [];
         public virtual List<string> Listeners => [];
         public virtual Dictionary<int, HookMode> UserMessages => [];
