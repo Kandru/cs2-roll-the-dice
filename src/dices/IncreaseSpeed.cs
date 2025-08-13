@@ -85,6 +85,10 @@ namespace RollTheDice.Dices
 
         public HookResult EventHostageFollows(EventHostageFollows @event, GameEventInfo info)
         {
+            if (!_config.Dices.IncreaseSpeed.ResetOnHostageRescue)
+            {
+                return HookResult.Continue;
+            }
             SetPlayerSpeed(@event.Userid, 1f);
             return HookResult.Continue;
         }
