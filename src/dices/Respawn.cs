@@ -78,54 +78,58 @@ namespace RollTheDice.Dices
             // respawn player
             Server.NextFrame(() =>
             {
-                // sanity checks
-                if (player?.PlayerPawn?.Value == null
-                    || player.PlayerPawn.Value.LifeState == (byte)LifeState_t.LIFE_ALIVE)
-                {
-                    return;
-                }
-                // respawn player
-                player.Respawn();
-                // give weapons next frame to ensure player is respawned
                 Server.NextFrame(() =>
                 {
                     // sanity checks
                     if (player?.PlayerPawn?.Value == null
-                        || player?.PlayerPawn?.Value.ItemServices == null
-                        || player.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE)
+                        || !_players.Contains(player)
+                        || player.PlayerPawn.Value.LifeState == (byte)LifeState_t.LIFE_ALIVE)
                     {
                         return;
                     }
-                    // strip all other weapons
-                    player.RemoveWeapons();
-                    // add default knife to player
-                    _ = player.GiveNamedItem($"weapon_knife");
-                    // give defuser if player is CT
-                    if (player.Team == CsTeam.CounterTerrorist)
+                    // respawn player
+                    player.Respawn();
+                    // give weapons next frame to ensure player is respawned
+                    Server.NextFrame(() =>
                     {
-                        CCSPlayer_ItemServices itemServices = new(player.PlayerPawn.Value.ItemServices.Handle)
+                        // sanity checks
+                        if (player?.PlayerPawn?.Value == null
+                            || player?.PlayerPawn?.Value.ItemServices == null
+                            || player.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE)
                         {
-                            HasDefuser = true
-                        };
-                    }
-                    // give player weapons of attacker (if any)
-                    if (tmpWeaponList.Count > 0)
-                    {
-                        foreach (string weapons in tmpWeaponList)
-                        {
-                            _ = player.GiveNamedItem(weapons);
+                            return;
                         }
-                    }
-                    else
-                    {
-                        // give some default loadout if no weapons are available
-                        _ = player.GiveNamedItem(_config.Dices.Respawn.DefaultPrimaryWeapon);
-                        _ = player.GiveNamedItem(_config.Dices.Respawn.DefaultSecondaryWeapon);
-                    }
-                    // set armor for player
-                    player.PlayerPawn.Value.ArmorValue = 100;
-                    // remove player from list to avoid respawning again
-                    _ = _players.Remove(player);
+                        // strip all other weapons
+                        player.RemoveWeapons();
+                        // add default knife to player
+                        _ = player.GiveNamedItem($"weapon_knife");
+                        // give defuser if player is CT
+                        if (player.Team == CsTeam.CounterTerrorist)
+                        {
+                            CCSPlayer_ItemServices itemServices = new(player.PlayerPawn.Value.ItemServices.Handle)
+                            {
+                                HasDefuser = true
+                            };
+                        }
+                        // give player weapons of attacker (if any)
+                        if (tmpWeaponList.Count > 0)
+                        {
+                            foreach (string weapons in tmpWeaponList)
+                            {
+                                _ = player.GiveNamedItem(weapons);
+                            }
+                        }
+                        else
+                        {
+                            // give some default loadout if no weapons are available
+                            _ = player.GiveNamedItem(_config.Dices.Respawn.DefaultPrimaryWeapon);
+                            _ = player.GiveNamedItem(_config.Dices.Respawn.DefaultSecondaryWeapon);
+                        }
+                        // set armor for player
+                        player.PlayerPawn.Value.ArmorValue = 100;
+                        // remove player from list to avoid respawning again
+                        _ = _players.Remove(player);
+                    });
                 });
             });
             return HookResult.Continue;
