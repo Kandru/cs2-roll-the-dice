@@ -7,5 +7,6 @@ namespace RollTheDice.Configs
         [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
         [JsonPropertyName("min_size")] public float MinSize { get; set; } = 0.5f;
         [JsonPropertyName("max_size")] public float MaxSize { get; set; } = 1.5f;
+        [JsonPropertyName("adjust_health")] public bool AdjustHealth { get; set; } = true;
     }
 }

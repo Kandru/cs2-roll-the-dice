@@ -58,7 +58,7 @@ namespace RollTheDice.Dices
             _players.Clear();
         }
 
-        private static void ChangeSize(CCSPlayerController player, float size)
+        private void ChangeSize(CCSPlayerController player, float size)
         {
             if (player?.Pawn?.Value?.CBodyComponent?.SceneNode == null
                 || !player.Pawn.IsValid)
@@ -68,6 +68,14 @@ namespace RollTheDice.Dices
             player.Pawn.Value.CBodyComponent.SceneNode.GetSkeletonInstance().Scale = size;
             player.Pawn.Value.AcceptInput("SetScale", null, null, size.ToString());
             Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_CBodyComponent");
+            // adjust health if enabled
+            if (_config.Dices.ChangePlayerSize.AdjustHealth)
+            {
+                player.Pawn.Value.Health = (int)(100 * size);
+                player.Pawn.Value.MaxHealth = (int)(100 * size);
+                Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iHealth");
+                Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iMaxHealth");
+            }
         }
     }
 }
