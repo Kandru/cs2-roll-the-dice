@@ -103,15 +103,19 @@ namespace RollTheDice.Dices
             {
                 return;
             }
+            // delay 3 frames to ensure the velocity modifier is set correctly
             Server.NextFrame(() =>
             {
                 Server.NextFrame(() =>
                 {
-                    if (player.PlayerPawn?.Value?.IsValid == true)
+                    Server.NextFrame(() =>
                     {
-                        player.PlayerPawn.Value.VelocityModifier = speed >= 0 ? speed : _playerSpeed[player];
-                        Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawn", "m_flVelocityModifier");
-                    }
+                        if (player.PlayerPawn?.Value?.IsValid == true)
+                        {
+                            player.PlayerPawn.Value.VelocityModifier = speed >= 0 ? speed : _playerSpeed[player];
+                            Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawn", "m_flVelocityModifier");
+                        }
+                    });
                 });
             });
         }
