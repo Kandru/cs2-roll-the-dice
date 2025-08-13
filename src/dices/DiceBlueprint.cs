@@ -28,6 +28,10 @@ namespace RollTheDice.Dices
                 return;
             }
             _players.Add(player);
+            NotifyPlayers(player, ClassName, new()
+            {
+                { "playerName", player.PlayerName }
+            });
         }
 
         public virtual void Remove(CCSPlayerController player)

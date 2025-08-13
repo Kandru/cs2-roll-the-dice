@@ -30,21 +30,16 @@ namespace RollTheDice
 
         private void OnServerPrecacheResources(ResourceManifest manifest)
         {
-            // check for additional models in DiceNoExplosives config
-            // TODO: rework this to use a way to get models from all dices
-            //Dictionary<string, object> config = GetDiceConfig("DiceNoExplosives");
-            //if (config.TryGetValue("models", out object? modelsObj) && modelsObj is List<object> models)
-            //{
-            //    foreach (object model in models)
-            //    {
-            //        if (model is Dictionary<string, object> modelDict
-            //            && modelDict.TryGetValue("Model", out object? modelName)
-            //            && modelName is string modelStr)
-            //        {
-            //            _precacheModels.Add(modelStr);
-            //        }
-            //    }
-            //}
+            // TODO: workaround to precache models from dices (maybe an more autoamatic way?)
+            foreach (string model in _currentMapConfig.Dices.NoExplosives.RandomModels)
+            {
+                if (string.IsNullOrEmpty(model)
+                    || _precacheModels.Contains(model))
+                {
+                    continue;
+                }
+                manifest.AddResource(model);
+            }
             // precache all models
             foreach (string model in _precacheModels)
             {

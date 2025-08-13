@@ -27,6 +27,7 @@ namespace RollTheDice
         [JsonPropertyName("increase_speed")] public IncreaseSpeedConfig IncreaseSpeed { get; set; } = new IncreaseSpeedConfig();
         [JsonPropertyName("no_recoil")] public NoRecoilConfig NoRecoil { get; set; } = new NoRecoilConfig();
         [JsonPropertyName("respawn")] public RespawnConfig Respawn { get; set; } = new RespawnConfig();
+        [JsonPropertyName("no_explosives")] public NoExplosivesConfig NoExplosives { get; set; } = new NoExplosivesConfig();
     }
 
     public class MapConfig

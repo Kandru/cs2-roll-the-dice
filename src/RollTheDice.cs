@@ -308,6 +308,11 @@ namespace RollTheDice
             {
                 _dices.Add(new Respawn(Config, _currentMapConfig, Localizer));
             }
+            // initialize NoExplosives module
+            if (_currentMapConfig.Dices.NoExplosives.Enabled)
+            {
+                _dices.Add(new NoExplosives(Config, _currentMapConfig, Localizer));
+            }
             // register listeners
             RegisterListeners();
             RegisterEventHandlers();
