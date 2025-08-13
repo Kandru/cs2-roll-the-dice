@@ -36,7 +36,19 @@ namespace RollTheDice
             {
                 foreach (CCSPlayerController entry in availablePlayers)
                 {
-                    _ = RollTheDiceForPlayer(entry, diceName);
+                    if (_playersThatRolledTheDice.ContainsKey(entry))
+                    {
+                        _playersThatRolledTheDice.Remove(entry);
+                    }
+                    // roll the dice
+                    (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(entry, diceName);
+                    // check if rolledDice is null or empty
+                    if (rolledDice is null or "")
+                    {
+                        return;
+                    }
+                    // add player to the list of players that rolled the dice
+                    _playersThatRolledTheDice[entry] = diceDescription ?? rolledDice;
                 }
             }
             else

@@ -86,11 +86,21 @@ namespace RollTheDice
                 {
                     _ = AddTimer(1f, () =>
                     {
-                        if (entry == null || !entry.IsValid)
+                        if (entry == null
+                            || !entry.IsValid
+                            || _playersThatRolledTheDice.ContainsKey(entry))
                         {
                             return;
                         }
-                        _ = RollTheDiceForPlayer(entry);
+                        // roll the dice
+                        (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(entry);
+                        // check if rolledDice is null or empty
+                        if (rolledDice is null or "")
+                        {
+                            return;
+                        }
+                        // add player to the list of players that rolled the dice
+                        _playersThatRolledTheDice[entry] = diceDescription ?? rolledDice;
                     });
                 }
             }
