@@ -83,5 +83,22 @@ namespace RollTheDice.Dices
                 Description = message;
             }
         }
+
+        public void NotifyStatus(CCSPlayerController player, string diceName, Dictionary<string, string> data)
+        {
+            // if player should get a message
+            if (!_localizer[$"dice_{diceName}_status"].ResourceNotFound)
+            {
+                string message = _localizer[$"dice_{diceName}_status"].Value;
+                foreach (KeyValuePair<string, string> kvp in data)
+                {
+                    message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
+                }
+                player.PrintToCenter(message);
+                player.PrintToChat(_localizer["command.prefix"].Value + message);
+                // update description if available
+                Description = message;
+            }
+        }
     }
 }

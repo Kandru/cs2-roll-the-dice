@@ -105,6 +105,10 @@ namespace RollTheDice.Dices
             }
             // Decrease ammunition and update GUI
             _ammunition[player]--;
+            NotifyStatus(player, ClassName, new()
+            {
+                { "batterySize", _ammunition[player].ToString() }
+            });
             return HookResult.Continue;
         }
     }
