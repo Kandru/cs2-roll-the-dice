@@ -1,4 +1,3 @@
-using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 
@@ -7,6 +6,9 @@ namespace RollTheDice.Dices
     public class HighGravity : DiceBlueprint
     {
         public override string ClassName => "HighGravity";
+        public override List<string> Events => [
+            "EventPlayerDeath"
+        ];
         public readonly Random _random = new();
 
         public HighGravity(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
@@ -49,7 +51,20 @@ namespace RollTheDice.Dices
             _players.Clear();
         }
 
-        private void ChangePlayerGravity(CCSPlayerController player, float gravityScale)
+        public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
+            if (player == null
+                || !_players.Contains(player)
+                || player.PlayerPawn?.Value?.WeaponServices == null)
+            {
+                return HookResult.Continue;
+            }
+            Remove(player);
+            return HookResult.Continue;
+        }
+
+        private static void ChangePlayerGravity(CCSPlayerController player, float gravityScale)
         {
             if (player.Pawn?.Value != null && player.Pawn.Value.IsValid)
             {
