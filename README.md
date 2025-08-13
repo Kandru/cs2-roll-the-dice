@@ -119,6 +119,7 @@ This plugin automatically creates a readable JSON configuration file. This confi
 
 ```json
 {
+{
   "enabled": true,
   "debug": false,
   "allow_rtd_during_warmup": false,
@@ -126,224 +127,98 @@ This plugin automatically creates a readable JSON configuration file. This confi
   "roll_the_dice_every_x_seconds": 0,
   "cooldown_rounds": 0,
   "cooldown_seconds": 0,
-  "sound_command": "",
+  "sound_command": "sounds/ui/coin_pickup_01.vsnd",
   "price_to_dice": 0,
   "allow_dice_after_respawn": false,
-  "default_gui_position": "bottom_center",
-  "gui_positions": {
-    "top_center": {
-      "message_font": "Arial Black Standard",
-      "message_font_size": 32,
-      "message_color": "#FFFFFF",
-      "message_shift_x": -2.9,
-      "message_shift_y": 4,
-      "message_draw_background": true,
-      "message_background_factor": 1,
-      "status_font": "Arial Black Standard",
-      "status_font_size": 30,
-      "status_color_enabled": "#00FF00",
-      "status_color_disabled": "#FF0000",
-      "status_shift_x": -2.85,
-      "status_shift_y": 3.7,
-      "status_draw_background": true,
-      "status_background_factor": 1
-    },
-    "bottom_center": {
-      "message_font": "Arial Black Standard",
-      "message_font_size": 32,
-      "message_color": "#FFFFFF",
-      "message_shift_x": -2.9,
-      "message_shift_y": -3.8,
-      "message_draw_background": true,
-      "message_background_factor": 1,
-      "status_font": "Arial Black Standard",
-      "status_font_size": 30,
-      "status_color_enabled": "#00FF00",
-      "status_color_disabled": "#FF0000",
-      "status_shift_x": -2.85,
-      "status_shift_y": -4.1,
-      "status_draw_background": true,
-      "status_background_factor": 1
-    }
-  },
   "dices": {
-    "DiceIncreaseHealth": {
+    "big_taser_battery": {
       "enabled": true,
-      "max_health": 30,
-      "min_health": 10
+      "min_batteries": 3,
+      "max_batteries": 10
     },
-    "DiceDecreaseHealth": {
+    "change_name": {
       "enabled": true,
-      "max_health": 30,
-      "min_health": 10
-    },
-    "DiceIncreaseSpeed": {
-      "enabled": true,
-      "max_speed": 2,
-      "min_speed": 1.5,
-      "reset_on_hostage_rescue": true
-    },
-    "DiceChangeName": {
-      "enabled": true,
-      "min_players_for_using_player_names": 4,
-      "names": [
-        "Hans Wurst",
-        "Fritz Frosch",
-        "Klaus Kleber",
-        "Otto Normalverbraucher",
-        "Peter Lustig",
-        "Karl-Heinz Klammer",
-        "Gustav Gans",
-        "Heinz Erhardt",
-        "Wolfgang Witzig",
-        "Ludwig Lustig",
-        "Rudi R\u00FCssel",
-        "Siggi Sorglos",
-        "Berti Bratwurst",
-        "Dieter Dosenbier",
-        "Erwin Einhorn",
-        "Franz Fuchs",
-        "G\u00FCnther Gans",
-        "Horst Hering",
-        "Ingo Igel",
-        "J\u00FCrgen Jux",
-        "Kurt Ketchup",
-        "Lars Lachs",
-        "Manfred M\u00F6hre",
-        "Norbert Nudel",
-        "Olaf Oktopus",
-        "Paul Pinguin",
-        "Quirin Qualle",
-        "Ralf Rabe",
-        "Stefan Seestern",
-        "Thomas Tintenfisch",
-        "Uwe Uhu",
-        "Volker Vogel",
-        "Willi Wurm",
-        "Xaver Xylophon",
-        "Yannik Yak",
-        "Zacharias Zebra",
-        "Albert Apfel",
-        "Bernd Banane",
-        "Claus Clown",
-        "Detlef Dachs",
-        "Egon Eule",
-        "Ferdinand Frosch",
-        "Gerd Giraffe",
-        "Helmut Hase",
-        "Igor Igel",
-        "Jochen Jaguar",
-        "Knut K\u00E4nguru",
-        "Lothar L\u00F6we",
-        "Martin Marder",
-        "Norbert Nashorn",
-        "Egon Kowalski",
-        "Fritz Fink",
-        "Heinz Hering"
+      "player_names": [
+        "Anonymous",
+        "Player",
+        "Gamer",
+        "Warrior",
+        "Hero",
+        "Legend",
+        "Champion",
+        "Stranger"
       ]
     },
-    "DicePlayerInvisible": {
+    "change_player_model": {
+      "enabled": true
+    },
+    "change_player_size": {
       "enabled": true,
-      "invisibility_percentage": 0.5
+      "min_size": 0.5,
+      "max_size": 1.5,
+      "adjust_health": true
     },
-    "DicePlayerSuicide": {
-      "enabled": true
-    },
-    "DicePlayerRespawn": {
-      "enabled": true
-    },
-    "DiceStripWeapons": {
-      "enabled": true
-    },
-    "DiceChickenLeader": {
-      "amount_chicken": 16,
-      "enabled": true
-    },
-    "DiceFastMapAction": {
-      "enabled": true
-    },
-    "DicePlayerVampire": {
+    "chicken_leader": {
       "enabled": true,
-      "max_health": 200
+      "amount_chicken": 16
     },
-    "DicePlayerLowGravity": {
+    "decrease_health": {
+      "enabled": true,
+      "min_health": 10,
+      "max_health": 30,
+      "prevent_death": true
+    },
+    "increase_health": {
+      "enabled": true,
+      "min_health": 10,
+      "max_health": 30
+    },
+    "decrease_money": {
+      "enabled": true,
+      "min_money": 100,
+      "max_money": 1000
+    },
+    "increase_money": {
+      "enabled": true,
+      "min_money": 100,
+      "max_money": 1000
+    },
+    "give_health_shot": {
+      "enabled": true,
+      "min_shots": 1,
+      "max_shots": 5
+    },
+    "one_hp": {
+      "enabled": true
+    },
+    "low_gravity": {
       "enabled": true,
       "gravity_scale": 0.4
     },
-    "DicePlayerHighGravity": {
+    "high_gravity": {
       "enabled": true,
       "gravity_scale": 4
     },
-    "DicePlayerOneHP": {
+    "suicide": {
       "enabled": true
     },
-    "DicePlayerAsChicken": {
-      "enabled": true
-    },
-    "DicePlayerMakeHostageSounds": {
+    "increase_speed": {
       "enabled": true,
-      "max_sound_delay": 10,
-      "min_sound_delay": 5
+      "min_speed": 1.5,
+      "max_speed": 2,
+      "reset_on_hostage_rescue": true
     },
-    "DicePlayerMakeFakeGunSounds": {
-      "enabled": true,
-      "max_sound_delay": 15,
-      "min_sound_delay": 5
-    },
-    "DiceBigTaserBattery": {
-      "enabled": true,
-      "max_batteries": 10,
-      "min_batteries": 2
-    },
-    "DicePlayerCloak": {
+    "no_recoil": {
       "enabled": true
     },
-    "DiceGiveHealthShot": {
+    "respawn": {
       "enabled": true,
-      "max_healthshots": 5,
-      "min_healthshots": 1
-    },
-    "DiceNoExplosives": {
-      "enabled": true,
-      "swap_delay": 0.1
-    },
-    "DiceChangePlayerModel": {
-      "enabled": true
-    },
-    "DicePlayerGlow": {
-      "enabled": true
-    },
-    "DiceShowPlayerHealthBar": {
-      "enabled": true
-    },
-    "DiceNoRecoil": {
-      "enabled": true
-    },
-    "DiceChangePlayerSize": {
-      "enabled": true,
-      "max_size": 1.7,
-      "min_size": 1.2
-    },
-    "DiceIncreaseMoney": {
-      "enabled": true,
-      "max_money": 1000,
-      "min_money": 100
-    },
-    "DiceDecreaseMoney": {
-      "enabled": true,
-      "max_money": 1000,
-      "min_money": 100
-    },
-    "DiceThirdPersonView": {
-      "enabled": true
-    },
-    "DicePlayerDisguiseAsProp": {
-      "allow_model_change": true,
-      "enabled": true
+      "default_primary_weapon": "weapon_m4a1",
+      "default_secondary_weapon": "weapon_deagle"
     }
   },
   "maps": {},
-  "players": {},
+  "player_configs": {},
   "ConfigVersion": 1
 }
 ```
