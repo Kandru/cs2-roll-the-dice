@@ -36,7 +36,6 @@ namespace RollTheDice
                 _currentMap = Server.MapName;
                 // initialize configuration
                 LoadMapConfig(_currentMap);
-                Console.WriteLine(_currentMapConfig.Enabled);
                 Console.WriteLine(Localizer["core.hotreload"]);
                 _isDuringRound = true;
             }
@@ -317,7 +316,6 @@ namespace RollTheDice
             {
                 _dices.Add(new NoRecoil(Config, _currentMapConfig, Localizer));
             }
-            Console.WriteLine(_currentMapConfig.Dices.Suicide.Enabled);
             // initialize Respawn module
             if (_currentMapConfig.Dices.Respawn.Enabled)
             {
