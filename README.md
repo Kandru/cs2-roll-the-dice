@@ -382,6 +382,8 @@ Seconds a player needs to wait until he can use !rtd again (enable only this OR 
 
 Sound to play when a player use !rtd. Can either be a sound file path (e.g. sounds/test/test.vsnd) or a soundevents_addon.vsndevts name (e.g. RollTheDice.Command). Please note: sound file paths will be played at 100% volume regardless of the player's volume choices. This cannot be changed. Only sound events do support changing the volume via the soundevents_addon.vsndevts file.
 
+Hint: if you leave this empty the plug-in will attempt to play a sound event named RollTheDice.{rolledDice}, e.g. *RollTheDice.OneHP*. You can use this to announce the dice a player did roll.
+
 ### price_to_dice
 
 The cost of rolling the dice.

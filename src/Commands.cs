@@ -224,6 +224,13 @@ namespace RollTheDice
                     _ = player.EmitSound(Config.CommandSound, filter);
                 }
             }
+            else // play specific sound for a dice (if any)
+            {
+                // only players that rolled the dice will hear the sound
+                RecipientFilter filter = [player];
+                // will be played at the player's volume settings
+                _ = player.EmitSound($"RollTheDice.{rolledDice}", filter);
+            }
         }
 
         [ConsoleCommand("rollthedice", "RollTheDice admin commands")]
@@ -256,7 +263,7 @@ namespace RollTheDice
                     break;
                 case "deletemapconfig":
                     // delete _currentMapConfig from disk
-                    Config.MapConfigs.Remove(_currentMap);
+                    _ = Config.MapConfigs.Remove(_currentMap);
                     Config.Update();
                     command.ReplyToCommand(Localizer["admin.mapconfig.deleted"].Value.Replace("{mapName}", _currentMap));
                     break;

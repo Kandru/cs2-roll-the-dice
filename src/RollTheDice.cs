@@ -173,12 +173,6 @@ namespace RollTheDice
                     {
                         // execute dice
                         foundDice.Add(player);
-                        // emit sound for the player
-                        var recipientFilter = new RecipientFilter
-                        {
-                            player
-                        };
-                        player.EmitSound($"RollTheDice.{foundDice.ClassName}", recipientFilter);
                         return (foundDice.ClassName, foundDice.Description);
                     }
                 }
@@ -187,12 +181,6 @@ namespace RollTheDice
                     DiceBlueprint randomDice = _dices[_random.Next(_dices.Count)];
                     // execute dice
                     randomDice.Add(player);
-                    // emit sound for the player
-                    var recipientFilter = new RecipientFilter
-                    {
-                        player
-                    };
-                    player.EmitSound($"RollTheDice.{randomDice.ClassName}", recipientFilter);
                     return (randomDice.ClassName, randomDice.Description);
                 }
             }
