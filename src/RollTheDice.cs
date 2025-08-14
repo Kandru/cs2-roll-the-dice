@@ -324,6 +324,11 @@ namespace RollTheDice
             {
                 _dices.Add(new NoExplosives(Config, _currentMapConfig, Localizer));
             }
+            // initialize StripWeapons module
+            if (_currentMapConfig.Dices.StripWeapons.Enabled)
+            {
+                _dices.Add(new StripWeapons(Config, _currentMapConfig, Localizer));
+            }
             // register listeners
             RegisterListeners();
             RegisterEventHandlers();
