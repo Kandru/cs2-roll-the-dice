@@ -19,7 +19,7 @@ namespace RollTheDice
             string playerName = command.GetArg(1);
             string diceName = command.GetArg(2);
             List<CCSPlayerController> availablePlayers = [];
-            foreach (CCSPlayerController entry in Utilities.GetPlayers().Where(static p => p.IsValid && !p.IsHLTV))
+            foreach (CCSPlayerController entry in Utilities.GetPlayers().Where(static p => p.IsValid && !p.IsHLTV && !p.IsBot))
             {
                 if (playerName == null
                     || playerName == "" || playerName == "*"
