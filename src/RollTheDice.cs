@@ -334,6 +334,11 @@ namespace RollTheDice
             {
                 _dices.Add(new Vampire(Config, _currentMapConfig, Localizer));
             }
+            // initialize Invisible module
+            if (_currentMapConfig.Dices.Invisible.Enabled)
+            {
+                _dices.Add(new Invisible(Config, _currentMapConfig, Localizer));
+            }
             // register listeners
             RegisterListeners();
             RegisterEventHandlers();

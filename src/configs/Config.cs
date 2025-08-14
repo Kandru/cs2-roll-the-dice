@@ -30,6 +30,7 @@ namespace RollTheDice
         [JsonPropertyName("no_explosives")] public NoExplosivesConfig NoExplosives { get; set; } = new NoExplosivesConfig();
         [JsonPropertyName("strip_weapons")] public StripWeaponsConfig StripWeapons { get; set; } = new StripWeaponsConfig();
         [JsonPropertyName("vampire")] public VampireConfig Vampire { get; set; } = new VampireConfig();
+        [JsonPropertyName("invisible")] public InvisibleConfig Invisible { get; set; } = new InvisibleConfig();
     }
 
     public class MapConfig
