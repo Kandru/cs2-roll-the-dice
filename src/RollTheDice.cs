@@ -77,7 +77,8 @@ namespace RollTheDice
             // check if random dice should be rolled
             foreach (CCSPlayerController entry in Utilities.GetPlayers()
                 .Where(p => p.IsValid
-                    && !p.IsHLTV))
+                    && !p.IsHLTV
+                    && p.Pawn?.Value?.LifeState == (byte)LifeState_t.LIFE_ALIVE))
             {
                 // rtd for everyone if enabled or for specific players if they have it enabled
                 if (Config.RollTheDiceOnRoundStart
