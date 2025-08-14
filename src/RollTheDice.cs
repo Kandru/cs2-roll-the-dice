@@ -329,6 +329,11 @@ namespace RollTheDice
             {
                 _dices.Add(new StripWeapons(Config, _currentMapConfig, Localizer));
             }
+            // initialize Vampire module
+            if (_currentMapConfig.Dices.Vampire.Enabled)
+            {
+                _dices.Add(new Vampire(Config, _currentMapConfig, Localizer));
+            }
             // register listeners
             RegisterListeners();
             RegisterEventHandlers();
