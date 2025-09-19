@@ -57,7 +57,7 @@ namespace RollTheDice.Dices
 
         public override void Reset()
         {
-            foreach (CCSPlayerController player in _players)
+            foreach (CCSPlayerController player in _players.ToList())
             {
                 Remove(player);
             }

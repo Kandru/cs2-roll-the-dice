@@ -67,7 +67,7 @@ namespace RollTheDice.Dices
 
         public override void Reset()
         {
-            foreach (CCSPlayerController player in _players)
+            foreach (CCSPlayerController player in _players.ToList())
             {
                 ChangePlayerName(player, _oldNames[player]);
             }
