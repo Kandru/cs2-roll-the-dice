@@ -25,13 +25,24 @@ namespace RollTheDice.Dices
                 return;
             }
             // set player health to 1
-            player.Pawn.Value.Health = 1;
-            Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iHealth");
-            _players.Add(player);
+            ChangeHealth(player, 1);
             NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName }
             });
+        }
+
+        private static void ChangeHealth(CCSPlayerController player, int health)
+        {
+            if (player.Pawn?.Value == null
+                || !player.Pawn.Value.IsValid)
+            {
+                return;
+            }
+            player.Pawn.Value.Health = health;
+            player.Pawn.Value.MaxHealth = health;
+            Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iHealth");
+            Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iMaxHealth");
         }
     }
 }

@@ -8,6 +8,9 @@ namespace RollTheDice.Dices
     public class NoExplosives : DiceBlueprint
     {
         public override string ClassName => "NoExplosives";
+        public override List<string> Events => [
+            "EventPlayerDeath",
+        ];
         public override List<string> Listeners => [
             "OnEntitySpawned"
         ];
@@ -24,6 +27,19 @@ namespace RollTheDice.Dices
         public NoExplosives(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
             Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", ClassName));
+        }
+
+        public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
+            if (player == null
+                || !_players.Contains(player)
+                || player.PlayerPawn?.Value?.WeaponServices == null)
+            {
+                return HookResult.Continue;
+            }
+            Remove(player);
+            return HookResult.Continue;
         }
 
         public void OnEntitySpawned(CEntityInstance entity)

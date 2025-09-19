@@ -28,7 +28,6 @@ namespace RollTheDice.Dices
             }
             // spawn chicken
             SpawnChicken(player);
-            _players.Add(player);
             NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName }

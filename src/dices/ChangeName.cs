@@ -7,6 +7,9 @@ namespace RollTheDice.Dices
     public class ChangeName : DiceBlueprint
     {
         public override string ClassName => "ChangeName";
+        public override List<string> Events => [
+            "EventPlayerDeath"
+        ];
         public readonly Random _random = new();
         private readonly Dictionary<CCSPlayerController, string> _oldNames = [];
 
@@ -62,9 +65,8 @@ namespace RollTheDice.Dices
             _ = _oldNames.Remove(player);
         }
 
-        public override void Destroy()
+        public override void Reset()
         {
-            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
             foreach (CCSPlayerController player in _players)
             {
                 ChangePlayerName(player, _oldNames[player]);
@@ -73,9 +75,30 @@ namespace RollTheDice.Dices
             _oldNames.Clear();
         }
 
-        private static void ChangePlayerName(CCSPlayerController player, string newName)
+        public override void Destroy()
         {
-            if (player == null || !player.IsValid || !player.Pawn?.IsValid == true)
+            Reset();
+        }
+
+        public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
+            if (player == null
+                || !_players.Contains(player)
+                || player.PlayerPawn?.Value?.WeaponServices == null)
+            {
+                return HookResult.Continue;
+            }
+            Remove(player);
+            return HookResult.Continue;
+        }
+
+        private static void ChangePlayerName(CCSPlayerController? player, string newName)
+        {
+            if (
+                player == null
+                || !player.IsValid
+                || !player.Pawn?.IsValid == true)
             {
                 return;
             }

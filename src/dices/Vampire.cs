@@ -8,6 +8,7 @@ namespace RollTheDice.Dices
     {
         public override string ClassName => "Vampire";
         public override List<string> Events => [
+            "EventPlayerDeath",
             "EventPlayerHurt"
         ];
         public readonly Random _random = new();
@@ -16,6 +17,19 @@ namespace RollTheDice.Dices
         public Vampire(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
             Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", ClassName));
+        }
+
+        public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
+            if (player == null
+                || !_players.Contains(player)
+                || player.PlayerPawn?.Value?.WeaponServices == null)
+            {
+                return HookResult.Continue;
+            }
+            Remove(player);
+            return HookResult.Continue;
         }
 
         public HookResult EventPlayerHurt(EventPlayerHurt @event, GameEventInfo info)

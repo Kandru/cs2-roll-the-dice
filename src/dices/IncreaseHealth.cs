@@ -41,5 +41,38 @@ namespace RollTheDice.Dices
                 { "healthIncrease", healthIncrease.ToString() }
             });
         }
+
+        public override void Remove(CCSPlayerController player)
+        {
+            ChangeHealth(player, 100);
+            _ = _players.Remove(player);
+        }
+
+        public override void Reset()
+        {
+            foreach (CCSPlayerController player in _players)
+            {
+                Remove(player);
+            }
+            _players.Clear();
+        }
+
+        public override void Destroy()
+        {
+            Reset();
+        }
+
+        private static void ChangeHealth(CCSPlayerController? player, int health)
+        {
+            if (player?.Pawn?.IsValid == false
+                || player?.Pawn?.Value == null)
+            {
+                return;
+            }
+            player.Pawn.Value.Health = health;
+            player.Pawn.Value.MaxHealth = health;
+            Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iHealth");
+            Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iMaxHealth");
+        }
     }
 }

@@ -32,7 +32,6 @@ namespace RollTheDice.Dices
             {
                 _ = player.GiveNamedItem("weapon_healthshot");
             }
-            _players.Add(player);
             NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName },

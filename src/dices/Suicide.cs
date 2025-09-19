@@ -25,7 +25,6 @@ namespace RollTheDice.Dices
             }
             // commit suicide
             player.Pawn.Value.CommitSuicide(true, true);
-            _players.Add(player);
             NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName }

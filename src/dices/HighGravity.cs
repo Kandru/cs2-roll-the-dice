@@ -41,14 +41,18 @@ namespace RollTheDice.Dices
             _ = _players.Remove(player);
         }
 
-        public override void Destroy()
+        public override void Reset()
         {
-            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
             foreach (CCSPlayerController player in _players)
             {
-                ChangePlayerGravity(player, 1f);
+                Remove(player);
             }
             _players.Clear();
+        }
+
+        public override void Destroy()
+        {
+            Reset();
         }
 
         public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
@@ -64,9 +68,10 @@ namespace RollTheDice.Dices
             return HookResult.Continue;
         }
 
-        private static void ChangePlayerGravity(CCSPlayerController player, float gravityScale)
+        private static void ChangePlayerGravity(CCSPlayerController? player, float gravityScale)
         {
-            if (player.Pawn?.Value != null && player.Pawn.Value.IsValid)
+            if (player?.Pawn?.Value != null
+                && player.Pawn.Value.IsValid)
             {
                 player.Pawn.Value.ActualGravityScale = gravityScale;
             }

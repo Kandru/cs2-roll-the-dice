@@ -8,6 +8,9 @@ namespace RollTheDice.Dices
     public class Invisible : DiceBlueprint
     {
         public override string ClassName => "Invisible";
+        public override List<string> Events => [
+            "EventPlayerDeath",
+        ];
 
         public Invisible(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
@@ -27,8 +30,7 @@ namespace RollTheDice.Dices
             // set invisibility
             int alpha = 255 - (int)(_config.Dices.Invisible.PercentageVisible * 255);
             alpha = Math.Clamp(alpha, 0, 255);
-            player.Pawn.Value.Render = Color.FromArgb(alpha, 255, 255, 255);
-            Utilities.SetStateChanged(player.Pawn.Value, "CBaseModelEntity", "m_clrRender");
+            SetPlayerInvisible(player, alpha);
             _players.Add(player);
             NotifyPlayers(player, ClassName, new()
             {
@@ -39,29 +41,45 @@ namespace RollTheDice.Dices
         public override void Remove(CCSPlayerController player)
         {
             _ = _players.Remove(player);
-            if (player?.Pawn?.Value == null
-                || !player.Pawn.IsValid
-                || player.Pawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE) return;
-            // reset player render color
-            player.Pawn.Value.Render = Color.FromArgb(255, 255, 255, 255);
-            // set state changed
-            Utilities.SetStateChanged(player.Pawn.Value, "CBaseModelEntity", "m_clrRender");
+            SetPlayerInvisible(player, 255);
+        }
+
+        public override void Reset()
+        {
+            foreach (CCSPlayerController player in _players)
+            {
+                Remove(player);
+            }
+            _players.Clear();
         }
 
         public override void Destroy()
         {
-            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
-            foreach (CCSPlayerController player in _players)
+            Reset();
+        }
+
+        public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
+            if (player == null
+                || !_players.Contains(player)
+                || player.PlayerPawn?.Value?.WeaponServices == null)
             {
-                if (player?.Pawn?.Value == null
-                    || !player.Pawn.IsValid
-                    || player.Pawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE) continue;
-                // reset player render color
-                player.Pawn.Value.Render = Color.FromArgb(255, 255, 255, 255);
-                // set state changed
-                Utilities.SetStateChanged(player.Pawn.Value, "CBaseModelEntity", "m_clrRender");
+                return HookResult.Continue;
             }
-            _players.Clear();
+            Remove(player);
+            return HookResult.Continue;
+        }
+
+        private void SetPlayerInvisible(CCSPlayerController? player, int alpha)
+        {
+            if (player?.Pawn?.Value == null
+                || !player.Pawn.Value.IsValid)
+            {
+                return;
+            }
+            player.Pawn.Value.Render = Color.FromArgb(alpha, 255, 255, 255);
+            Utilities.SetStateChanged(player.Pawn.Value, "CBaseModelEntity", "m_clrRender");
         }
     }
 }

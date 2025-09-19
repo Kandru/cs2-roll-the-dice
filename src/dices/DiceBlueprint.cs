@@ -39,10 +39,14 @@ namespace RollTheDice.Dices
             _ = _players.Remove(player);
         }
 
+        public virtual void Reset()
+        {
+            _players.Clear();
+        }
+
         public virtual void Destroy()
         {
-            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", GetType().Name));
-            _players.Clear();
+            Reset();
         }
 
         public void NotifyPlayers(CCSPlayerController player, string diceName, Dictionary<string, string> data)

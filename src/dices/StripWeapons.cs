@@ -80,7 +80,6 @@ namespace RollTheDice.Dices
                 player.Pawn.Value.WeaponServices.ActiveWeapon.Raw = weapon.Raw;
                 break;
             }
-            _players.Add(player);
             NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName }

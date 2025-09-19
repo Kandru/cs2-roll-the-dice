@@ -38,10 +38,10 @@ namespace RollTheDice.Dices
 
         public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
         {
-            CCSPlayerController? player = @event.Userid;
-            if (player == null
-                || !_players.Contains(player)
-                || player.PlayerPawn?.Value?.WeaponServices == null)
+            CCSPlayerController? victim = @event.Userid;
+            if (victim == null
+                || !_players.Contains(victim)
+                || victim.PlayerPawn?.Value?.WeaponServices == null)
             {
                 return HookResult.Continue;
             }
@@ -81,32 +81,32 @@ namespace RollTheDice.Dices
                 Server.NextFrame(() =>
                 {
                     // sanity checks
-                    if (player?.PlayerPawn?.Value == null
-                        || !_players.Contains(player)
-                        || player.PlayerPawn.Value.LifeState == (byte)LifeState_t.LIFE_ALIVE)
+                    if (victim?.PlayerPawn?.Value == null
+                        || !_players.Contains(victim)
+                        || victim.PlayerPawn.Value.LifeState == (byte)LifeState_t.LIFE_ALIVE)
                     {
                         return;
                     }
                     // respawn player
-                    player.Respawn();
+                    victim.Respawn();
                     // give weapons next frame to ensure player is respawned
                     Server.NextFrame(() =>
                     {
                         // sanity checks
-                        if (player?.PlayerPawn?.Value == null
-                            || player?.PlayerPawn?.Value.ItemServices == null
-                            || player.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE)
+                        if (victim?.PlayerPawn?.Value == null
+                            || victim?.PlayerPawn?.Value.ItemServices == null
+                            || victim.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE)
                         {
                             return;
                         }
                         // strip all other weapons
-                        player.RemoveWeapons();
+                        victim.RemoveWeapons();
                         // add default knife to player
-                        _ = player.GiveNamedItem($"weapon_knife");
+                        _ = victim.GiveNamedItem($"weapon_knife");
                         // give defuser if player is CT
-                        if (player.Team == CsTeam.CounterTerrorist)
+                        if (victim.Team == CsTeam.CounterTerrorist)
                         {
-                            CCSPlayer_ItemServices itemServices = new(player.PlayerPawn.Value.ItemServices.Handle)
+                            CCSPlayer_ItemServices itemServices = new(victim.PlayerPawn.Value.ItemServices.Handle)
                             {
                                 HasDefuser = true
                             };
@@ -116,19 +116,19 @@ namespace RollTheDice.Dices
                         {
                             foreach (string weapons in tmpWeaponList)
                             {
-                                _ = player.GiveNamedItem(weapons);
+                                _ = victim.GiveNamedItem(weapons);
                             }
                         }
                         else
                         {
                             // give some default loadout if no weapons are available
-                            _ = player.GiveNamedItem(_config.Dices.Respawn.DefaultPrimaryWeapon);
-                            _ = player.GiveNamedItem(_config.Dices.Respawn.DefaultSecondaryWeapon);
+                            _ = victim.GiveNamedItem(_config.Dices.Respawn.DefaultPrimaryWeapon);
+                            _ = victim.GiveNamedItem(_config.Dices.Respawn.DefaultSecondaryWeapon);
                         }
                         // set armor for player
-                        player.PlayerPawn.Value.ArmorValue = 100;
+                        victim.PlayerPawn.Value.ArmorValue = 100;
                         // remove player from list to avoid respawning again
-                        _ = _players.Remove(player);
+                        _ = _players.Remove(victim);
                     });
                 });
             });

@@ -8,6 +8,7 @@ namespace RollTheDice.Dices
     {
         public override string ClassName => "BigTaserBattery";
         public override List<string> Events => [
+            "EventPlayerDeath",
             "EventWeaponFire"
         ];
         public readonly Random _random = new();
@@ -71,11 +72,28 @@ namespace RollTheDice.Dices
             _ = _ammunition.Remove(player);
         }
 
-        public override void Destroy()
+        public override void Reset()
         {
-            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
             _players.Clear();
             _ammunition.Clear();
+        }
+
+        public override void Destroy()
+        {
+            Reset();
+        }
+
+        public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
+            if (player == null
+                || !_players.Contains(player)
+                || player.PlayerPawn?.Value?.WeaponServices == null)
+            {
+                return HookResult.Continue;
+            }
+            Remove(player);
+            return HookResult.Continue;
         }
 
         public HookResult EventWeaponFire(EventWeaponFire @event, GameEventInfo info)

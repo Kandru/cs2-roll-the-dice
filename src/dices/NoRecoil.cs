@@ -7,6 +7,7 @@ namespace RollTheDice.Dices
     {
         public override string ClassName => "NoRecoil";
         public override List<string> Events => [
+            "EventPlayerDeath",
             "EventWeaponFire"
         ];
         public readonly Random _random = new();
@@ -39,20 +40,38 @@ namespace RollTheDice.Dices
             _ = _players.Remove(player);
         }
 
-        public override void Destroy()
+        public override void Reset()
         {
-            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
             foreach (CCSPlayerController player in _players)
             {
-                player.ReplicateConVar("weapon_accuracy_nospread", "0");
+                Remove(player);
             }
             _players.Clear();
+        }
+
+        public override void Destroy()
+        {
+            Reset();
+        }
+
+        public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
+            if (player == null
+                || !_players.Contains(player)
+                || player.PlayerPawn?.Value?.WeaponServices == null)
+            {
+                return HookResult.Continue;
+            }
+            Remove(player);
+            return HookResult.Continue;
         }
 
         public HookResult EventWeaponFire(EventWeaponFire @event, GameEventInfo info)
         {
             CCSPlayerController? player = @event.Userid;
             if (player == null
+                || !_players.Contains(player)
                 || player.PlayerPawn == null
                 || !player.PlayerPawn.IsValid
                 || player.PlayerPawn.Value == null
@@ -60,11 +79,6 @@ namespace RollTheDice.Dices
                 || player.PlayerPawn.Value.WeaponServices.ActiveWeapon == null
                 || !player.PlayerPawn.Value.WeaponServices.ActiveWeapon.IsValid
                 || player.PlayerPawn.Value.WeaponServices.ActiveWeapon.Value == null)
-            {
-                return HookResult.Continue;
-            }
-
-            if (!_players.Contains(player))
             {
                 return HookResult.Continue;
             }
@@ -80,7 +94,7 @@ namespace RollTheDice.Dices
         }
 
         // TODO: apply when switching weapons
-        private static void ApplyNoRecoil(CCSPlayerController player)
+        private static void ApplyNoRecoil(CCSPlayerController? player)
         {
             if (player == null
                 || !player.IsValid

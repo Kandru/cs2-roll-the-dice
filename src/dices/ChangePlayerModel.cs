@@ -7,6 +7,9 @@ namespace RollTheDice.Dices
     public class ChangePlayerModel : DiceBlueprint
     {
         public override string ClassName => "ChangePlayerModel";
+        public override List<string> Events => [
+            "EventPlayerDeath"
+        ];
         private readonly Dictionary<CCSPlayerController, string> _oldModels = [];
 
         public ChangePlayerModel(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
@@ -52,24 +55,38 @@ namespace RollTheDice.Dices
             _ = _oldModels.Remove(player);
         }
 
-        public override void Destroy()
+        public override void Reset()
         {
-            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
             foreach (CCSPlayerController player in _players)
             {
-                ChangeModel(player, _oldModels[player]);
+                Remove(player);
             }
             _players.Clear();
             _oldModels.Clear();
         }
 
-        private static void ChangeModel(CCSPlayerController player, string model)
+        public override void Destroy()
         {
+            Reset();
+        }
+
+        public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
             if (player == null
-                || player.Pawn == null
-                || !player.Pawn.IsValid
-                || player.Pawn.Value == null
-                || player.LifeState != (byte)LifeState_t.LIFE_ALIVE)
+                || !_players.Contains(player)
+                || player.PlayerPawn?.Value?.WeaponServices == null)
+            {
+                return HookResult.Continue;
+            }
+            Remove(player);
+            return HookResult.Continue;
+        }
+
+        private static void ChangeModel(CCSPlayerController? player, string model)
+        {
+            if (player?.Pawn?.IsValid == false
+                || player?.Pawn?.Value == null)
             {
                 return;
             }

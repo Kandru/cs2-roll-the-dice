@@ -36,14 +36,24 @@ namespace RollTheDice.Dices
                 moneyDecrease = player.InGameMoneyServices.Account;
             }
             // decrease money
-            player.InGameMoneyServices.Account -= moneyDecrease;
-            Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInGameMoneyServices");
-            _players.Add(player);
+            SetMoney(player, player.InGameMoneyServices.Account - moneyDecrease);
             NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName },
                 { "money", moneyDecrease.ToString() }
             });
+        }
+
+        private static void SetMoney(CCSPlayerController player, int amount)
+        {
+            if (player == null
+                || !player.IsValid
+                || player.InGameMoneyServices == null)
+            {
+                return;
+            }
+            player.InGameMoneyServices.Account = amount;
+            Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInGameMoneyServices");
         }
     }
 }

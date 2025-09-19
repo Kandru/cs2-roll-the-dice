@@ -8,6 +8,9 @@ namespace RollTheDice.Dices
     public class ChangePlayerSize : DiceBlueprint
     {
         public override string ClassName => "ChangePlayerSize";
+        public override List<string> Events => [
+            "EventPlayerDeath"
+        ];
         public readonly Random _random = new();
 
         public ChangePlayerSize(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
@@ -48,17 +51,34 @@ namespace RollTheDice.Dices
             _ = _players.Remove(player);
         }
 
-        public override void Destroy()
+        public override void Reset()
         {
-            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
             foreach (CCSPlayerController player in _players)
             {
-                ChangeSize(player, 1f);
+                Remove(player);
             }
             _players.Clear();
         }
 
-        private void ChangeSize(CCSPlayerController player, float size)
+        public override void Destroy()
+        {
+            Reset();
+        }
+
+        public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
+            if (player == null
+                || !_players.Contains(player)
+                || player.PlayerPawn?.Value?.WeaponServices == null)
+            {
+                return HookResult.Continue;
+            }
+            Remove(player);
+            return HookResult.Continue;
+        }
+
+        private void ChangeSize(CCSPlayerController? player, float size)
         {
             if (player?.Pawn?.Value?.CBodyComponent?.SceneNode == null
                 || !player.Pawn.IsValid)

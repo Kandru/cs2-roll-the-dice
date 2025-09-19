@@ -9,6 +9,7 @@ namespace RollTheDice.Dices
         public override string ClassName => "IncreaseSpeed";
         public override List<string> Events => [
             "EventPlayerHurt",
+            "EventPlayerDeath",
             "EventPlayerFalldamage",
             "EventHostageFollows",
             "EventHostageStopsFollowing"
@@ -57,23 +58,37 @@ namespace RollTheDice.Dices
             _ = _players.Remove(player);
         }
 
-        public override void Destroy()
+        public override void Reset()
         {
-            Console.WriteLine(_localizer["dice.class.destroy"].Value.Replace("{name}", ClassName));
-            _playerSpeed.Clear();
-            _players.Clear();
             foreach (CCSPlayerController player in _players)
             {
-                if (player.PlayerPawn?.Value?.IsValid == true)
-                {
-                    SetPlayerSpeed(player, 1f);
-                }
+                Remove(player);
             }
+            _playerSpeed.Clear();
+            _players.Clear();
+        }
+
+        public override void Destroy()
+        {
+            Reset();
         }
 
         public HookResult EventPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
         {
             SetPlayerSpeed(@event.Userid);
+            return HookResult.Continue;
+        }
+
+        public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
+            if (player == null
+                || !_players.Contains(player)
+                || player.PlayerPawn?.Value?.WeaponServices == null)
+            {
+                return HookResult.Continue;
+            }
+            Remove(player);
             return HookResult.Continue;
         }
 
@@ -102,8 +117,7 @@ namespace RollTheDice.Dices
         private void SetPlayerSpeed(CCSPlayerController? player, float speed = -1f)
         {
             if (player?.IsValid != true
-            || !_players.Contains(player)
-            || player.PlayerPawn?.Value?.LifeState != (byte)LifeState_t.LIFE_ALIVE)
+            || !_players.Contains(player))
             {
                 return;
             }
@@ -114,11 +128,13 @@ namespace RollTheDice.Dices
                 {
                     Server.NextFrame(() =>
                     {
-                        if (player.PlayerPawn?.Value?.IsValid == true)
+                        if (player?.PlayerPawn?.IsValid == false
+                            || player?.PlayerPawn?.Value == null)
                         {
-                            player.PlayerPawn.Value.VelocityModifier = speed >= 0 ? speed : _playerSpeed[player];
-                            Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawn", "m_flVelocityModifier");
+                            return;
                         }
+                        player.PlayerPawn.Value.VelocityModifier = speed >= 0 ? speed : _playerSpeed[player];
+                        Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawn", "m_flVelocityModifier");
                     });
                 });
             });

@@ -31,14 +31,24 @@ namespace RollTheDice.Dices
                 _config.Dices.IncreaseMoney.MaxMoney + 1
             );
             // increase money
-            player.InGameMoneyServices.Account += moneyIncrease;
-            Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInGameMoneyServices");
-            _players.Add(player);
+            SetMoney(player, player.InGameMoneyServices.Account + moneyIncrease);
             NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName },
                 { "money", moneyIncrease.ToString() }
             });
+        }
+
+        private static void SetMoney(CCSPlayerController player, int amount)
+        {
+            if (player == null
+                || !player.IsValid
+                || player.InGameMoneyServices == null)
+            {
+                return;
+            }
+            player.InGameMoneyServices.Account = amount;
+            Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInGameMoneyServices");
         }
     }
 }
