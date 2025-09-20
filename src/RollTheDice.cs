@@ -24,6 +24,7 @@ namespace RollTheDice
             ReloadConfigFromDisk();
             // register listeners
             RegisterEventHandler<EventRoundStart>(OnRoundStart);
+            RegisterEventHandler<EventRoundFreezeEnd>(OnRoundFreezeEnd);
             RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
             RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
@@ -52,6 +53,7 @@ namespace RollTheDice
             ReloadConfigFromDisk();
             // unregister listeners
             DeregisterEventHandler<EventRoundStart>(OnRoundStart);
+            DeregisterEventHandler<EventRoundFreezeEnd>(OnRoundFreezeEnd);
             DeregisterEventHandler<EventRoundEnd>(OnRoundEnd);
             DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             DeregisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
@@ -77,15 +79,44 @@ namespace RollTheDice
             Server.PrintToChatAll(Localizer["core.announcement"]);
             // allow dice rolls
             _isDuringRound = true;
-            // check if random dice should be rolled
+            // roll the dice on round start if enabled
+            if (Config.DiceTrigger.TriggerEvent == DiceTriggerEvent.RoundStart)
+            {
+                RollTheDiceOnRoundStart(force: Config.DiceTrigger.ForceAllPlayers);
+            }
+
+            // check if random dice should be rolled every X seconds
+            // TODO: re-implement rolling every X seconds
+            //if (Config.RollTheDiceEveryXSeconds > 0)
+            //{
+            //RollTheDiceEveryXSeconds(Config.RollTheDiceEveryXSeconds);
+            //}
+            // continue event
+            return HookResult.Continue;
+        }
+
+        private HookResult OnRoundFreezeEnd(EventRoundFreezeEnd @event, GameEventInfo info)
+        {
+            if (Config.DiceTrigger.TriggerEvent != DiceTriggerEvent.RoundFreezeEnd)
+            {
+                return HookResult.Continue;
+            }
+            RollTheDiceOnRoundStart(force: Config.DiceTrigger.ForceAllPlayers);
+            return HookResult.Continue;
+        }
+
+        private void RollTheDiceOnRoundStart(bool force = false)
+        {
+            // roll the dice for all players who requested it via "!rtd auto"
             foreach (CCSPlayerController entry in Utilities.GetPlayers()
-                .Where(p => p.IsValid
-                    && !p.IsHLTV
+                .Where(p => !p.IsHLTV
+                    && !p.IsBot
                     && p.Pawn?.Value?.LifeState == (byte)LifeState_t.LIFE_ALIVE))
             {
                 // rtd for everyone if enabled or for specific players if they have it enabled
-                if (Config.RollTheDiceOnRoundStart
-                    || (_playerConfigs.ContainsKey(entry.SteamID)
+                if (force
+                    || (Config.DiceTrigger.AllowPlayerAutoRtd
+                        && _playerConfigs.ContainsKey(entry.SteamID)
                         && _playerConfigs[entry.SteamID].RtdOnSpawn))
                 {
                     _ = AddTimer(1f, () =>
@@ -108,14 +139,6 @@ namespace RollTheDice
                     });
                 }
             }
-            // check if random dice should be rolled every X seconds
-            // TODO: re-implement rolling every X seconds
-            //if (Config.RollTheDiceEveryXSeconds > 0)
-            //{
-            //RollTheDiceEveryXSeconds(Config.RollTheDiceEveryXSeconds);
-            //}
-            // continue event
-            return HookResult.Continue;
         }
 
         private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)

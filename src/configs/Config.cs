@@ -2,6 +2,7 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Extensions;
 using RollTheDice.Configs;
+using RollTheDice.Enums;
 using System.IO.Enumeration;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -47,6 +48,18 @@ namespace RollTheDice
         [JsonPropertyName("rtd_on_spawn")] public bool RtdOnSpawn { get; set; } = false;
     }
 
+    public class TriggerConfig
+    {
+        // event to trigger RTD
+        [JsonPropertyName("event")]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public DiceTriggerEvent TriggerEvent { get; set; } = DiceTriggerEvent.RoundStart;
+        // Force all players to RTD regardless of their personal setting
+        [JsonPropertyName("force_all_players")] public bool ForceAllPlayers { get; set; } = false;
+        // Allow players to opt-in for automatic RTD (only used when ForceAllPlayers is false)
+        [JsonPropertyName("allow_player_auto_rtd")] public bool AllowPlayerAutoRtd { get; set; } = true;
+    }
+
     public class PluginConfig : BasePluginConfig
     {
         // disabled
@@ -55,8 +68,8 @@ namespace RollTheDice
         [JsonPropertyName("debug")] public bool Debug { get; set; } = false;
         // allow !rtd during warmup
         [JsonPropertyName("allow_rtd_during_warmup")] public bool AllowRtdDuringWarmup { get; set; } = false;
-        // automatically roll the dice on spawn
-        [JsonPropertyName("roll_the_dice_on_round_start")] public bool RollTheDiceOnRoundStart { get; set; } = false;
+        // event to trigger RTD
+        [JsonPropertyName("trigger")] public TriggerConfig DiceTrigger { get; set; } = new TriggerConfig();
         // fun: roll the dice every x seconds (0 to disable)
         [JsonPropertyName("roll_the_dice_every_x_seconds")] public int RollTheDiceEveryXSeconds { get; set; } = 0;
         // limit !rtd usage to every X rounds (only set one of both)
