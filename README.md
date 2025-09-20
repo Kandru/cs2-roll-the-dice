@@ -294,7 +294,7 @@ Number of seconds a player must wait before using !rtd again. Use this OR cooldo
 
 ### sound_command
 
-Sound played when using `!rtd`. Use sound file paths (e.g. `sounds/test.vsnd`) or sound events (e.g. `RollTheDice.Command`). Leave empty to play `RollTheDice.{DiceName}` sound events automatically.
+Sound played when using `!rtd`. Use sound file paths (e.g. `sounds/test.vsnd`) or sound events (e.g. `RollTheDice.Command`). Leave empty to play `RollTheDice.{DiceName}` sound events automatically. Example audio files are provided via the AI from elevenlabs.io (Unreal Tonemanagement 2003).
 
 ### price_to_dice
 
