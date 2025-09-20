@@ -58,6 +58,8 @@ namespace RollTheDice
         [JsonPropertyName("force_all_players")] public bool ForceAllPlayers { get; set; } = false;
         // Allow players to opt-in for automatic RTD (only used when ForceAllPlayers is false)
         [JsonPropertyName("allow_player_auto_rtd")] public bool AllowPlayerAutoRtd { get; set; } = true;
+        // fun: roll the dice every x seconds (0 to disable)
+        [JsonPropertyName("roll_the_dice_every_x_seconds")] public int RollTheDiceEveryXSeconds { get; set; } = 0;
     }
 
     public class PluginConfig : BasePluginConfig
@@ -70,8 +72,6 @@ namespace RollTheDice
         [JsonPropertyName("allow_rtd_during_warmup")] public bool AllowRtdDuringWarmup { get; set; } = false;
         // event to trigger RTD
         [JsonPropertyName("trigger")] public TriggerConfig DiceTrigger { get; set; } = new TriggerConfig();
-        // fun: roll the dice every x seconds (0 to disable)
-        [JsonPropertyName("roll_the_dice_every_x_seconds")] public int RollTheDiceEveryXSeconds { get; set; } = 0;
         // limit !rtd usage to every X rounds (only set one of both)
         [JsonPropertyName("cooldown_rounds")] public int CooldownRounds { get; set; } = 0;
         // limit !rtd usage to every X seconds (only set one of both)

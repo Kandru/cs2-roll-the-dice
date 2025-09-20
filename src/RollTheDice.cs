@@ -85,15 +85,12 @@ namespace RollTheDice
             if (Config.DiceTrigger.TriggerEvent == DiceTriggerEvent.RoundStart)
             {
                 RollTheDiceOnRoundStart(force: Config.DiceTrigger.ForceAllPlayers);
+                // optionally roll the dice every X seconds
+                if (Config.DiceTrigger.RollTheDiceEveryXSeconds > 0)
+                {
+                    RollTheDiceEveryXSeconds(Config.DiceTrigger.RollTheDiceEveryXSeconds);
+                }
             }
-
-            // check if random dice should be rolled every X seconds
-            // TODO: re-implement rolling every X seconds
-            //if (Config.RollTheDiceEveryXSeconds > 0)
-            //{
-            //RollTheDiceEveryXSeconds(Config.RollTheDiceEveryXSeconds);
-            //}
-            // continue event
             return HookResult.Continue;
         }
 
@@ -104,6 +101,11 @@ namespace RollTheDice
                 return HookResult.Continue;
             }
             RollTheDiceOnRoundStart(force: Config.DiceTrigger.ForceAllPlayers);
+            // optionally roll the dice every X seconds
+            if (Config.DiceTrigger.RollTheDiceEveryXSeconds > 0)
+            {
+                RollTheDiceEveryXSeconds(Config.DiceTrigger.RollTheDiceEveryXSeconds);
+            }
             return HookResult.Continue;
         }
 
@@ -141,6 +143,23 @@ namespace RollTheDice
                     });
                 }
             }
+        }
+
+        private void RollTheDiceEveryXSeconds(int seconds)
+        {
+            AddTimer(seconds, () =>
+            {
+                if (!_isDuringRound) return;
+                foreach (CCSPlayerController entry in Utilities.GetPlayers()
+                    .Where(p => !p.IsHLTV
+                        && !p.IsBot
+                        && p.Pawn?.Value?.LifeState == (byte)LifeState_t.LIFE_ALIVE))
+                {
+                    RemoveDiceForPlayer(entry, reason: DiceRemoveReason.NewDice);
+                    RollTheDiceForPlayer(entry);
+                }
+                RollTheDiceEveryXSeconds(seconds);
+            });
         }
 
         private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
