@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Utils;
 using RollTheDice.Dices;
 using RollTheDice.Enums;
 using RollTheDice.Utils;
@@ -140,6 +141,8 @@ namespace RollTheDice
                         }
                         // add player to the list of players that rolled the dice
                         _playersThatRolledTheDice[entry] = diceDescription ?? rolledDice;
+                        // play sound
+                        PlayDiceSoundForPlayer(entry, rolledDice);
                     });
                 }
             }
@@ -147,16 +150,20 @@ namespace RollTheDice
 
         private void RollTheDiceEveryXSeconds(int seconds)
         {
-            AddTimer(seconds, () =>
+            _ = AddTimer(seconds, () =>
             {
-                if (!_isDuringRound) return;
+                if (!_isDuringRound)
+                {
+                    return;
+                }
+
                 foreach (CCSPlayerController entry in Utilities.GetPlayers()
                     .Where(p => !p.IsHLTV
                         && !p.IsBot
                         && p.Pawn?.Value?.LifeState == (byte)LifeState_t.LIFE_ALIVE))
                 {
                     RemoveDiceForPlayer(entry, reason: DiceRemoveReason.NewDice);
-                    RollTheDiceForPlayer(entry);
+                    _ = RollTheDiceForPlayer(entry);
                 }
                 RollTheDiceEveryXSeconds(seconds);
             });
@@ -487,6 +494,30 @@ namespace RollTheDice
                     //DebugPrint($"- UserMessage ID: {userMessageId}, HookMode: {hookMode}");
                     DynamicHandlers.DeregisterUserMessageHook(this, userMessageId, module, hookMode);
                 }
+            }
+        }
+
+        private void PlayDiceSoundForPlayer(CCSPlayerController? player, string rolledDice, bool command = false)
+        {
+            if (player == null
+                || !player.IsValid
+                || (!command && Config.Sounds.PlayOnCommandOnly)
+                || string.IsNullOrEmpty(Config.Sounds.DiceRollSound))
+            {
+                return;
+            }
+            // play sound directly at player if it starts with "sounds/"
+            if (Config.Sounds.DiceRollSound.StartsWith("sounds/"))
+            {
+                // simply play sound (will be played at 100% volume regardless of the player's volume settings)
+                player.ExecuteClientCommand($"play {Config.Sounds.DiceRollSound}");
+            }
+            else
+            {
+                // only players that rolled the dice will hear the sound
+                RecipientFilter filter = [player];
+                // will be played at the player's volume settings
+                _ = player.EmitSound(Config.Sounds.DiceRollSound.Replace("{dice}", rolledDice), filter);
             }
         }
     }

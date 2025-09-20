@@ -139,7 +139,6 @@ This plugin automatically creates a readable JSON configuration file. This confi
   },
   "cooldown_rounds": 0,
   "cooldown_seconds": 0,
-  "sound_command": "sounds/ui/coin_pickup_01.vsnd",
   "price_to_dice": 0,
   "allow_dice_after_respawn": false,
   "dices": {
@@ -254,6 +253,13 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "percentage_visible": 0.5
     }
   },
+  "sounds": {
+    "dice_sound": "RollTheDice.{dice}",
+    "play_on_command_only": false
+  },
+  "precache": {
+    "soundevent_file": "soundevents/soundevents_rollthedice.vsndevts"
+  },
   "maps": {},
   "player_configs": {
     "76561198019045610": {
@@ -292,10 +298,6 @@ Number of rounds a player must wait before using !rtd again. Use this OR cooldow
 
 Number of seconds a player must wait before using !rtd again. Use this OR cooldown_rounds, not both (0 = disabled).
 
-### sound_command
-
-Sound played when using `!rtd`. Use sound file paths (e.g. `sounds/test.vsnd`) or sound events (e.g. `RollTheDice.Command`). Leave empty to play `RollTheDice.{DiceName}` sound events automatically. Example audio files are provided via the AI from elevenlabs.io (Unreal Tonemanagement 2003).
-
 ### price_to_dice
 
 Money it costs to roll the dice.
@@ -329,6 +331,13 @@ Configuration for all available dice effects. Each dice can be enabled/disabled 
 - **strip_weapons**: Removes all weapons
 - **vampire**: Converts damage dealt into health (max_health limit)
 - **invisible**: Makes player partially invisible (percentage_visible: 0.0 = fully invisible, 1.0 = fully visible)
+
+### sounds
+
+Sound played when using `!rtd`. Use sound file paths (e.g. `sounds/test.vsnd`) or sound events (e.g. `RollTheDice.Command`). Use `RollTheDice.{dice}` to play a sound event for each individual dice. Example audio files are provided via the AI from elevenlabs.io (Unreal Tonemanagement 2003).
+
+- **dice_sound**: Sound path or event name to play. `{dice}`gets replaced by the case-sensitive dice name. Disabled if empty.
+- **play_on_command_only**: Plays the sound only when a player types in `!rtd` - otherwise plays it on events as well.
 
 ### maps
 

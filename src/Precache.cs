@@ -40,6 +40,11 @@ namespace RollTheDice
                 }
                 manifest.AddResource(model);
             }
+            // add soundevent file to precache
+            if (!string.IsNullOrEmpty(Config.Precache.SoundEventFile))
+            {
+                manifest.AddResource(Config.Precache.SoundEventFile);
+            }
             // precache all models
             foreach (string model in _precacheModels)
             {

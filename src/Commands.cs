@@ -4,7 +4,6 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Extensions;
-using CounterStrikeSharp.API.Modules.Utils;
 using RollTheDice.Utils;
 
 namespace RollTheDice
@@ -221,28 +220,7 @@ namespace RollTheDice
                 _PlayerCooldown[player] = (int)Server.CurrentTime + Config.CooldownSeconds;
             }
             // play sound
-            if (Config.CommandSound is not null and not "")
-            {
-                if (Config.CommandSound.StartsWith("sounds/"))
-                {
-                    // simply play sound (will be played at 100% volume regardless of the player's volume settings)
-                    player.ExecuteClientCommand($"play {Config.CommandSound}");
-                }
-                else
-                {
-                    // only players that rolled the dice will hear the sound
-                    RecipientFilter filter = [player];
-                    // will be played at the player's volume settings
-                    _ = player.EmitSound(Config.CommandSound, filter);
-                }
-            }
-            else // play specific sound for a dice (if any)
-            {
-                // only players that rolled the dice will hear the sound
-                RecipientFilter filter = [player];
-                // will be played at the player's volume settings
-                _ = player.EmitSound($"RollTheDice.{rolledDice}", filter);
-            }
+            PlayDiceSoundForPlayer(player, rolledDice, true);
         }
 
         [ConsoleCommand("rollthedice", "RollTheDice admin commands")]

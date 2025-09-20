@@ -31,175 +31,175 @@
 
 	RollTheDice.BigTaserBattery = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/BigTaserBattery.vsnd"
 	}
 
 	RollTheDice.ChangeName = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/ChangeName.vsnd"
 	}
 
 	RollTheDice.ChangePlayerModel = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/ChangePlayerModel.vsnd"
 	}
 
 	RollTheDice.ChangePlayerSize = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/ChangePlayerSize.vsnd"
 	}
 
 	RollTheDice.ChickenLeader = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/ChickenLeader.vsnd"
 	}
 
 	RollTheDice.Cloak = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/Cloak.vsnd"
 	}
 
 	RollTheDice.DecreaseHealth = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/DecreaseHealth.vsnd"
 	}
 
 	RollTheDice.DecreaseMoney = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/DecreaseMoney.vsnd"
 	}
 
 	RollTheDice.DisguiseAsProp = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/DisguiseAsProp.vsnd"
 	}
 
 	RollTheDice.GiveHealthShot = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/GiveHealthShot.vsnd"
 	}
 
 	RollTheDice.Glow = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/Glow.vsnd"
 	}
 
 	RollTheDice.HighGravity = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/HighGravity.vsnd"
 	}
 
 	RollTheDice.IncreaseHealth = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/IncreaseHealth.vsnd"
 	}
 
 	RollTheDice.IncreaseMoney = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/IncreaseMoney.vsnd"
 	}
 
 	RollTheDice.IncreaseSpeed = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/IncreaseSpeed.vsnd"
 	}
 
 	RollTheDice.Invisible = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/Invisible.vsnd"
 	}
 
 	RollTheDice.LowGravity = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/LowGravity.vsnd"
 	}
 
 	RollTheDice.MakeFakeGunSounds = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/MakeFakeGunSounds.vsnd"
 	}
 
 	RollTheDice.MakeHostageSounds = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/MakeHostageSounds.vsnd"
 	}
 
 	RollTheDice.NoExplosives = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/NoExplosives.vsnd"
 	}
 
 	RollTheDice.NoRecoil = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/NoRecoil.vsnd"
 	}
 
 	RollTheDice.OneHP = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/OneHP.vsnd"
 	}
 
 	RollTheDice.PlayerAsChicken = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/PlayerAsChicken.vsnd"
 	}
 
 	RollTheDice.PlayerHealthBar = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/PlayerHealthBar.vsnd"
 	}
 
 	RollTheDice.Respawn = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/Respawn.vsnd"
 	}
 
 	RollTheDice.StripWeapons = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/StripWeapons.vsnd"
 	}
 
 	RollTheDice.Suicide = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/Suicide.vsnd"
 	}
 
 	RollTheDice.ThirdPersonView = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/ThirdPersonView.vsnd"
 	}
 
 	RollTheDice.Vampire = 
 	{
-		base = "RollTheDice"
+		base = "RollTheDice.Base"
 		vsnd_files_track_01 = "sounds/cs2/dices/Vampire.vsnd"
 	}
 }

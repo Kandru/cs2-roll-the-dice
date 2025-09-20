@@ -62,6 +62,19 @@ namespace RollTheDice
         [JsonPropertyName("roll_the_dice_every_x_seconds")] public int RollTheDiceEveryXSeconds { get; set; } = 0;
     }
 
+    public class SoundConfig
+    {
+        // sound to play on dice roll
+        [JsonPropertyName("dice_sound")] public string DiceRollSound { get; set; } = "sounds/ui/coin_pickup_01.vsnd";
+        // whether or not to play only on command usage or also on event trigger
+        [JsonPropertyName("play_on_command_only")] public bool PlayOnCommandOnly { get; set; } = false;
+    }
+
+    public class PrecacheConfig
+    {
+        [JsonPropertyName("soundevent_file")] public string SoundEventFile { get; set; } = "soundevents/soundevents_rollthedice.vsndevts";
+    }
+
     public class PluginConfig : BasePluginConfig
     {
         // disabled
@@ -76,14 +89,16 @@ namespace RollTheDice
         [JsonPropertyName("cooldown_rounds")] public int CooldownRounds { get; set; } = 0;
         // limit !rtd usage to every X seconds (only set one of both)
         [JsonPropertyName("cooldown_seconds")] public int CooldownSeconds { get; set; } = 0;
-        // sound to play on command usage
-        [JsonPropertyName("sound_command")] public string CommandSound { get; set; } = "sounds/ui/coin_pickup_01.vsnd";
         // price to charge on command usage
         [JsonPropertyName("price_to_dice")] public int PriceToDice { get; set; } = 0;
         // allow re-dice after respawn
         [JsonPropertyName("allow_dice_after_respawn")] public bool AllowDiceAfterRespawn { get; set; } = false;
         // dices configuration
         [JsonPropertyName("dices")] public DicesConfig Dices { get; set; } = new DicesConfig();
+        // sound configuration
+        [JsonPropertyName("sounds")] public SoundConfig Sounds { get; set; } = new SoundConfig();
+        // precache configuration
+        [JsonPropertyName("precache")] public PrecacheConfig Precache { get; set; } = new PrecacheConfig();
         // map configurations
         [JsonPropertyName("maps")] public Dictionary<string, MapConfig> MapConfigs { get; set; } = [];
         // player configuration
