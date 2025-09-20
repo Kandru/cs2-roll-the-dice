@@ -110,6 +110,10 @@ namespace RollTheDice.Dices
             {
                 return;
             }
+
+            // Get the speed value before the delayed execution
+            float speedToApply = speed >= 0 ? speed : (_playerSpeed.TryGetValue(player, out float playerSpeed) ? playerSpeed : 1f);
+
             // delay 3 frames to ensure the velocity modifier is set correctly
             Server.NextFrame(() =>
             {
@@ -122,7 +126,7 @@ namespace RollTheDice.Dices
                         {
                             return;
                         }
-                        player.PlayerPawn.Value.VelocityModifier = speed >= 0 ? speed : _playerSpeed[player];
+                        player.PlayerPawn.Value.VelocityModifier = speedToApply;
                         Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawn", "m_flVelocityModifier");
                     });
                 });
