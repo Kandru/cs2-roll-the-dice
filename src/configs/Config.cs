@@ -122,7 +122,7 @@ namespace RollTheDice
             // select map config whose regexes (keys) match against the map name
             // use default global config if no map config matches
             _currentMapConfig = Config.MapConfigs
-                .Where(mapConfig => FileSystemName.MatchesSimpleExpression(mapConfig.Key, mapName))
+                .Where(mapConfig => FileSystemName.MatchesSimpleExpression(mapConfig.Key, mapName, ignoreCase: true))
                 .Select(mapConfig => mapConfig.Value)
                 .FirstOrDefault() ?? new MapConfig
                 {
