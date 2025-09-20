@@ -1,0 +1,205 @@
+<!-- kv3 encoding:text:version{e21c7f3c-8a33-41c5-9977-a76d3a32aa0d} format:generic:version{7412167c-06e9-4698-aff2-e63eb59037e7} -->
+{
+	RollTheDice.Base =
+	{
+		type = "csgo_mega"
+		volume = 1.000000
+		pitch = 1.000000
+        occlusion_intensity = 0
+        distance_effect_mix = 0
+		mixgroup = "Ambient"
+		distance_volume_mapping_curve = 
+		[
+			[
+				0.000000,
+				1.000000,
+				0.000000,
+				0.000000,
+				2.000000,
+				3.000000,
+			],
+			[
+				2048.000000,
+				1.000000,
+				0.000000,
+				0.000000,
+				2.000000,
+				3.000000,
+			],
+		]
+	}
+
+	RollTheDice.BigTaserBattery = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/BigTaserBattery.vsnd"
+	}
+
+	RollTheDice.ChangeName = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/ChangeName.vsnd"
+	}
+
+	RollTheDice.ChangePlayerModel = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/ChangePlayerModel.vsnd"
+	}
+
+	RollTheDice.ChangePlayerSize = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/ChangePlayerSize.vsnd"
+	}
+
+	RollTheDice.ChickenLeader = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/ChickenLeader.vsnd"
+	}
+
+	RollTheDice.Cloak = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/Cloak.vsnd"
+	}
+
+	RollTheDice.DecreaseHealth = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/DecreaseHealth.vsnd"
+	}
+
+	RollTheDice.DecreaseMoney = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/DecreaseMoney.vsnd"
+	}
+
+	RollTheDice.DisguiseAsProp = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/DisguiseAsProp.vsnd"
+	}
+
+	RollTheDice.GiveHealthShot = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/GiveHealthShot.vsnd"
+	}
+
+	RollTheDice.Glow = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/Glow.vsnd"
+	}
+
+	RollTheDice.HighGravity = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/HighGravity.vsnd"
+	}
+
+	RollTheDice.IncreaseHealth = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/IncreaseHealth.vsnd"
+	}
+
+	RollTheDice.IncreaseMoney = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/IncreaseMoney.vsnd"
+	}
+
+	RollTheDice.IncreaseSpeed = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/IncreaseSpeed.vsnd"
+	}
+
+	RollTheDice.Invisible = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/Invisible.vsnd"
+	}
+
+	RollTheDice.LowGravity = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/LowGravity.vsnd"
+	}
+
+	RollTheDice.MakeFakeGunSounds = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/MakeFakeGunSounds.vsnd"
+	}
+
+	RollTheDice.MakeHostageSounds = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/MakeHostageSounds.vsnd"
+	}
+
+	RollTheDice.NoExplosives = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/NoExplosives.vsnd"
+	}
+
+	RollTheDice.NoRecoil = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/NoRecoil.vsnd"
+	}
+
+	RollTheDice.OneHP = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/OneHP.vsnd"
+	}
+
+	RollTheDice.PlayerAsChicken = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/PlayerAsChicken.vsnd"
+	}
+
+	RollTheDice.PlayerHealthBar = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/PlayerHealthBar.vsnd"
+	}
+
+	RollTheDice.Respawn = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/Respawn.vsnd"
+	}
+
+	RollTheDice.StripWeapons = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/StripWeapons.vsnd"
+	}
+
+	RollTheDice.Suicide = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/Suicide.vsnd"
+	}
+
+	RollTheDice.ThirdPersonView = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/ThirdPersonView.vsnd"
+	}
+
+	RollTheDice.Vampire = 
+	{
+		base = "QuakeSounds.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/Vampire.vsnd"
+	}
+}
