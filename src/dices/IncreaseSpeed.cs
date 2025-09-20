@@ -47,13 +47,15 @@ namespace RollTheDice.Dices
             });
         }
 
-        public override void Remove(CCSPlayerController player, DiceRemoveReason reason = DiceRemoveReason.GameLogic)
+        public override void Remove(CCSPlayerController? player, DiceRemoveReason reason = DiceRemoveReason.GameLogic)
         {
             // check if player is valid and has a pawn
-            if (player.PlayerPawn?.Value?.IsValid == true)
+            if (player == null
+                || player.PlayerPawn?.Value?.IsValid == false)
             {
-                SetPlayerSpeed(player, 1f);
+                return;
             }
+            SetPlayerSpeed(player, 1f);
             _ = _playerSpeed.Remove(player);
             _ = _players.Remove(player);
         }
