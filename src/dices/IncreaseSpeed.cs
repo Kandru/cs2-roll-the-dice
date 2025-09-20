@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
+using RollTheDice.Enums;
 
 namespace RollTheDice.Dices
 {
@@ -9,7 +10,6 @@ namespace RollTheDice.Dices
         public override string ClassName => "IncreaseSpeed";
         public override List<string> Events => [
             "EventPlayerHurt",
-            "EventPlayerDeath",
             "EventPlayerFalldamage",
             "EventHostageFollows",
             "EventHostageStopsFollowing"
@@ -47,7 +47,7 @@ namespace RollTheDice.Dices
             });
         }
 
-        public override void Remove(CCSPlayerController player)
+        public override void Remove(CCSPlayerController player, DiceRemoveReason reason = DiceRemoveReason.GameLogic)
         {
             // check if player is valid and has a pawn
             if (player.PlayerPawn?.Value?.IsValid == true)
@@ -76,19 +76,6 @@ namespace RollTheDice.Dices
         public HookResult EventPlayerHurt(EventPlayerHurt @event, GameEventInfo info)
         {
             SetPlayerSpeed(@event.Userid);
-            return HookResult.Continue;
-        }
-
-        public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
-        {
-            CCSPlayerController? player = @event.Userid;
-            if (player == null
-                || !_players.Contains(player)
-                || player.PlayerPawn?.Value?.WeaponServices == null)
-            {
-                return HookResult.Continue;
-            }
-            Remove(player);
             return HookResult.Continue;
         }
 

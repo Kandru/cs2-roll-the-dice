@@ -1,15 +1,13 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
+using RollTheDice.Enums;
 
 namespace RollTheDice.Dices
 {
     public class ChangePlayerModel : DiceBlueprint
     {
         public override string ClassName => "ChangePlayerModel";
-        public override List<string> Events => [
-            "EventPlayerDeath"
-        ];
         private readonly Dictionary<CCSPlayerController, string> _oldModels = [];
 
         public ChangePlayerModel(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
@@ -48,7 +46,7 @@ namespace RollTheDice.Dices
             });
         }
 
-        public override void Remove(CCSPlayerController player)
+        public override void Remove(CCSPlayerController player, DiceRemoveReason reason = DiceRemoveReason.GameLogic)
         {
             ChangeModel(player, _oldModels[player]);
             _ = _players.Remove(player);
@@ -68,19 +66,6 @@ namespace RollTheDice.Dices
         public override void Destroy()
         {
             Reset();
-        }
-
-        public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
-        {
-            CCSPlayerController? player = @event.Userid;
-            if (player == null
-                || !_players.Contains(player)
-                || player.PlayerPawn?.Value?.WeaponServices == null)
-            {
-                return HookResult.Continue;
-            }
-            Remove(player);
-            return HookResult.Continue;
         }
 
         private static void ChangeModel(CCSPlayerController? player, string model)

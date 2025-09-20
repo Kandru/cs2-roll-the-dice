@@ -1,6 +1,7 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using RollTheDice.Dices;
+using RollTheDice.Enums;
 using RollTheDice.Utils;
 
 namespace RollTheDice
@@ -24,6 +25,7 @@ namespace RollTheDice
             // register listeners
             RegisterEventHandler<EventRoundStart>(OnRoundStart);
             RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
+            RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
             RegisterListener<Listeners.OnMapStart>(OnMapStart);
             RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
@@ -31,15 +33,15 @@ namespace RollTheDice
             // print message if hot reload
             if (hotReload)
             {
+                Console.WriteLine(Localizer["core.hotreload"]);
                 // set current map
                 _currentMap = Server.MapName;
                 // initialize configuration
                 LoadMapConfig(_currentMap);
-                Console.WriteLine(Localizer["core.hotreload"]);
                 _isDuringRound = true;
+                // initialize dice modules
+                InitializeModules();
             }
-            // initialize dice modules
-            InitializeModules();
         }
 
         public override void Unload(bool hotReload)
@@ -51,6 +53,7 @@ namespace RollTheDice
             // unregister listeners
             DeregisterEventHandler<EventRoundStart>(OnRoundStart);
             DeregisterEventHandler<EventRoundEnd>(OnRoundEnd);
+            DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             DeregisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
             RemoveListener<Listeners.OnMapStart>(OnMapStart);
             RemoveListener<Listeners.OnMapEnd>(OnMapEnd);
@@ -136,9 +139,15 @@ namespace RollTheDice
             return HookResult.Continue;
         }
 
+        private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
+        {
+            RemoveDiceForPlayer(@event.Userid, DiceRemoveReason.Death);
+            return HookResult.Continue;
+        }
+
         private HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
         {
-            RemoveDiceForPlayer(@event.Userid);
+            RemoveDiceForPlayer(@event.Userid, DiceRemoveReason.Disconnect);
             return HookResult.Continue;
         }
 
@@ -170,7 +179,7 @@ namespace RollTheDice
                 return (null, null);
             }
             // remove old dice first
-            RemoveDiceForPlayer(player);
+            RemoveDiceForPlayer(player, DiceRemoveReason.NewDice);
             // roll the dice for the player - get random dice and add player
             if (_dices.Count > 0)
             {
@@ -197,7 +206,7 @@ namespace RollTheDice
             return (null, null);
         }
 
-        private void RemoveDiceForPlayer(CCSPlayerController? player)
+        private void RemoveDiceForPlayer(CCSPlayerController? player, DiceRemoveReason reason)
         {
             if (player == null
                 || !player.IsValid)
@@ -209,7 +218,7 @@ namespace RollTheDice
             {
                 if (dice._players.Contains(player))
                 {
-                    dice.Remove(player);
+                    dice.Remove(player, reason);
                 }
             }
         }
@@ -219,7 +228,7 @@ namespace RollTheDice
             // reset all dices for all players
             foreach (DiceBlueprint dice in _dices)
             {
-                dice.Destroy();
+                dice.Reset();
             }
         }
 
@@ -345,6 +354,20 @@ namespace RollTheDice
             RegisterUserMessageHooks();
         }
 
+        private void DestroyModules()
+        {
+            // deregister listeners
+            DeregisterListeners();
+            DeregisterEventHandlers();
+            DeregisterUserMessageHooks();
+            // destroy all cosmetics modules
+            foreach (DiceBlueprint module in _dices)
+            {
+                module.Destroy();
+            }
+            _dices.Clear();
+        }
+
         private void RegisterListeners()
         {
             foreach (DiceBlueprint module in _dices)
@@ -421,21 +444,6 @@ namespace RollTheDice
                     DynamicHandlers.DeregisterUserMessageHook(this, userMessageId, module, hookMode);
                 }
             }
-        }
-
-        private void DestroyModules()
-        {
-            //DebugPrint("Destroying all modules...");
-            // deregister listeners
-            DeregisterListeners();
-            DeregisterEventHandlers();
-            DeregisterUserMessageHooks();
-            // destroy all cosmetics modules
-            foreach (DiceBlueprint module in _dices)
-            {
-                module.Destroy();
-            }
-            _dices.Clear();
         }
     }
 }

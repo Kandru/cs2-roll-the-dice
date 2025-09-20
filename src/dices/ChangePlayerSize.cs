@@ -1,16 +1,13 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
-
+using RollTheDice.Enums;
 
 namespace RollTheDice.Dices
 {
     public class ChangePlayerSize : DiceBlueprint
     {
         public override string ClassName => "ChangePlayerSize";
-        public override List<string> Events => [
-            "EventPlayerDeath"
-        ];
         public readonly Random _random = new();
 
         public ChangePlayerSize(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
@@ -45,7 +42,7 @@ namespace RollTheDice.Dices
             });
         }
 
-        public override void Remove(CCSPlayerController player)
+        public override void Remove(CCSPlayerController player, DiceRemoveReason reason = DiceRemoveReason.GameLogic)
         {
             ChangeSize(player, 1f);
             _ = _players.Remove(player);
@@ -63,19 +60,6 @@ namespace RollTheDice.Dices
         public override void Destroy()
         {
             Reset();
-        }
-
-        public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
-        {
-            CCSPlayerController? player = @event.Userid;
-            if (player == null
-                || !_players.Contains(player)
-                || player.PlayerPawn?.Value?.WeaponServices == null)
-            {
-                return HookResult.Continue;
-            }
-            Remove(player);
-            return HookResult.Continue;
         }
 
         private void ChangeSize(CCSPlayerController? player, float size)

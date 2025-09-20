@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
+using RollTheDice.Enums;
 
 namespace RollTheDice.Dices
 {
@@ -34,6 +35,16 @@ namespace RollTheDice.Dices
             {
                 { "playerName", player.PlayerName }
             });
+        }
+
+        public override void Remove(CCSPlayerController player, DiceRemoveReason reason = DiceRemoveReason.GameLogic)
+        {
+            // ignore removal on death, because player will be removed after respawn
+            if (reason == DiceRemoveReason.Death)
+            {
+                return;
+            }
+            _ = _players.Remove(player);
         }
 
         public HookResult EventPlayerDeath(EventPlayerDeath @event, GameEventInfo info)

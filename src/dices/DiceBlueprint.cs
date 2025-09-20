@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
+using RollTheDice.Enums;
 
 namespace RollTheDice.Dices
 {
@@ -34,7 +35,7 @@ namespace RollTheDice.Dices
             });
         }
 
-        public virtual void Remove(CCSPlayerController player)
+        public virtual void Remove(CCSPlayerController player, DiceRemoveReason reason = DiceRemoveReason.GameLogic)
         {
             _ = _players.Remove(player);
         }
