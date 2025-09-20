@@ -82,8 +82,7 @@ bind "o" rtd
 Enables or disables the automatic !rtd mode (will roll the dice automatically on spawn depending on the settings made inside your configuration).
 
 ### !givedice (@rollthedice/admin)
-
-This command triggers the !rtd command for all or specific players. Only available with the correct permission (@rollthedice/admin).
+This admin command allows administrators to force dice rolls for players. Requires the @rollthedice/admin permission. Dice names correspond to the filenames in the [dices folder](tree/main/src/dices/) and are case-insensitive.
 
 ```
 // roll randomly for everyone
