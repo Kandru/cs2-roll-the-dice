@@ -97,6 +97,12 @@ namespace RollTheDice
 
         private HookResult OnRoundFreezeEnd(EventRoundFreezeEnd @event, GameEventInfo info)
         {
+            // abort if warmup
+            object? warmupPeriodObj = GameRules.Get("WarmupPeriod");
+            if (!Config.AllowRtdDuringWarmup && warmupPeriodObj is bool warmupPeriod && warmupPeriod)
+            {
+                return HookResult.Continue;
+            }
             if (Config.DiceTrigger.TriggerEvent != DiceTriggerEvent.RoundFreezeEnd)
             {
                 return HookResult.Continue;
