@@ -69,6 +69,8 @@ namespace RollTheDice
             _playersThatRolledTheDice.Clear();
             // reset dices (necessary after warmup)
             RemoveDicesForPlayers();
+            // refresh game rules (to avoid caching warmup value)
+            GameRules.Refresh();
             // abort if warmup
             object? warmupPeriodObj = GameRules.Get("WarmupPeriod");
             if (!Config.AllowRtdDuringWarmup && warmupPeriodObj is bool warmupPeriod && warmupPeriod)

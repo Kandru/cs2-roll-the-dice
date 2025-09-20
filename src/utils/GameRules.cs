@@ -10,9 +10,9 @@ namespace RollTheDice.Utils
         public static CCSGameRules? _gameRules;
         private static IEnumerable<CCSTeam>? _teamManager;
 
-        private static CCSGameRules? GetGameRule()
+        private static CCSGameRules? GetGameRule(bool forceRefresh = false)
         {
-            if (_gameRules == null)
+            if (_gameRules == null || forceRefresh)
             {
                 _gameRules = Utilities.FindAllEntitiesByDesignerName<CCSGameRulesProxy>("cs_gamerules")
                     .FirstOrDefault(static e => e != null && e.IsValid)?.GameRules;
@@ -20,7 +20,9 @@ namespace RollTheDice.Utils
             return _gameRules;
         }
 
-        public static object? Get(string rule)
+        public static void Refresh() => _ = GetGameRule(true);
+
+        public static object? Get(string rule, bool forceRefresh = false)
         {
             _ = GetGameRule();
             System.Reflection.PropertyInfo? property = _gameRules?.GetType().GetProperty(rule);
