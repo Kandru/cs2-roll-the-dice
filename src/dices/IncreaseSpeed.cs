@@ -105,8 +105,7 @@ namespace RollTheDice.Dices
 
         private void SetPlayerSpeed(CCSPlayerController? player, float speed = -1f)
         {
-            if (player?.IsValid != true
-            || !_players.Contains(player))
+            if (player?.IsValid != true)
             {
                 return;
             }
@@ -121,8 +120,12 @@ namespace RollTheDice.Dices
                 {
                     Server.NextFrame(() =>
                     {
-                        if (player?.PlayerPawn?.IsValid == false
-                            || player?.PlayerPawn?.Value == null)
+                        // Re-validate player and check if still in our tracking
+                        if (player == null
+                            || player?.IsValid == false
+                            || player?.PlayerPawn?.IsValid == false
+                            || player?.PlayerPawn?.Value == null
+                            || !_players.Contains(player))
                         {
                             return;
                         }
