@@ -90,7 +90,7 @@ namespace RollTheDice.Dices
             _glow.Glow.GlowRange = 5000;
             _glow.Glow.GlowTeam = -1;
             _glow.Glow.GlowType = 3;
-            _glow.Glow.GlowRangeMin = 0;
+            _glow.Glow.GlowRangeMin = 20;
             return (_glowProxy, _glow);
         }
 
