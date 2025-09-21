@@ -405,6 +405,11 @@ namespace RollTheDice
             {
                 _dices.Add(new Invisible(Config, _currentMapConfig, Localizer));
             }
+            // initialize Glow module
+            if (_currentMapConfig.Dices.Glow.Enabled)
+            {
+                _dices.Add(new Glow(Config, _currentMapConfig, Localizer));
+            }
             // register listeners
             RegisterListeners();
             RegisterEventHandlers();

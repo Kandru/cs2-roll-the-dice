@@ -32,6 +32,7 @@ namespace RollTheDice
         [JsonPropertyName("strip_weapons")] public StripWeaponsConfig StripWeapons { get; set; } = new StripWeaponsConfig();
         [JsonPropertyName("vampire")] public VampireConfig Vampire { get; set; } = new VampireConfig();
         [JsonPropertyName("invisible")] public InvisibleConfig Invisible { get; set; } = new InvisibleConfig();
+        [JsonPropertyName("glow")] public GlowConfig Glow { get; set; } = new GlowConfig();
     }
 
     public class MapConfig
