@@ -410,6 +410,11 @@ namespace RollTheDice
             {
                 _dices.Add(new Glow(Config, _currentMapConfig, Localizer));
             }
+            // initialize PlayerHealthBar module
+            if (_currentMapConfig.Dices.PlayerHealthBar.Enabled)
+            {
+                _dices.Add(new PlayerHealthBar(Config, _currentMapConfig, Localizer));
+            }
             // register listeners
             RegisterListeners();
             RegisterEventHandlers();

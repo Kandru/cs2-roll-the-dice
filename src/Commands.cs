@@ -37,6 +37,7 @@ namespace RollTheDice
                 {
                     if (_playersThatRolledTheDice.ContainsKey(entry))
                     {
+                        RemoveDiceForPlayer(entry, Enums.DiceRemoveReason.NewDice);
                         _playersThatRolledTheDice.Remove(entry);
                     }
                     // roll the dice
