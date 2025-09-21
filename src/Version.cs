@@ -4,6 +4,6 @@ namespace RollTheDice
 {
     public partial class RollTheDice : BasePlugin
     {
-        public override string ModuleVersion => "2.0.14";
+        public override string ModuleVersion => "2.0.15";
     }
 }
