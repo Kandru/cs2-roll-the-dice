@@ -49,6 +49,8 @@ namespace RollTheDice
                     }
                     // add player to the list of players that rolled the dice
                     _playersThatRolledTheDice[entry] = diceDescription ?? rolledDice;
+                    // play sound
+                    PlayDiceSoundForPlayer(player, rolledDice, false);
                 }
             }
             else
