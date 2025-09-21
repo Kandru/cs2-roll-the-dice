@@ -5,9 +5,15 @@
 		type = "csgo_mega"
 		volume = 1.000000
 		pitch = 1.000000
+		mixgroup = "VO"
+		use_fadetime_volume_mapping_curve = false
+		block_matching_events = false
+    	block_match_entity = false
+		block_duration = 0.000000
+    	block_distance = 0.000000
         occlusion_intensity = 0
+		occlusion_frequency_scale = 0.000000
         distance_effect_mix = 0
-		mixgroup = "Ambient"
 		distance_volume_mapping_curve = 
 		[
 			[
@@ -26,6 +32,12 @@
 				2.000000,
 				3.000000,
 			],
+		]
+		position_offset = 
+		[
+			0.000000,
+			0.000000,
+			60.000000,
 		]
 	}
 
