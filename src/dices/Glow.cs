@@ -29,6 +29,7 @@ namespace RollTheDice.Dices
             {
                 return;
             }
+            _players.Add(player);
             _playerGlows.Add(player, CreateGlow(player.Pawn.Value, player.TeamNum == (int)CsTeam.Terrorist ? Color.Red : Color.Blue));
             NotifyPlayers(player, ClassName, new()
             {

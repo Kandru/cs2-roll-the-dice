@@ -16,7 +16,7 @@ namespace RollTheDice.Dices
         public override List<string> Listeners => [
         //    "OnTick" -> disabled for now due to error Invalid argument type(s) supplied to Virtual Function (GetPickerEntity)
         ];
-        public new Dictionary<CCSPlayerController, Dictionary<CCSPlayerPawn, float>> _players = [];
+        private Dictionary<CCSPlayerController, Dictionary<CCSPlayerPawn, float>> _playersHealthbar = [];
 
         public PlayerHealthBar(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
@@ -33,7 +33,8 @@ namespace RollTheDice.Dices
             {
                 return;
             }
-            _players.Add(player, []);
+            _players.Add(player);
+            _playersHealthbar.Add(player, []);
             NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName }
@@ -43,11 +44,13 @@ namespace RollTheDice.Dices
         public override void Remove(CCSPlayerController player, DiceRemoveReason reason = DiceRemoveReason.GameLogic)
         {
             _ = _players.Remove(player);
+            _ = _playersHealthbar.Remove(player);
         }
 
         public override void Reset()
         {
             _players.Clear();
+            _playersHealthbar.Clear();
         }
 
         public override void Destroy()
@@ -65,7 +68,7 @@ namespace RollTheDice.Dices
             || attacker?.IsValid != true
             || victim.TeamNum == attacker.TeamNum
             || victim == attacker
-            || !_players.ContainsKey(attacker))
+            || !_playersHealthbar.ContainsKey(attacker))
             {
                 return HookResult.Continue;
             }
@@ -88,7 +91,7 @@ namespace RollTheDice.Dices
 
         public void OnTick()
         {
-            if (_players.Count == 0
+            if (_playersHealthbar.Count == 0
                 || Server.TickCount % 8 != 0
                 || GameRules._gameRules == null)
             {
@@ -96,7 +99,7 @@ namespace RollTheDice.Dices
             }
 
             // worker
-            foreach (KeyValuePair<CCSPlayerController, Dictionary<CCSPlayerPawn, float>> playerEntry in _players.ToDictionary())
+            foreach (KeyValuePair<CCSPlayerController, Dictionary<CCSPlayerPawn, float>> playerEntry in _playersHealthbar.ToDictionary())
             {
                 CCSPlayerController player = playerEntry.Key;
                 Dictionary<CCSPlayerPawn, float> healthBarData = playerEntry.Value;
