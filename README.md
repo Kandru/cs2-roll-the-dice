@@ -1,6 +1,5 @@
-> [!CAUTION]
-> This plug-in is in BETA-TEST since the latest big CS2 update! Not all dices and features are currently implemented. Use at your own risk and look for updates weekly. Breaking changes are also done in the config during the BETA-UPDATES! So backup before (or just update manually afterwards).
-
+> [!TIP]
+> You can test this plug-in by joining our community server via `connect server.counterstrike.party:27030` or via https://counterstrike.party
 
 # CounterstrikeSharp - Roll The Dice
 
