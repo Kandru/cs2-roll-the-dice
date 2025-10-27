@@ -26,12 +26,52 @@ namespace RollTheDice.Dices
             {
                 return;
             }
-            // get random player size
-            float playerSize = float.Round((float)((_random.NextDouble()
-                * ((float)_config.Dices.ChangePlayerSize.MaxSize
-                - (float)_config.Dices.ChangePlayerSize.MinSize))
-                + (float)_config.Dices.ChangePlayerSize.MinSize)
-            , 2);
+            // get random player size, avoiding sizes too close to 1.0 (100%)
+            float minSize = (float)_config.Dices.ChangePlayerSize.MinSize;
+            float maxSize = (float)_config.Dices.ChangePlayerSize.MaxSize;
+            float minChangeAmount = (float)_config.Dices.ChangePlayerSize.MinChangeAmount;
+
+            // determine valid ranges: [minSize, 1.0 - minChangeAmount] and [1.0 + minChangeAmount, maxSize]
+            float lowerRangeMax = Math.Min(1.0f - minChangeAmount, maxSize);
+            float upperRangeMin = Math.Max(1.0f + minChangeAmount, minSize);
+
+            float playerSize;
+            // check if both ranges are valid
+            bool hasLowerRange = minSize < lowerRangeMax;
+            bool hasUpperRange = upperRangeMin < maxSize;
+
+            if (hasLowerRange && hasUpperRange)
+            {
+                // randomly choose between lower and upper range
+                if (_random.Next(2) == 0)
+                {
+                    // generate in lower range [minSize, 1.0 - minChangeAmount]
+                    playerSize = (float)(_random.NextDouble() * (lowerRangeMax - minSize) + minSize);
+                }
+                else
+                {
+                    // generate in upper range [1.0 + minChangeAmount, maxSize]
+                    playerSize = (float)(_random.NextDouble() * (maxSize - upperRangeMin) + upperRangeMin);
+                }
+            }
+            else if (hasLowerRange)
+            {
+                // only lower range is valid
+                playerSize = (float)(_random.NextDouble() * (lowerRangeMax - minSize) + minSize);
+            }
+            else if (hasUpperRange)
+            {
+                // only upper range is valid
+                playerSize = (float)(_random.NextDouble() * (maxSize - upperRangeMin) + upperRangeMin);
+            }
+            else
+            {
+                // no valid range (shouldn't happen with proper config), fallback logic
+                playerSize = (float)(_random.NextDouble() * (maxSize - minSize) + minSize);
+            }
+
+            playerSize = float.Round(playerSize, 2);
+
             // change player size
             ChangeSize(player, playerSize);
             _players.Add(player);
