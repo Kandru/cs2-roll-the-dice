@@ -85,7 +85,6 @@ namespace RollTheDice.Dices
             message.SetFloat("healthratio_new", newHealth / victimPawn.MaxHealth);
             message.SetInt("style", 0);
             message.Send(attacker);
-            Console.WriteLine($"Sent health bar update to {attacker.PlayerName}");
             return HookResult.Continue;
         }
 
@@ -107,7 +106,6 @@ namespace RollTheDice.Dices
                 // sanity checks
                 if (player?.PlayerPawn?.Value is not { IsValid: true, LifeState: (byte)LifeState_t.LIFE_ALIVE })
                 {
-                    Console.WriteLine($"Skipping health bar update for {player?.PlayerName}");
                     continue;
                 }
 
@@ -117,7 +115,6 @@ namespace RollTheDice.Dices
                     || playerTarget.TeamNum == player.TeamNum
                     || playerTarget.DesignerName != "player")
                 {
-                    Console.WriteLine($"Skipping health bar update for {player.PlayerName}");
                     continue;
                 }
 
@@ -126,7 +123,6 @@ namespace RollTheDice.Dices
                 {
                     if (lastSentTime + 2.0f > Server.CurrentTime)
                     {
-                        Console.WriteLine($"Skipping health bar update for {player.PlayerName}");
                         continue;
                     }
 
@@ -145,7 +141,6 @@ namespace RollTheDice.Dices
                 message.SetFloat("healthratio_new", healthRatio);
                 message.SetInt("style", 0);
                 message.Send(player);
-                Console.WriteLine($"Sent health bar update to {player.PlayerName}");
             }
         }
     }
