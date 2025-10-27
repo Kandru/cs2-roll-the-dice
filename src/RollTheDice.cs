@@ -16,6 +16,7 @@ namespace RollTheDice
         private readonly Dictionary<CCSPlayerController, string> _playersThatRolledTheDice = [];
         private readonly Dictionary<CCSPlayerController, int> _PlayerCooldown = [];
         private readonly List<DiceBlueprint> _dices = [];
+        private readonly Dictionary<DiceBlueprint, int> _diceUsageCount = [];
         private bool _isDuringRound;
         private readonly Random _random = new(Guid.NewGuid().GetHashCode());
 
@@ -227,6 +228,8 @@ namespace RollTheDice
             _isDuringRound = false;
             _playersThatRolledTheDice.Clear();
             _PlayerCooldown.Clear();
+            // reset dice usage counter for better distribution
+            _diceUsageCount.Clear();
         }
 
         private (string?, string?) RollTheDiceForPlayer(CCSPlayerController? player, string? diceName = null)
@@ -249,18 +252,58 @@ namespace RollTheDice
                     {
                         // execute dice
                         foundDice.Add(player);
+                        // track usage
+                        if (!_diceUsageCount.ContainsKey(foundDice))
+                        {
+                            _diceUsageCount[foundDice] = 0;
+                        }
+                        _diceUsageCount[foundDice]++;
                         return (foundDice.ClassName, foundDice.Description);
                     }
                 }
                 else
                 {
-                    DiceBlueprint randomDice = _dices[_random.Next(_dices.Count)];
+                    // use weighted random selection for better distribution
+                    DiceBlueprint randomDice = GetWeightedRandomDice();
                     // execute dice
                     randomDice.Add(player);
+                    // track usage
+                    if (!_diceUsageCount.ContainsKey(randomDice))
+                    {
+                        _diceUsageCount[randomDice] = 0;
+                    }
+                    _diceUsageCount[randomDice]++;
                     return (randomDice.ClassName, randomDice.Description);
                 }
             }
             return (null, null);
+        }
+
+        private DiceBlueprint GetWeightedRandomDice()
+        {
+            // find the minimum usage count
+            int minUsage = _diceUsageCount.Count > 0 ? _diceUsageCount.Values.Min() : 0;
+
+            // create a pool of least-used dices
+            List<DiceBlueprint> leastUsedDices = [];
+            foreach (DiceBlueprint dice in _dices)
+            {
+                int usage = _diceUsageCount.ContainsKey(dice) ? _diceUsageCount[dice] : 0;
+                // only add dices that have been used the minimum amount or less
+                if (usage <= minUsage)
+                {
+                    leastUsedDices.Add(dice);
+                }
+            }
+
+            // if we have least-used dices, pick randomly from them
+            if (leastUsedDices.Count > 0)
+            {
+                return leastUsedDices[_random.Next(leastUsedDices.Count)];
+            }
+
+            // fallback to pure random (should rarely happen)
+            return _dices[_random.Next(_dices.Count)];
         }
 
         private void RemoveDiceForPlayer(CCSPlayerController? player, DiceRemoveReason reason)
@@ -277,6 +320,10 @@ namespace RollTheDice
                 {
                     dice.Remove(player, reason);
                 }
+            }
+            if (Config.AllowDiceAfterRespawn)
+            {
+                _playersThatRolledTheDice.Remove(player);
             }
         }
 
