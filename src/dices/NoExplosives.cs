@@ -41,7 +41,7 @@ namespace RollTheDice.Dices
 
         private void DiceNoExplosivesHandle(nint handle)
         {
-            _ = new CounterStrikeSharp.API.Modules.Timers.Timer(_config.Dices.NoExplosives.SwapDelay, () =>
+            Server.NextFrame(() =>
             {
                 if (handle == IntPtr.Zero)
                 {
