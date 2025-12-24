@@ -9,8 +9,6 @@ namespace RollTheDice.Configs
         [JsonPropertyName("model_scale")] public float ModelScale { get; set; } = 1f;
         public List<string> RandomModels { get; set; } = [
             "models/food/fruits/banana01a.vmdl",
-            "models/food/fruits/watermelon01a.vmdl",
-            "models/food/vegetables/cabbage01a.vmdl",
             "models/food/vegetables/onion01a.vmdl",
             "models/food/vegetables/pepper01a.vmdl",
             "models/food/vegetables/potato01a.vmdl",
