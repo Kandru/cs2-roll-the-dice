@@ -93,11 +93,13 @@ namespace RollTheDice.Dices
             // settings
             prop.Health = 10;
             prop.MaxHealth = 10;
-            // spawn it
-            prop.DispatchSpawn();
-            // set model and scale
+            // set model
             prop.SetModel(model);
-            prop.CBodyComponent!.SceneNode!.Scale = scale;
+            // scale
+            CEntityKeyValues kv = new();
+            kv.SetFloat("modelscale", scale);
+            // spawn it
+            prop.DispatchSpawn(kv);
             // teleport properly
             prop.Teleport(origin, angles, velocity);
             return prop.Index;
