@@ -26,6 +26,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Decrease Money** - Takes away some of your hard-earned cash
 - **Fog Of War** - Creates a foggy environment obscuring visibility
 - **Give Health Shot** - Provides you with health shots for healing
+- **Glow** - Makes you glow with a colored outline visible through walls
 - **High Gravity** - Increases gravity making you fall faster and jump lower
 - **Increase Health** - Boosts your health above the normal maximum
 - **Increase Money** - Adds extra money to your account for better equipment
@@ -35,6 +36,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **No Explosives** - Replaces all your grenades with harmless vegetables and fruits
 - **No Recoil** - Removes weapon recoil for perfect accuracy
 - **One HP** - Sets your health to just 1 hit point - survive if you can!
+- **Show Player Health Bar** - Displays health bars when aiming at players
 - **Respawn** - Brings you back to life after death with default weapons
 - **Strip Weapons** - Removes all your weapons leaving you defenseless
 - **Suicide** - Instantly eliminates you from the round
@@ -45,14 +47,12 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 The following dices are planned for future releases:
 
 - **Fast Map Action** - Speeds up map-specific interactions like bomb plant and hostage pick-up
-- **Glow** - Makes you glow with a colored outline visible through walls for everyone else
 - **Wallhack** - Shows you the best enemy player through the wall in a given interval
 - **Player as Chicken** - Transforms your player model into a chicken while retaining normal gameplay
 - **Cloak** - Advanced invisibility effect while you're standing still
 - **Disguise as Prop** - Transforms you into a random map prop for ultimate camouflage
 - **Make Fake Gun Sounds** - You will produce random weapon firing sounds
 - **Make Hostage Sounds** - Makes random hostage sounds every now and then
-- **Show Player Health Bar** - Displays health bars when aiming at players
 - **Third Person View** - Forces your camera into third-person perspective for the round
 - **More Recoil** - Reduces weapon accuracy for less precision
 
@@ -330,7 +330,9 @@ Configuration for all available dice effects. Each dice can be enabled/disabled 
 - **increase_money**: Adds money (min_money to max_money)
 - **fog_of_war**: Fog of war effect (color, exponent, density, distance, player_visibility)
 - **give_health_shot**: Gives health shots (min_shots to max_shots)
+- **glow**: Makes player glow with color outline (color)
 - **one_hp**: Sets player to 1 HP
+- **player_health_bar**: Shows health bar when aiming at other players
 - **low_gravity**: Reduces gravity (gravity_scale multiplier)
 - **high_gravity**: Increases gravity (gravity_scale multiplier)
 - **suicide**: Instantly kills the player
