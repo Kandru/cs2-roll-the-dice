@@ -467,6 +467,11 @@ namespace RollTheDice
             {
                 _dices.Add(new FogOfWar(Config, _currentMapConfig, Localizer));
             }
+            // initialize PlayAsChicken module
+            if (_currentMapConfig.Dices.PlayAsChicken.Enabled)
+            {
+                _dices.Add(new PlayAsChicken(Config, _currentMapConfig, Localizer));
+            }
             // register listeners
             RegisterListeners();
             RegisterEventHandlers();

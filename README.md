@@ -41,6 +41,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Strip Weapons** - Removes all your weapons leaving you defenseless
 - **Suicide** - Instantly eliminates you from the round
 - **Vampire** - Converts damage you deal to enemies into health for yourself
+- **Play As Chicken** - Turns you into a chicken temporarily
 
 ## Dice Roadmap
 
@@ -264,6 +265,12 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "density": 1,
       "distance": 10000,
       "player_visibility": 1
+    },
+    "play_as_chicken": {
+      "enabled": true,
+      "sound_volume": 3,
+      "min_sound_wait_time": 3,
+      "max_sound_wait_time": 7
     }
   },
   "sounds": {
@@ -343,6 +350,7 @@ Configuration for all available dice effects. Each dice can be enabled/disabled 
 - **strip_weapons**: Removes all weapons
 - **vampire**: Converts damage dealt into health (max_health limit)
 - **invisible**: Makes player partially invisible (percentage_visible: 0.0 = fully invisible, 1.0 = fully visible)
+- **play_as_chicken**: Turns player into a chicken (sound_volume, min_sound_wait_time, max_sound_wait_time)
 
 ### sounds
 

@@ -39,6 +39,34 @@ namespace RollTheDice.Utils
             return prop;
         }
 
+        public static CDynamicProp? CreatePropEntity(Vector position, QAngle rotation, string model, float scale = 1f, CEntityInstance? parent = null)
+        {
+            CDynamicProp? prop = Utilities.CreateEntityByName<CDynamicProp>("prop_dynamic_override");
+            if (prop == null)
+            {
+                return null;
+            }
+            prop.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags = (uint)(prop.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags & ~(1 << 2));
+            // set player model
+            prop.SetModel(model);
+            // do not use default animation stuff
+            prop.UseAnimGraph = true;
+            // scale
+            CEntityKeyValues kv = new();
+            kv.SetFloat("modelscale", scale);
+            // spawn it
+            prop.DispatchSpawn(kv);
+            // start animation
+            prop.AcceptInput("Enable");
+            prop.Teleport(position, rotation);
+            // parent if enabled
+            if (parent != null)
+            {
+                prop.AcceptInput("SetParent", parent, parent, "!activator");
+            }
+            return prop;
+        }
+
         public static string GetModel(CBaseEntity entity)
         {
             return entity?.CBodyComponent?.SceneNode?.GetSkeletonInstance()?.ModelState.ModelName ?? string.Empty;
