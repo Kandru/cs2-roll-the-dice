@@ -101,6 +101,12 @@
 		vsnd_files_track_01 = "sounds/cs2/dices/GiveHealthShot.vsnd"
 	}
 
+	RollTheDice.FogOfWar = 
+	{
+		base = "RollTheDice.Base"
+		vsnd_files_track_01 = "sounds/cs2/dices/FogOfWar.vsnd"
+	}
+
 	RollTheDice.Glow = 
 	{
 		base = "RollTheDice.Base"
