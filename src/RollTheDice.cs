@@ -462,6 +462,11 @@ namespace RollTheDice
             {
                 _dices.Add(new PlayerHealthBar(Config, _currentMapConfig, Localizer));
             }
+            // initialize FogOfWar module
+            if (_currentMapConfig.Dices.FogOfWar.Enabled)
+            {
+                _dices.Add(new FogOfWar(Config, _currentMapConfig, Localizer));
+            }
             // register listeners
             RegisterListeners();
             RegisterEventHandlers();

@@ -34,6 +34,7 @@ namespace RollTheDice
         [JsonPropertyName("invisible")] public InvisibleConfig Invisible { get; set; } = new InvisibleConfig();
         [JsonPropertyName("glow")] public GlowConfig Glow { get; set; } = new GlowConfig();
         [JsonPropertyName("player_health_bar")] public PlayerHealthBarConfig PlayerHealthBar { get; set; } = new PlayerHealthBarConfig();
+        [JsonPropertyName("fog_of_war")] public FogOfWarConfig FogOfWar { get; set; } = new FogOfWarConfig();
     }
 
     public class MapConfig

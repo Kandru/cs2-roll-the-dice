@@ -24,6 +24,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Chicken Leader** - Spawns a flock of chickens that follow you around the map
 - **Decrease Health** - Reduces your health to make you more vulnerable
 - **Decrease Money** - Takes away some of your hard-earned cash
+- **Fog Of War** - Creates a foggy environment obscuring visibility
 - **Give Health Shot** - Provides you with health shots for healing
 - **High Gravity** - Increases gravity making you fall faster and jump lower
 - **Increase Health** - Boosts your health above the normal maximum
@@ -166,6 +167,7 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "enabled": true,
       "min_size": 0.5,
       "max_size": 1.5,
+      "min_change_amount": 0.3,
       "adjust_health": true
     },
     "chicken_leader": {
@@ -232,8 +234,6 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "model_scale": 1,
       "RandomModels": [
         "models/food/fruits/banana01a.vmdl",
-        "models/food/fruits/watermelon01a.vmdl",
-        "models/food/vegetables/cabbage01a.vmdl",
         "models/food/vegetables/onion01a.vmdl",
         "models/food/vegetables/pepper01a.vmdl",
         "models/food/vegetables/potato01a.vmdl",
@@ -250,21 +250,31 @@ This plugin automatically creates a readable JSON configuration file. This confi
     "invisible": {
       "enabled": true,
       "percentage_visible": 0.5
+    },
+    "glow": {
+      "enabled": true
+    },
+    "player_health_bar": {
+      "enabled": true
+    },
+    "fog_of_war": {
+      "enabled": true,
+      "color": "#a3a3a3",
+      "exponent": 0.05,
+      "density": 1,
+      "distance": 10000,
+      "player_visibility": 1
     }
   },
   "sounds": {
-    "dice_sound": "RollTheDice.{dice}",
+    "dice_sound": "sounds/ui/coin_pickup_01.vsnd",
     "play_on_command_only": false
   },
   "precache": {
     "soundevent_file": "soundevents/soundevents_rollthedice.vsndevts"
   },
   "maps": {},
-  "player_configs": {
-    "76561198019045610": {
-      "rtd_on_spawn": true
-    }
-  },
+  "player_configs": {},
   "ConfigVersion": 1
 }
 ```
@@ -318,6 +328,7 @@ Configuration for all available dice effects. Each dice can be enabled/disabled 
 - **increase_health**: Adds health (min_health to max_health)
 - **decrease_money**: Removes money (min_money to max_money)
 - **increase_money**: Adds money (min_money to max_money)
+- **fog_of_war**: Fog of war effect (color, exponent, density, distance, player_visibility)
 - **give_health_shot**: Gives health shots (min_shots to max_shots)
 - **one_hp**: Sets player to 1 HP
 - **low_gravity**: Reduces gravity (gravity_scale multiplier)
