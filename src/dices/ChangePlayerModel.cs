@@ -28,16 +28,21 @@ namespace RollTheDice.Dices
             }
             // get current player model
             string playerModel = player.Pawn.Value.CBodyComponent.SceneNode.GetSkeletonInstance().ModelState.ModelName;
+            // stop if player model could not be saved
+            if (playerModel == "")
+            {
+                return;
+            }
             // save old model
             _oldModels[player] = playerModel;
             // set new player model
             if (player.Team == CsTeam.Terrorist)
             {
-                ChangeModel(player, "characters/models/ctm_sas/ctm_sas.vmdl");
+                ChangeModel(player, _config.Dices.ChangePlayerModel.TModel);
             }
             else
             {
-                ChangeModel(player, "characters/models/tm_phoenix/tm_phoenix.vmdl");
+                ChangeModel(player, _config.Dices.ChangePlayerModel.CTModel);
             }
             _players.Add(player);
             NotifyPlayers(player, ClassName, new()
