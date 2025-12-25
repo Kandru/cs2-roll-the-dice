@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
 
@@ -52,8 +53,11 @@ namespace RollTheDice.Dices
                         (float)(100 * Math.Sin(2 * Math.PI * i / _config.Dices.ChickenLeader.Amount)),
                         0
                     );
+                    // teleport and spawn chicken
                     chicken.Teleport(player.Pawn.Value.AbsOrigin + offset, player.Pawn.Value.AbsRotation, player.Pawn.Value.AbsVelocity);
                     chicken.DispatchSpawn();
+                    // set player as chicken leader
+                    Schema.SetSchemaValue(chicken.Handle, "CChicken", "m_leader", player.Pawn.Raw);
                 }
             }
         }
