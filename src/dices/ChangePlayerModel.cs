@@ -1,3 +1,4 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
@@ -53,7 +54,7 @@ namespace RollTheDice.Dices
 
         public override void Remove(CCSPlayerController player, DiceRemoveReason reason = DiceRemoveReason.GameLogic)
         {
-            ChangeModel(player, _oldModels[player]);
+            Server.NextFrame(() => ChangeModel(player, _oldModels[player]));
             _ = _players.Remove(player);
             _ = _oldModels.Remove(player);
         }
