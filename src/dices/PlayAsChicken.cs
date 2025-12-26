@@ -26,8 +26,8 @@ namespace RollTheDice.Dices
         private readonly string _playersAsChickenModel = "models/chicken/chicken.vmdl";
         private readonly Dictionary<string, uint> _chickenSounds = new()
         {
-            { "Chicken.Idle", 4037203721 },
-            { "Chicken.Panic", 2004932112 },
+            { "Chicken.Idle", SoundEventUtils.GenerateSoundHash("Chicken.Idle") },
+            { "Chicken.Panic", SoundEventUtils.GenerateSoundHash("Chicken.Panic") },
         };
 
         public PlayAsChicken(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
@@ -111,8 +111,8 @@ namespace RollTheDice.Dices
                 {
                     kvp.Key.EmitSound(_chickenSounds.ElementAt(_random.Next(_chickenSounds.Count)).Key);
                     _chickens[kvp.Key]["next_sound"] = (int)Server.CurrentTime + _random.Next(
-                        _config.Dices.PlayAsChicken.MinSoundWaitTime,
-                        _config.Dices.PlayAsChicken.MaxSoundWaitTime);
+                        1,
+                        1);
                 }
             }
         }
@@ -180,20 +180,15 @@ namespace RollTheDice.Dices
             {
                 return HookResult.Continue;
             }
-            // SosSetSoundEventParams
-            var extend = UserMessage.FromId(210);
-            extend.SetUInt("soundevent_guid", soundevent_guid);
-            var volumeBytes = GetSoundVolumeParams(_config.Dices.PlayAsChicken.SoundVolume);
-            // volume -> 0.5f [0xE9, 0x54, 0x60, 0xBD, 0x08, 0x04, 0x00, 0x00, 0x00, 0x00, 0x3F]
-            // volume -> 2f [0xE9, 0x54, 0x60, 0xBD, 0x08, 0x04, 0x00, 0x00, 0x00, 0x00, 0x40]
-            var packedParams = new byte[] { 0xE9, 0x54, 0x60, 0xBD, 0x08, 0x04, 0x00 }.Concat(volumeBytes).ToArray();
-            extend.SetBytes("packed_params", packedParams);
-            extend.Recipients = um.Recipients;
-            extend.Send();
+            new SoundParams
+            {
+                Guid = soundevent_guid,
+                Recipients = um.Recipients
+            }
+            .Volume(_config.Dices.PlayAsChicken.SoundVolume)
+            .Send();
             return HookResult.Continue;
         }
-
-        private byte[] GetSoundVolumeParams(float volume) => BitConverter.GetBytes(volume);
 
         private void SetPlayerVisibility(CCSPlayerController? player, int alpha)
         {
