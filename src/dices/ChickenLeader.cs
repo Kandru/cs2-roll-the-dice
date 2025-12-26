@@ -54,8 +54,9 @@ namespace RollTheDice.Dices
                         0
                     );
                     // teleport and spawn chicken
-                    chicken.Teleport(player.Pawn.Value.AbsOrigin + offset, player.Pawn.Value.AbsRotation, player.Pawn.Value.AbsVelocity);
                     chicken.DispatchSpawn();
+                    chicken.Teleport(player.Pawn.Value.AbsOrigin + offset, player.Pawn.Value.AbsRotation, player.Pawn.Value.AbsVelocity);
+                    chicken.CBodyComponent!.SceneNode!.Scale = _config.Dices.ChickenLeader.ChickenSize;
                     // set player as chicken leader
                     Schema.SetSchemaValue(chicken.Handle, "CChicken", "m_leader", player.Pawn.Raw);
                 }

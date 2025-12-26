@@ -5,6 +5,7 @@ namespace RollTheDice.Configs
     public class ChickenLeaderConfig
     {
         [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
-        [JsonPropertyName("amount_chicken")] public int Amount { get; set; } = 16;
+        [JsonPropertyName("amount_chicken")] public int Amount { get; set; } = 8;
+        [JsonPropertyName("chicken_size")] public float ChickenSize { get; set; } = 2f;
     }
 }
