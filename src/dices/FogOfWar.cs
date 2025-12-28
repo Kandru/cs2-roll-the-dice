@@ -77,8 +77,15 @@ namespace RollTheDice.Dices
             // remove fog for players
             foreach (CCSPlayerController player in _players)
             {
-                Remove(player, DiceRemoveReason.GameLogic);
+                // remove fog controller (if any)
+                CFogController? fogController = GetOrCreateFogController(player);
+                if (fogController == null)
+                {
+                    return;
+                }
+                fogController.Remove();
             }
+            _players.Clear();
         }
 
         public override void Destroy()
