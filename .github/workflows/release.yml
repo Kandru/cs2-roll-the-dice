@@ -111,3 +111,18 @@ jobs:
         asset_path: /home/runner/work/${{ env.REPOSITORY_NAME }}-release-${{ env.version }}.zip
         asset_name: ${{ env.REPOSITORY_NAME }}-release-${{ env.version }}.zip
         asset_content_type: application/zip
+
+    - name: Delete Old Releases (Keep Last 5)
+      if: env.new_version == 'true'
+      run: |
+        releases=$(curl -s -H "Authorization: token ${{ secrets.UPLOAD_TOKEN }}" \
+          "https://api.github.com/repos/${{ github.repository }}/releases?per_page=100" | \
+          jq -r '.[] | .id')
+        
+        release_ids=($releases)
+        releases_to_delete=${release_ids[@]:4}
+        
+        for release_id in $releases_to_delete; do
+          curl -X DELETE -H "Authorization: token ${{ secrets.UPLOAD_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases/$release_id"
+        done
