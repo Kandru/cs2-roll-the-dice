@@ -25,14 +25,14 @@ namespace RollTheDice.Utils
                 return null;
             }
             prop.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags = (uint)(prop.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags & ~(1 << 2));
-            // set player model
-            prop.SetModel(model);
             // do not use default animation stuff
             prop.UseAnimGraph = false;
             // set idle animation
             prop.IdleAnim = animation;
             prop.IdleAnimLoopMode = loop ? AnimLoopMode_t.ANIM_LOOP_MODE_LOOPING : AnimLoopMode_t.ANIM_LOOP_MODE_NOT_LOOPING;
             prop.DispatchSpawn();
+            // set player model
+            prop.SetModel(model);
             // start animation
             prop.AcceptInput("Enable");
             prop.Teleport(position, rotation);
@@ -47,8 +47,6 @@ namespace RollTheDice.Utils
                 return null;
             }
             prop.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags = (uint)(prop.CBodyComponent!.SceneNode!.Owner!.Entity!.Flags & ~(1 << 2));
-            // set player model
-            prop.SetModel(model);
             // do not use default animation stuff
             prop.UseAnimGraph = true;
             // scale
@@ -56,6 +54,8 @@ namespace RollTheDice.Utils
             kv.SetFloat("modelscale", scale);
             // spawn it
             prop.DispatchSpawn(kv);
+            // set player model
+            prop.SetModel(model);
             // start animation
             prop.AcceptInput("Enable");
             prop.Teleport(position, rotation);

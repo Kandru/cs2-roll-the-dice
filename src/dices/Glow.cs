@@ -76,13 +76,13 @@ namespace RollTheDice.Dices
             // create proxy
             _glowProxy.Spawnflags = 256u;
             _glowProxy.RenderMode = RenderMode_t.kRenderNone;
-            _glowProxy.SetModel(modelName);
             _glowProxy.AcceptInput("FollowEntity", entity, _glowProxy, "!activator");
             _glowProxy.DispatchSpawn();
+            _glowProxy.SetModel(modelName);
             // create glow
-            _glow.SetModel(modelName);
             _glow.AcceptInput("FollowEntity", _glowProxy, _glow, "!activator");
             _glow.DispatchSpawn();
+            _glow.SetModel(modelName);
             _glow.Render = Color.FromArgb(255, 255, 255, 255);
             _glow.Glow.GlowColorOverride = color;
             _glow.Spawnflags = 256u;
