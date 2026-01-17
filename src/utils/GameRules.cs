@@ -20,7 +20,10 @@ namespace RollTheDice.Utils
             return _gameRules;
         }
 
-        public static void Refresh() => _ = GetGameRule(true);
+        public static void Refresh()
+        {
+            _ = GetGameRule(true);
+        }
 
         public static object? Get(string rule, bool forceRefresh = false)
         {

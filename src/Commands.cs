@@ -31,10 +31,9 @@ namespace RollTheDice
 
             bool isWildcard = string.IsNullOrWhiteSpace(playerName) || playerName == "*";
 
-            var targetPlayers = Utilities.GetPlayers()
+            List<CCSPlayerController> targetPlayers = [.. Utilities.GetPlayers()
                 .Where(p => p.IsValid && !p.IsHLTV && !p.IsBot)
-                .Where(p => isWildcard || p.PlayerName.Contains(playerName, StringComparison.OrdinalIgnoreCase))
-                .ToList();
+                .Where(p => isWildcard || p.PlayerName.Contains(playerName, StringComparison.OrdinalIgnoreCase))];
 
             if (targetPlayers.Count == 0)
             {
@@ -48,12 +47,15 @@ namespace RollTheDice
                 return;
             }
 
-            foreach (var target in targetPlayers)
+            foreach (CCSPlayerController target in targetPlayers)
             {
                 // RollTheDiceForPlayer handles removing old dice
                 (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(target, string.IsNullOrWhiteSpace(diceName) ? null : diceName);
 
-                if (string.IsNullOrEmpty(rolledDice)) continue;
+                if (string.IsNullOrEmpty(rolledDice))
+                {
+                    continue;
+                }
 
                 _playersThatRolledTheDice[target] = diceDescription ?? rolledDice;
                 PlayDiceSoundForPlayer(target, rolledDice, false);
@@ -73,7 +75,7 @@ namespace RollTheDice
 
             if (command.GetArg(1) == "auto")
             {
-                if (!_playerConfigs.TryGetValue(player.SteamID, out var playerConfig))
+                if (!_playerConfigs.TryGetValue(player.SteamID, out PlayerConfig? playerConfig))
                 {
                     playerConfig = new PlayerConfig();
                     _playerConfigs.Add(player.SteamID, playerConfig);
@@ -97,7 +99,7 @@ namespace RollTheDice
                 return;
             }
 
-            if (_playersThatRolledTheDice.TryGetValue(player, out var diceVal))
+            if (_playersThatRolledTheDice.TryGetValue(player, out string? diceVal))
             {
                 string message = Localizer["command.rollthedice.alreadyrolled"].Value.Replace("{dice}", diceVal);
                 player.PrintToCenter(diceVal);
@@ -147,8 +149,14 @@ namespace RollTheDice
 
             _playersThatRolledTheDice[player] = diceDescription ?? rolledDice;
 
-            if (Config.CooldownRounds > 0) _PlayerCooldown[player] = Config.CooldownRounds;
-            else if (Config.CooldownSeconds > 0) _PlayerCooldown[player] = (int)Server.CurrentTime + Config.CooldownSeconds;
+            if (Config.CooldownRounds > 0)
+            {
+                _PlayerCooldown[player] = Config.CooldownRounds;
+            }
+            else if (Config.CooldownSeconds > 0)
+            {
+                _PlayerCooldown[player] = (int)Server.CurrentTime + Config.CooldownSeconds;
+            }
 
             PlayDiceSoundForPlayer(player, rolledDice, true);
         }

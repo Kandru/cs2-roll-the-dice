@@ -16,7 +16,7 @@ namespace RollTheDice.Dices
         public override List<string> Listeners => [
         //    "OnTick" -> disabled for now due to error Invalid argument type(s) supplied to Virtual Function (GetPickerEntity)
         ];
-        private Dictionary<CCSPlayerController, Dictionary<CCSPlayerPawn, float>> _playersHealthbar = [];
+        private readonly Dictionary<CCSPlayerController, Dictionary<CCSPlayerPawn, float>> _playersHealthbar = [];
 
         public PlayerHealthBar(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
@@ -76,10 +76,13 @@ namespace RollTheDice.Dices
             float newHealth = @event.Health;
             float oldHealth = newHealth + @event.DmgHealth;
 
-            if (oldHealth == newHealth) return HookResult.Continue;
+            if (oldHealth == newHealth)
+            {
+                return HookResult.Continue;
+            }
 
             // send message
-            var message = UserMessage.FromPartialName("UpdateScreenHealthBar");
+            UserMessage message = UserMessage.FromPartialName("UpdateScreenHealthBar");
             message.SetInt("entidx", (int)victim.PlayerPawn.Index);
             message.SetFloat("healthratio_old", oldHealth / victimPawn.MaxHealth);
             message.SetFloat("healthratio_new", newHealth / victimPawn.MaxHealth);

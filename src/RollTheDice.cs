@@ -323,7 +323,7 @@ namespace RollTheDice
             }
             if (Config.AllowDiceAfterRespawn)
             {
-                _playersThatRolledTheDice.Remove(player);
+                _ = _playersThatRolledTheDice.Remove(player);
             }
         }
 

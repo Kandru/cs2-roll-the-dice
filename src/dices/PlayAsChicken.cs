@@ -22,7 +22,7 @@ namespace RollTheDice.Dices
             { 208, HookMode.Pre },
         };
         private readonly Random _random = new(Guid.NewGuid().GetHashCode());
-        private Dictionary<CCSPlayerController, Dictionary<string, object>> _chickens = [];
+        private readonly Dictionary<CCSPlayerController, Dictionary<string, object>> _chickens = [];
         private readonly string _playersAsChickenModel = "models/chicken/chicken.vmdl";
         private readonly Dictionary<string, uint> _chickenSounds = new()
         {
@@ -79,7 +79,7 @@ namespace RollTheDice.Dices
 
         public override void Reset()
         {
-            foreach (var kvp in _chickens)
+            foreach (KeyValuePair<CCSPlayerController, Dictionary<string, object>> kvp in _chickens)
             {
                 Remove(kvp.Key);
             }
@@ -99,17 +99,20 @@ namespace RollTheDice.Dices
                 return;
             }
             Dictionary<CCSPlayerController, Dictionary<string, object>> _chickensCopy = new(_chickens);
-            foreach (var kvp in _chickensCopy)
+            foreach (KeyValuePair<CCSPlayerController, Dictionary<string, object>> kvp in _chickensCopy)
             {
                 // sanity checks
                 if (kvp.Key == null
                 || kvp.Key.PlayerPawn == null || !kvp.Key.PlayerPawn.IsValid || kvp.Key.PlayerPawn.Value == null
                 || kvp.Key.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE
-                || !kvp.Value.ContainsKey("prop")) continue;
+                || !kvp.Value.ContainsKey("prop"))
+                {
+                    continue;
+                }
                 // make sound if time
                 if ((int)_chickensCopy[kvp.Key]["next_sound"] <= (int)Server.CurrentTime)
                 {
-                    kvp.Key.EmitSound(_chickenSounds.ElementAt(_random.Next(_chickenSounds.Count)).Key);
+                    _ = kvp.Key.EmitSound(_chickenSounds.ElementAt(_random.Next(_chickenSounds.Count)).Key);
                     _chickens[kvp.Key]["next_sound"] = (int)Server.CurrentTime + _random.Next(
                         1,
                         1);
@@ -130,10 +133,18 @@ namespace RollTheDice.Dices
                 if (player == null
                     || !player.IsValid
                     || player.IsBot
-                    || !_chickens.ContainsKey(player)) continue;
-                var prop = (CDynamicProp)_chickens[player]["prop"];
+                    || !_chickens.ContainsKey(player))
+                {
+                    continue;
+                }
+
+                CDynamicProp prop = (CDynamicProp)_chickens[player]["prop"];
                 if (prop == null
-                    || !prop.IsValid) continue;
+                    || !prop.IsValid)
+                {
+                    continue;
+                }
+
                 info.TransmitEntities.Remove(prop);
             }
         }
@@ -174,8 +185,8 @@ namespace RollTheDice.Dices
 
         public HookResult HookUserMessage208(UserMessage um)
         {
-            var soundevent = um.ReadUInt("soundevent_hash");
-            var soundevent_guid = um.ReadUInt("soundevent_guid");
+            uint soundevent = um.ReadUInt("soundevent_hash");
+            uint soundevent_guid = um.ReadUInt("soundevent_guid");
             if (!_chickenSounds.ContainsValue(soundevent))
             {
                 return HookResult.Continue;

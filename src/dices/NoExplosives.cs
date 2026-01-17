@@ -113,7 +113,7 @@ namespace RollTheDice.Dices
                     // remove entry after some time, but delay because we wait for eventual damage
                     _ = new CounterStrikeSharp.API.Modules.Timers.Timer(10f, () =>
                     {
-                        _grenadesThrownByPlayers.Remove(inflictorHandler);
+                        _ = _grenadesThrownByPlayers.Remove(inflictorHandler);
                     });
                     // stop sound and kill grenade
                     _ = grenade.EmitSound("StopSoundEvents.StopAllExceptMusic");

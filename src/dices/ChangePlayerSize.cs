@@ -46,28 +46,28 @@ namespace RollTheDice.Dices
                 if (_random.Next(2) == 0)
                 {
                     // generate in lower range [minSize, 1.0 - minChangeAmount]
-                    playerSize = (float)(_random.NextDouble() * (lowerRangeMax - minSize) + minSize);
+                    playerSize = (float)((_random.NextDouble() * (lowerRangeMax - minSize)) + minSize);
                 }
                 else
                 {
                     // generate in upper range [1.0 + minChangeAmount, maxSize]
-                    playerSize = (float)(_random.NextDouble() * (maxSize - upperRangeMin) + upperRangeMin);
+                    playerSize = (float)((_random.NextDouble() * (maxSize - upperRangeMin)) + upperRangeMin);
                 }
             }
             else if (hasLowerRange)
             {
                 // only lower range is valid
-                playerSize = (float)(_random.NextDouble() * (lowerRangeMax - minSize) + minSize);
+                playerSize = (float)((_random.NextDouble() * (lowerRangeMax - minSize)) + minSize);
             }
             else if (hasUpperRange)
             {
                 // only upper range is valid
-                playerSize = (float)(_random.NextDouble() * (maxSize - upperRangeMin) + upperRangeMin);
+                playerSize = (float)((_random.NextDouble() * (maxSize - upperRangeMin)) + upperRangeMin);
             }
             else
             {
                 // no valid range (shouldn't happen with proper config), fallback logic
-                playerSize = (float)(_random.NextDouble() * (maxSize - minSize) + minSize);
+                playerSize = (float)((_random.NextDouble() * (maxSize - minSize)) + minSize);
             }
 
             playerSize = float.Round(playerSize, 2);

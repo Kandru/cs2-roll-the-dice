@@ -51,9 +51,9 @@ namespace RollTheDice.Dices
                     continue;
                 }
                 // remove all other weapons
-                if (!_weaponsToKeep.Contains(weapon.Value!.DesignerName.ToLower(System.Globalization.CultureInfo.CurrentCulture)))
+                if (!_weaponsToKeep.Contains(weapon.Value.DesignerName.ToLower(System.Globalization.CultureInfo.CurrentCulture)))
                 {
-                    myWeapons.Add(weapon.Value!.Handle);
+                    myWeapons.Add(weapon.Value.Handle);
                 }
             }
             // remove weapons
