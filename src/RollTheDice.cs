@@ -472,6 +472,11 @@ namespace RollTheDice
             {
                 _dices.Add(new PlayAsChicken(Config, _currentMapConfig, Localizer));
             }
+            // set current rolled dices to 0
+            foreach (DiceBlueprint entry in _dices)
+            {
+                _diceUsageCount.Add(entry, 0);
+            }
             // register listeners
             RegisterListeners();
             RegisterEventHandlers();
