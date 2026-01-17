@@ -31,6 +31,7 @@
     "command.givedice.noplayers": "{purple}[WürfelSpiel] {default}Keinen Spieler gefunden",
     "command.givedice.toomanyplayers": "{purple}[WürfelSpiel] {default}Zu viele Spieler gefunden. Bitte genauer angeben",
     "command.givedice.nodicefound": "{purple}[WürfelSpiel] {default}Keinen zu vergebenen Würfel gefunden",
+    "command.givedice.availabledices": "{purple}[RollTheDice] {default}Die folgenden Würfel sind verfügbar:",
     "dice_ChangeName_player": "{default}Du heißt jetzt {green}{randomName}{default}!",
     "dice_ChangeName_name": "{default}Neuer Name: {green}{randomName}",
     "dice_ChangeName_other": "{purple}[WürfelSpiel] {green}{playerName} {default}hat seinen Namen in {green}{randomName} {default}geändert!",

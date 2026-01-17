@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Extensions;
+using RollTheDice.Dices;
 using RollTheDice.Utils;
 
 namespace RollTheDice
@@ -17,45 +18,45 @@ namespace RollTheDice
         {
             string playerName = command.GetArg(1);
             string diceName = command.GetArg(2);
-            List<CCSPlayerController> availablePlayers = [];
-            foreach (CCSPlayerController entry in Utilities.GetPlayers().Where(static p => p.IsValid && !p.IsHLTV && !p.IsBot))
+
+            if (string.IsNullOrWhiteSpace(playerName))
             {
-                if (playerName == null
-                    || playerName == "" || playerName == "*"
-                    || entry.PlayerName.Contains(playerName, StringComparison.OrdinalIgnoreCase))
+                command.ReplyToCommand(Localizer["command.givedice.availabledices"]);
+                foreach (DiceBlueprint entry in _dices)
                 {
-                    availablePlayers.Add(entry);
+                    command.ReplyToCommand($"- {entry.ClassName}");
                 }
+                return;
             }
-            if (availablePlayers.Count == 0)
+
+            bool isWildcard = string.IsNullOrWhiteSpace(playerName) || playerName == "*";
+
+            var targetPlayers = Utilities.GetPlayers()
+                .Where(p => p.IsValid && !p.IsHLTV && !p.IsBot)
+                .Where(p => isWildcard || p.PlayerName.Contains(playerName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (targetPlayers.Count == 0)
             {
                 command.ReplyToCommand(Localizer["command.givedice.noplayers"]);
+                return;
             }
-            else if (availablePlayers.Count == 1 || playerName == null || playerName == "" || playerName == "*")
-            {
-                foreach (CCSPlayerController entry in availablePlayers)
-                {
-                    if (_playersThatRolledTheDice.ContainsKey(entry))
-                    {
-                        RemoveDiceForPlayer(entry, Enums.DiceRemoveReason.NewDice);
-                        _playersThatRolledTheDice.Remove(entry);
-                    }
-                    // roll the dice
-                    (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(entry, diceName);
-                    // check if rolledDice is null or empty
-                    if (rolledDice is null or "")
-                    {
-                        return;
-                    }
-                    // add player to the list of players that rolled the dice
-                    _playersThatRolledTheDice[entry] = diceDescription ?? rolledDice;
-                    // play sound
-                    PlayDiceSoundForPlayer(entry, rolledDice, false);
-                }
-            }
-            else
+
+            if (!isWildcard && targetPlayers.Count > 1)
             {
                 command.ReplyToCommand(Localizer["command.givedice.toomanyplayers"]);
+                return;
+            }
+
+            foreach (var target in targetPlayers)
+            {
+                // RollTheDiceForPlayer handles removing old dice
+                (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(target, string.IsNullOrWhiteSpace(diceName) ? null : diceName);
+
+                if (string.IsNullOrEmpty(rolledDice)) continue;
+
+                _playersThatRolledTheDice[target] = diceDescription ?? rolledDice;
+                PlayDiceSoundForPlayer(target, rolledDice, false);
             }
         }
 
