@@ -133,7 +133,7 @@ namespace RollTheDice.Dices
             prop.MaxHealth = 10;
             // scale
             CEntityKeyValues kv = new();
-            kv.SetFloat("modelscale", 5f);
+            kv.SetFloat("modelscale", scale);
             // spawn it
             prop.DispatchSpawn(kv);
             // set model
