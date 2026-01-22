@@ -472,6 +472,11 @@ namespace RollTheDice
             {
                 _dices.Add(new PlayAsChicken(Config, _currentMapConfig, Localizer));
             }
+            // initialize InfiniteAmmo module
+            if (_currentMapConfig.Dices.InfiniteAmmo.Enabled)
+            {
+                _dices.Add(new InfiniteAmmo(Config, _currentMapConfig, Localizer));
+            }
             // set current rolled dices to 0
             foreach (DiceBlueprint entry in _dices)
             {

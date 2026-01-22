@@ -36,6 +36,7 @@ namespace RollTheDice
         [JsonPropertyName("player_health_bar")] public PlayerHealthBarConfig PlayerHealthBar { get; set; } = new PlayerHealthBarConfig();
         [JsonPropertyName("fog_of_war")] public FogOfWarConfig FogOfWar { get; set; } = new FogOfWarConfig();
         [JsonPropertyName("play_as_chicken")] public PlayAsChickenConfig PlayAsChicken { get; set; } = new PlayAsChickenConfig();
+        [JsonPropertyName("unlimited_ammo")] public InfiniteAmmoConfig InfiniteAmmo { get; set; } = new InfiniteAmmoConfig();
     }
 
     public class MapConfig
