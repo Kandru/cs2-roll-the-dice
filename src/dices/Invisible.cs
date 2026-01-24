@@ -65,6 +65,18 @@ namespace RollTheDice.Dices
             }
             player.Pawn.Value.Render = Color.FromArgb(alpha, 255, 255, 255);
             Utilities.SetStateChanged(player.Pawn.Value, "CBaseModelEntity", "m_clrRender");
+            // enable / disable shadow if enabled
+            if (_config.Dices.Invisible.HideShadow)
+            {
+                if (alpha < 255)
+                {
+                    player.Pawn.Value.AcceptInput("DisableShadow");
+                }
+                else
+                {
+                    player.Pawn.Value.AcceptInput("EnableShadow");
+                }
+            }
         }
     }
 }

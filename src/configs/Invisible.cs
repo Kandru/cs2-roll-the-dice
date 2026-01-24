@@ -6,5 +6,6 @@ namespace RollTheDice.Configs
     {
         [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
         [JsonPropertyName("percentage_visible")] public float PercentageVisible { get; set; } = 0.5f;
+        [JsonPropertyName("hide_shadow")] public bool HideShadow { get; set; } = true;
     }
 }
