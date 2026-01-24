@@ -55,7 +55,7 @@ namespace RollTheDice.Dices
             {
                 return;
             }
-            SetPlayerSpeed(player, 1f);
+            SetPlayerSpeed(player, 1f, true);
             _ = _playerSpeed.Remove(player);
             _ = _players.Remove(player);
         }
@@ -103,7 +103,7 @@ namespace RollTheDice.Dices
             return HookResult.Continue;
         }
 
-        private void SetPlayerSpeed(CCSPlayerController? player, float speed = -1f)
+        private void SetPlayerSpeed(CCSPlayerController? player, float speed = -1f, bool force = false)
         {
             if (player?.IsValid != true)
             {
@@ -125,7 +125,7 @@ namespace RollTheDice.Dices
                             || player?.IsValid == false
                             || player?.PlayerPawn?.IsValid == false
                             || player?.PlayerPawn?.Value == null
-                            || !_players.Contains(player))
+                            || (!_players.Contains(player) && force == false))
                         {
                             return;
                         }
