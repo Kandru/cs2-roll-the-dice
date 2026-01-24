@@ -31,6 +31,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Increase Health** - Boosts your health above the normal maximum
 - **Increase Money** - Adds extra money to your account for better equipment
 - **Increase Speed** - Makes you run significantly faster than normal
+- **Infinite Ammo** - Gives you infinite ammo
 - **Invisible** - Makes you partially or fully invisible to enemies
 - **Low Gravity** - Reduces gravity allowing you to jump higher and fall slower
 - **No Explosives** - Replaces all your grenades with harmless vegetables and fruits
