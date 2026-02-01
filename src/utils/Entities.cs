@@ -88,9 +88,15 @@ namespace RollTheDice.Utils
             {
                 return null;
             }
-
-            CCSWeaponBaseVData vdata = weapon.GetVData<CCSWeaponBaseVData>()!;
-            return Utilities.ReadStringUtf8(Marshal.ReadIntPtr(Schema.GetSchemaValue<nint>(vdata.Handle, "CCSWeaponBaseVData", "m_szAnimClass"), 0x10) + 0x10);
+            try
+            {
+                CCSWeaponBaseVData? vdata = weapon.GetVData<CCSWeaponBaseVData>();
+                return vdata?.Name ?? null;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public static Vector GetForwardVector(QAngle angles)
