@@ -492,6 +492,11 @@ namespace RollTheDice
             {
                 _dices.Add(new HeadshotOnly(Config, _currentMapConfig, Localizer));
             }
+            // initialize NoHeadshot module
+            if (_currentMapConfig.Dices.NoHeadshot.Enabled)
+            {
+                _dices.Add(new NoHeadshot(Config, _currentMapConfig, Localizer));
+            }
             // set current rolled dices to 0
             foreach (DiceBlueprint entry in _dices)
             {

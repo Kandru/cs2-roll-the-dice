@@ -40,6 +40,7 @@ namespace RollTheDice
         [JsonPropertyName("random_weapon")] public RandomWeaponConfig RandomWeapon { get; set; } = new RandomWeaponConfig();
         [JsonPropertyName("damage_multiplier")] public DamageMultiplierConfig DamageMultiplier { get; set; } = new DamageMultiplierConfig();
         [JsonPropertyName("headshot_only")] public HeadshotOnlyConfig HeadshotOnly { get; set; } = new HeadshotOnlyConfig();
+        [JsonPropertyName("no_headshot")] public NoHeadshotConfig NoHeadshot { get; set; } = new NoHeadshotConfig();
     }
 
     public class MapConfig
