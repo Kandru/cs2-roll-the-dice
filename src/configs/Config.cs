@@ -2,7 +2,6 @@
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Extensions;
 using RollTheDice.Configs;
-using RollTheDice.Dices;
 using RollTheDice.Enums;
 using System.IO.Enumeration;
 using System.Text.Json;
