@@ -477,10 +477,15 @@ namespace RollTheDice
             {
                 _dices.Add(new InfiniteAmmo(Config, _currentMapConfig, Localizer));
             }
-            // initialize InfiniteAmmo module
+            // initialize RandomWeapon module
             if (_currentMapConfig.Dices.RandomWeapon.Enabled)
             {
                 _dices.Add(new RandomWeapon(Config, _currentMapConfig, Localizer));
+            }
+            // initialize DamageMultiplier module
+            if (_currentMapConfig.Dices.DamageMultiplier.Enabled)
+            {
+                _dices.Add(new DamageMultiplier(Config, _currentMapConfig, Localizer));
             }
             // set current rolled dices to 0
             foreach (DiceBlueprint entry in _dices)
