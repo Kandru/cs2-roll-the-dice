@@ -24,6 +24,10 @@ namespace RollTheDice.Dices
 
         public void OnEntitySpawned(CEntityInstance entity)
         {
+            if (_players.Count == 0)
+            {
+                return;
+            }
             switch (entity.DesignerName)
             {
                 case "flashbang_projectile":
@@ -31,6 +35,17 @@ namespace RollTheDice.Dices
                 case "hegrenade_projectile":
                 case "decoy_projectile":
                     CBaseCSGrenadeProjectile grenade = entity.As<CBaseCSGrenadeProjectile>();
+                    CCSPlayerPawn? owner = grenade.OriginalThrower?.Value;
+                    if (owner == null
+                        || !owner.IsValid)
+                    {
+                        return;
+                    }
+                    if (owner.Controller?.Value == null
+                        || !_players.Contains(owner.Controller.Value))
+                    {
+                        return;
+                    }
                     Server.NextFrame(() =>
                     {
                         float min = _config.Dices.WeirdGrenades.MinDetonateTime;
@@ -41,8 +56,6 @@ namespace RollTheDice.Dices
                     });
                     break;
                 case "molotov_projectile":
-                    CBaseCSGrenadeProjectile grenade2 = entity.As<CBaseCSGrenadeProjectile>();
-                    //grenade2.Bounces = 99; // make it stick where it lands
                     break;
                 default:
                     break;
