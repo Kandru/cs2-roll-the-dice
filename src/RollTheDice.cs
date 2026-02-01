@@ -497,6 +497,11 @@ namespace RollTheDice
             {
                 _dices.Add(new NoHeadshot(Config, _currentMapConfig, Localizer));
             }
+            // initialize WeirdGrenades module
+            if (_currentMapConfig.Dices.WeirdGrenades.Enabled)
+            {
+                _dices.Add(new WeirdGrenades(Config, _currentMapConfig, Localizer));
+            }
             // set current rolled dices to 0
             foreach (DiceBlueprint entry in _dices)
             {
