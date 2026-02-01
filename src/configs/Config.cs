@@ -42,6 +42,7 @@ namespace RollTheDice
         [JsonPropertyName("headshot_only")] public HeadshotOnlyConfig HeadshotOnly { get; set; } = new HeadshotOnlyConfig();
         [JsonPropertyName("no_headshot")] public NoHeadshotConfig NoHeadshot { get; set; } = new NoHeadshotConfig();
         [JsonPropertyName("weird_grenades")] public WeirdGrenadesConfig WeirdGrenades { get; set; } = new WeirdGrenadesConfig();
+        [JsonPropertyName("loud_steps")] public LoudStepsConfig LoudSteps { get; set; } = new LoudStepsConfig();
     }
 
     public class MapConfig

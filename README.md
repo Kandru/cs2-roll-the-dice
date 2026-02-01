@@ -33,6 +33,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Increase Speed** - Makes you run significantly faster than normal
 - **Infinite Ammo** - Gives you infinite ammo
 - **Invisible** - Makes you partially or fully invisible to enemies
+- **Loud Steps** - Don't even try to crouch or walk
 - **Low Gravity** - Reduces gravity allowing you to jump higher and fall slower
 - **No Explosives** - Replaces all your grenades with harmless vegetables and fruits
 - **No Headshot** - Headshots do not deal any damage
