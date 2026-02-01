@@ -351,6 +351,7 @@ Configuration for all available dice effects. Each dice can be enabled/disabled 
 - **vampire**: Converts damage dealt into health (max_health limit)
 - **invisible**: Makes player partially invisible (percentage_visible: 0.0 = fully invisible, 1.0 = fully visible)
 - **play_as_chicken**: Turns player into a chicken (sound_volume, min_sound_wait_time, max_sound_wait_time)
+- **random_weapon**: Gives player a random weapon, either both primary and secondary or either of one per random
 
 ### sounds
 
