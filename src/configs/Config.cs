@@ -98,6 +98,13 @@ namespace RollTheDice
         [JsonPropertyName("price_to_dice")] public int PriceToDice { get; set; } = 0;
         // allow re-dice after respawn
         [JsonPropertyName("allow_dice_after_respawn")] public bool AllowDiceAfterRespawn { get; set; } = false;
+        // notify other players when a player rolls the dice
+        [JsonPropertyName("notify_other_players_about_dices_rolled")] public bool NotifyOtherPlayers { get; set; } = true;
+        // notify player via chat
+        [JsonPropertyName("notify_player_via_chatmsg")] public bool NotifyPlayerViaChatMsg { get; set; } = true;
+        // notify player via center message
+        [JsonPropertyName("notify_player_via_centermsg")] public bool NotifyPlayerViaCenterMsg { get; set; } = true;
+
         // dices configuration
         [JsonPropertyName("dices")] public DicesConfig Dices { get; set; } = new DicesConfig();
         // sound configuration
