@@ -1,4 +1,5 @@
-﻿using CounterStrikeSharp.API;
+﻿using System.Reflection;
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using RollTheDice.Dices;
@@ -347,161 +348,30 @@ namespace RollTheDice
             {
                 return;
             }
-            // initialize BigTaserBattery module
-            if (_currentMapConfig.Dices.BigTaserBattery.Enabled)
+
+            // Get all dice types that are not abstract and are subclasses of DiceBlueprint
+            Dictionary<string, Type> diceTypes = typeof(DiceBlueprint).Assembly.GetTypes()
+                .Where(static t => t.IsSubclassOf(typeof(DiceBlueprint)) && !t.IsAbstract)
+                .ToDictionary(static t => t.Name, static t => t);
+
+            // Iterate through properties in DicesConfig and instantiate enabled dices
+            foreach (PropertyInfo property in typeof(DicesConfig).GetProperties())
             {
-                _dices.Add(new BigTaserBattery(Config, _currentMapConfig, Localizer));
+                if (diceTypes.TryGetValue(property.Name, out Type? diceType))
+                {
+                    object? configValue = property.GetValue(_currentMapConfig.Dices);
+                    if (configValue != null)
+                    {
+                        PropertyInfo? enabledProperty = configValue.GetType().GetProperty("Enabled");
+                        if (enabledProperty != null && enabledProperty.GetValue(configValue) is bool enabled && enabled)
+                        {
+                            DiceBlueprint instance = (DiceBlueprint)Activator.CreateInstance(diceType, Config, _currentMapConfig, Localizer)!;
+                            _dices.Add(instance);
+                        }
+                    }
+                }
             }
-            // initialize ChangeName module
-            if (_currentMapConfig.Dices.ChangeName.Enabled)
-            {
-                _dices.Add(new ChangeName(Config, _currentMapConfig, Localizer));
-            }
-            // initialize ChangePlayerModel module
-            if (_currentMapConfig.Dices.ChangePlayerModel.Enabled)
-            {
-                _dices.Add(new ChangePlayerModel(Config, _currentMapConfig, Localizer));
-            }
-            // initialize ChangePlayerSize module
-            if (_currentMapConfig.Dices.ChangePlayerSize.Enabled)
-            {
-                _dices.Add(new ChangePlayerSize(Config, _currentMapConfig, Localizer));
-            }
-            // initialize ChickenLeader module
-            if (_currentMapConfig.Dices.ChickenLeader.Enabled)
-            {
-                _dices.Add(new ChickenLeader(Config, _currentMapConfig, Localizer));
-            }
-            // initialize DecreaseHealth module
-            if (_currentMapConfig.Dices.DecreaseHealth.Enabled)
-            {
-                _dices.Add(new DecreaseHealth(Config, _currentMapConfig, Localizer));
-            }
-            // initialize IncreaseHealth module
-            if (_currentMapConfig.Dices.IncreaseHealth.Enabled)
-            {
-                _dices.Add(new IncreaseHealth(Config, _currentMapConfig, Localizer));
-            }
-            // initialize DecreaseMoney module
-            if (_currentMapConfig.Dices.DecreaseMoney.Enabled)
-            {
-                _dices.Add(new DecreaseMoney(Config, _currentMapConfig, Localizer));
-            }
-            // initialize IncreaseMoney module
-            if (_currentMapConfig.Dices.IncreaseMoney.Enabled)
-            {
-                _dices.Add(new IncreaseMoney(Config, _currentMapConfig, Localizer));
-            }
-            // initialize GiveHealthShot module
-            if (_currentMapConfig.Dices.GiveHealthShot.Enabled)
-            {
-                _dices.Add(new GiveHealthShot(Config, _currentMapConfig, Localizer));
-            }
-            // initialize OneHP module
-            if (_currentMapConfig.Dices.OneHP.Enabled)
-            {
-                _dices.Add(new OneHP(Config, _currentMapConfig, Localizer));
-            }
-            // initialize LowGravity module
-            if (_currentMapConfig.Dices.LowGravity.Enabled)
-            {
-                _dices.Add(new LowGravity(Config, _currentMapConfig, Localizer));
-            }
-            // initialize HighGravity module
-            if (_currentMapConfig.Dices.HighGravity.Enabled)
-            {
-                _dices.Add(new HighGravity(Config, _currentMapConfig, Localizer));
-            }
-            // initialize Suicide module
-            if (_currentMapConfig.Dices.Suicide.Enabled)
-            {
-                _dices.Add(new Suicide(Config, _currentMapConfig, Localizer));
-            }
-            // initialize IncreaseSpeed module
-            if (_currentMapConfig.Dices.IncreaseSpeed.Enabled)
-            {
-                _dices.Add(new IncreaseSpeed(Config, _currentMapConfig, Localizer));
-            }
-            // initialize NoRecoil module
-            if (_currentMapConfig.Dices.NoRecoil.Enabled)
-            {
-                _dices.Add(new NoRecoil(Config, _currentMapConfig, Localizer));
-            }
-            // initialize Respawn module
-            if (_currentMapConfig.Dices.Respawn.Enabled)
-            {
-                _dices.Add(new Respawn(Config, _currentMapConfig, Localizer));
-            }
-            // initialize NoExplosives module
-            if (_currentMapConfig.Dices.NoExplosives.Enabled)
-            {
-                _dices.Add(new NoExplosives(Config, _currentMapConfig, Localizer));
-            }
-            // initialize StripWeapons module
-            if (_currentMapConfig.Dices.StripWeapons.Enabled)
-            {
-                _dices.Add(new StripWeapons(Config, _currentMapConfig, Localizer));
-            }
-            // initialize Vampire module
-            if (_currentMapConfig.Dices.Vampire.Enabled)
-            {
-                _dices.Add(new Vampire(Config, _currentMapConfig, Localizer));
-            }
-            // initialize Invisible module
-            if (_currentMapConfig.Dices.Invisible.Enabled)
-            {
-                _dices.Add(new Invisible(Config, _currentMapConfig, Localizer));
-            }
-            // initialize Glow module
-            if (_currentMapConfig.Dices.Glow.Enabled)
-            {
-                _dices.Add(new Glow(Config, _currentMapConfig, Localizer));
-            }
-            // initialize PlayerHealthBar module
-            if (_currentMapConfig.Dices.PlayerHealthBar.Enabled)
-            {
-                _dices.Add(new PlayerHealthBar(Config, _currentMapConfig, Localizer));
-            }
-            // initialize FogOfWar module
-            if (_currentMapConfig.Dices.FogOfWar.Enabled)
-            {
-                _dices.Add(new FogOfWar(Config, _currentMapConfig, Localizer));
-            }
-            // initialize PlayAsChicken module
-            if (_currentMapConfig.Dices.PlayAsChicken.Enabled)
-            {
-                _dices.Add(new PlayAsChicken(Config, _currentMapConfig, Localizer));
-            }
-            // initialize InfiniteAmmo module
-            if (_currentMapConfig.Dices.InfiniteAmmo.Enabled)
-            {
-                _dices.Add(new InfiniteAmmo(Config, _currentMapConfig, Localizer));
-            }
-            // initialize RandomWeapon module
-            if (_currentMapConfig.Dices.RandomWeapon.Enabled)
-            {
-                _dices.Add(new RandomWeapon(Config, _currentMapConfig, Localizer));
-            }
-            // initialize DamageMultiplier module
-            if (_currentMapConfig.Dices.DamageMultiplier.Enabled)
-            {
-                _dices.Add(new DamageMultiplier(Config, _currentMapConfig, Localizer));
-            }
-            // initialize HeadshotOnly module
-            if (_currentMapConfig.Dices.HeadshotOnly.Enabled)
-            {
-                _dices.Add(new HeadshotOnly(Config, _currentMapConfig, Localizer));
-            }
-            // initialize NoHeadshot module
-            if (_currentMapConfig.Dices.NoHeadshot.Enabled)
-            {
-                _dices.Add(new NoHeadshot(Config, _currentMapConfig, Localizer));
-            }
-            // initialize WeirdGrenades module
-            if (_currentMapConfig.Dices.WeirdGrenades.Enabled)
-            {
-                _dices.Add(new WeirdGrenades(Config, _currentMapConfig, Localizer));
-            }
+
             // set current rolled dices to 0
             foreach (DiceBlueprint entry in _dices)
             {
