@@ -1,3 +1,4 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using Microsoft.Extensions.Localization;
@@ -26,6 +27,9 @@ namespace RollTheDice.Dices
             CsItem.DefaultKnifeT.ToString().ToLower(System.Globalization.CultureInfo.CurrentCulture),
             $"weapon_{CsItem.DefaultKnifeT.ToString().ToLower(System.Globalization.CultureInfo.CurrentCulture)}",
         ];
+        public override List<string> Events => [
+            "EventEnterBuyzone"
+        ];
 
         public StripWeapons(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
@@ -37,6 +41,7 @@ namespace RollTheDice.Dices
             // check if player is valid and has a pawn
             if (!player.IsValid
                 || player?.Pawn?.Value?.IsValid == false
+                || player?.PlayerPawn?.Value == null
                 || player?.Pawn?.Value?.WeaponServices == null)
             {
                 return;
@@ -80,10 +85,32 @@ namespace RollTheDice.Dices
                 player.Pawn.Value.WeaponServices.ActiveWeapon.Raw = weapon.Raw;
                 break;
             }
+            // disallow buyzone
+            if (_config.Dices.StripWeapons.DisableBuymenu)
+            {
+                player.PlayerPawn.Value.InBuyZone = false;
+                Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawn", "m_bInBuyZone");
+            }
+            _players.Add(player);
             NotifyPlayers(player, ClassName, new()
             {
                 { "playerName", player.PlayerName }
             });
+        }
+
+        public HookResult EventEnterBuyzone(EventEnterBuyzone @event, GameEventInfo info)
+        {
+            CCSPlayerController? player = @event.Userid;
+            if (player?.IsValid != true
+                || player.PlayerPawn?.Value == null
+                || !_players.Contains(player)
+                || !_config.Dices.StripWeapons.DisableBuymenu)
+            {
+                return HookResult.Continue;
+            }
+            player.PlayerPawn.Value.InBuyZone = false;
+            Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawn", "m_bInBuyZone");
+            return HookResult.Continue;
         }
     }
 }
