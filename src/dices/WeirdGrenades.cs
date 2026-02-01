@@ -1,8 +1,5 @@
-using System.Diagnostics;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Modules.Entities.Constants;
-using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
 
 namespace RollTheDice.Dices
@@ -36,9 +33,9 @@ namespace RollTheDice.Dices
                     CBaseCSGrenadeProjectile grenade = entity.As<CBaseCSGrenadeProjectile>();
                     Server.NextFrame(() =>
                     {
-                        var min = _config.Dices.WeirdGrenades.MinDetonateTime;
-                        var max = _config.Dices.WeirdGrenades.MaxDetonateTime;
-                        float detonateOffset = (float)(_random.NextDouble() * (max - min) + min);
+                        float min = _config.Dices.WeirdGrenades.MinDetonateTime;
+                        float max = _config.Dices.WeirdGrenades.MaxDetonateTime;
+                        float detonateOffset = (float)((_random.NextDouble() * (max - min)) + min);
                         grenade.DetonateTime = Server.CurrentTime + detonateOffset;
                         Utilities.SetStateChanged(grenade, "CBaseGrenade", "m_flDetonateTime");
                     });
@@ -66,8 +63,8 @@ namespace RollTheDice.Dices
             {
                 return HookResult.Continue;
             }
-            var min = _config.Dices.WeirdGrenades.MinSmokeduration;
-            var max = _config.Dices.WeirdGrenades.MaxSmokeduration;
+            int min = _config.Dices.WeirdGrenades.MinSmokeduration;
+            int max = _config.Dices.WeirdGrenades.MaxSmokeduration;
             int smokeDuration = _random.Next(min, max + 1);
             grenade.SmokeEffectTickBegin = Server.TickCount - ((19 - smokeDuration) * 64);
             Utilities.SetStateChanged(grenade, "CSmokeGrenadeProjectile", "m_nSmokeEffectTickBegin");
@@ -85,9 +82,9 @@ namespace RollTheDice.Dices
             {
                 return HookResult.Continue;
             }
-            var min = _config.Dices.WeirdGrenades.MinBlindduration;
-            var max = _config.Dices.WeirdGrenades.MaxBlindduration;
-            float blindDuration = (float)(_random.NextDouble() * (max - min) + min);
+            float min = _config.Dices.WeirdGrenades.MinBlindduration;
+            float max = _config.Dices.WeirdGrenades.MaxBlindduration;
+            float blindDuration = (float)((_random.NextDouble() * (max - min)) + min);
             @event.BlindDuration = blindDuration;
             player.PlayerPawn.Value.FlashDuration = blindDuration;
             Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawnBase", "m_flFlashDuration");
