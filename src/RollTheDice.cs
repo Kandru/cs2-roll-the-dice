@@ -487,6 +487,11 @@ namespace RollTheDice
             {
                 _dices.Add(new DamageMultiplier(Config, _currentMapConfig, Localizer));
             }
+            // initialize HeadshotOnly module
+            if (_currentMapConfig.Dices.HeadshotOnly.Enabled)
+            {
+                _dices.Add(new HeadshotOnly(Config, _currentMapConfig, Localizer));
+            }
             // set current rolled dices to 0
             foreach (DiceBlueprint entry in _dices)
             {

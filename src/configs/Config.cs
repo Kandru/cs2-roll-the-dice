@@ -39,6 +39,7 @@ namespace RollTheDice
         [JsonPropertyName("unlimited_ammo")] public InfiniteAmmoConfig InfiniteAmmo { get; set; } = new InfiniteAmmoConfig();
         [JsonPropertyName("random_weapon")] public RandomWeaponConfig RandomWeapon { get; set; } = new RandomWeaponConfig();
         [JsonPropertyName("damage_multiplier")] public DamageMultiplierConfig DamageMultiplier { get; set; } = new DamageMultiplierConfig();
+        [JsonPropertyName("headshot_only")] public HeadshotOnlyConfig HeadshotOnly { get; set; } = new HeadshotOnlyConfig();
     }
 
     public class MapConfig
