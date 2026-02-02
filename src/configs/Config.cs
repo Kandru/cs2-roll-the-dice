@@ -44,6 +44,7 @@ namespace RollTheDice
         [JsonPropertyName("weird_grenades")] public WeirdGrenadesConfig WeirdGrenades { get; set; } = new WeirdGrenadesConfig();
         [JsonPropertyName("loud_steps")] public LoudStepsConfig LoudSteps { get; set; } = new LoudStepsConfig();
         [JsonPropertyName("longer_flashes")] public LongerFlashesConfig LongerFlashes { get; set; } = new LongerFlashesConfig();
+        [JsonPropertyName("reset_on_reload")] public ResetOnReloadConfig ResetOnReload { get; set; } = new ResetOnReloadConfig();
     }
 
     public class MapConfig

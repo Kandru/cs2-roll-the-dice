@@ -46,6 +46,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Play as Chicken** - swaps your player model with a big chicken. Bok-Bok
 - **Show Player Health Bar** - Displays health bars when aiming at players
 - **Random Weapon** - Gives a random weapon, either primary, secondary or both. Strips all other weapons.
+- **Reset On Reload** - Respawns a player everytime he's reloading
 - **Respawn** - Brings you back to life after death with default weapons
 - **Strip Weapons** - Removes all your weapons leaving you defenseless
 - **Suicide** - Instantly eliminates you from the round
