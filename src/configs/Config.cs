@@ -47,6 +47,7 @@ namespace RollTheDice
         [JsonPropertyName("reset_on_reload")] public ResetOnReloadConfig ResetOnReload { get; set; } = new ResetOnReloadConfig();
         [JsonPropertyName("bankrupt")] public BankruptConfig Bankrupt { get; set; } = new BankruptConfig();
         [JsonPropertyName("millionaire")] public MillionaireConfig Millionaire { get; set; } = new MillionaireConfig();
+        [JsonPropertyName("cutter")] public CutterConfig Cutter { get; set; } = new CutterConfig();
     }
 
     public class MapConfig

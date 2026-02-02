@@ -24,6 +24,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Change Player Model** - Disguises you as an enemy team player model
 - **Change Player Size** - Scales your player model size randomly (smaller or larger)
 - **Chicken Leader** - Spawns a flock of chickens that follow you around the map
+- **Cutter** - kills everyone instant with a knife
 - **Damage Multiplier** - Multiplies the damage positively and/or negatively
 - **Decrease Health** - Reduces your health to make you more vulnerable
 - **Decrease Money** - Takes away some of your hard-earned cash
