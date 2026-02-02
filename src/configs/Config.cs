@@ -51,6 +51,8 @@ namespace RollTheDice
         [JsonPropertyName("return_to_sender")] public ReturnToSenderConfig ReturnToSender { get; set; } = new ReturnToSenderConfig();
         [JsonPropertyName("jammer")] public JammerConfig Jammer { get; set; } = new JammerConfig();
         [JsonPropertyName("deaf")] public DeafConfig Deaf { get; set; } = new DeafConfig();
+        [JsonPropertyName("zoom_in")] public ZoomInConfig ZoomIn { get; set; } = new ZoomInConfig();
+        [JsonPropertyName("zoom_out")] public ZoomOutConfig ZoomOut { get; set; } = new ZoomOutConfig();
     }
 
     public class MapConfig

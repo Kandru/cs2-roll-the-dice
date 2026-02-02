@@ -58,6 +58,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Suicide** - Instantly eliminates you from the round
 - **Vampire** - Converts damage you deal to enemies into health for yourself
 - **Weird Grenades** - Bought from somewhere cheap over the internet, they don't work as expected. Or do they?
+- **Zoom In** - Player's view is zoomed in
 
 ## Plugin Installation
 
