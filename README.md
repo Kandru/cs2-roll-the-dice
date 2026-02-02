@@ -40,6 +40,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Longer Flashes** - Gives the ability to flash longer
 - **Loud Steps** - Don't even try to crouch or walk
 - **Low Gravity** - Reduces gravity allowing you to jump higher and fall slower
+- **Millionaire** - Gives you a lot of money to buy anything you can dream of
 - **No Explosives** - Replaces all your grenades with harmless vegetables and fruits
 - **No Headshot** - Headshots do not deal any damage
 - **No Recoil** - Removes weapon recoil for perfect accuracy
