@@ -13,6 +13,8 @@ Roll The Dice is a hilarious and chaotic game mode plugin for Counter-Strike 2 t
 
 This plugin transforms the traditional competitive nature of Counter-Strike 2 into a party-like atmosphere where anything can happen. Whether you're boosting your health, spawning an army of chickens as your loyal followers, or finding yourself stuck with vegetables instead of grenades, Roll The Dice ensures that no two rounds are ever the same. The effects are temporary and reset each round, keeping the gameplay fresh and encouraging players to take risks and embrace the chaos.
 
+> [!TIP]
+> This plug-in is highly configurable. In case you're missing something you want to be able to change create an GitHub Issue.
 
 ## Currently Available Dices
 
@@ -21,6 +23,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Change Player Model** - Disguises you as an enemy team player model
 - **Change Player Size** - Scales your player model size randomly (smaller or larger)
 - **Chicken Leader** - Spawns a flock of chickens that follow you around the map
+- **Damage Multiplier** - Multiplies the damage positively and/or negatively
 - **Decrease Health** - Reduces your health to make you more vulnerable
 - **Decrease Money** - Takes away some of your hard-earned cash
 - **Fog Of War** - Creates a foggy environment obscuring visibility
