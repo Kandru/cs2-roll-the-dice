@@ -48,6 +48,7 @@ namespace RollTheDice
         [JsonPropertyName("bankrupt")] public BankruptConfig Bankrupt { get; set; } = new BankruptConfig();
         [JsonPropertyName("millionaire")] public MillionaireConfig Millionaire { get; set; } = new MillionaireConfig();
         [JsonPropertyName("cutter")] public CutterConfig Cutter { get; set; } = new CutterConfig();
+        [JsonPropertyName("return_to_sender")] public ReturnToSenderConfig ReturnToSender { get; set; } = new ReturnToSenderConfig();
     }
 
     public class MapConfig

@@ -51,6 +51,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Random Weapon** - Gives a random weapon, either primary, secondary or both. Strips all other weapons.
 - **Reset On Reload** - Respawns a player everytime he's reloading
 - **Respawn** - Brings you back to life after death with default weapons
+- **ReturnToSender** - Sends a player back to spawn when hit
 - **Strip Weapons** - Removes all your weapons leaving you defenseless
 - **Suicide** - Instantly eliminates you from the round
 - **Vampire** - Converts damage you deal to enemies into health for yourself
