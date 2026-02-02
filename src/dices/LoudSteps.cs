@@ -29,7 +29,7 @@ namespace RollTheDice.Dices
             }
             foreach (CCSPlayerController entry in _playersWithLoudSteps)
             {
-                entry.EmitSound(_config.Dices.LoudSteps.SoundEventName);
+                _ = entry.EmitSound(_config.Dices.LoudSteps.SoundEventName);
             }
         }
 
@@ -52,7 +52,7 @@ namespace RollTheDice.Dices
                 && !player.Buttons.HasFlag(PlayerButtons.Speed)
                 && _playersWithLoudSteps.Contains(player))
             {
-                _playersWithLoudSteps.Remove(player);
+                _ = _playersWithLoudSteps.Remove(player);
             }
         }
     }
