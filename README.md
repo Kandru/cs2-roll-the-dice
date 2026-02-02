@@ -38,6 +38,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Increase Speed** - Makes you run significantly faster than normal
 - **Infinite Ammo** - Gives you infinite ammo
 - **Invisible** - Makes you partially or fully invisible to enemies
+- **Jammer** - Disables your HUD
 - **Longer Flashes** - Gives the ability to flash longer
 - **Loud Steps** - Don't even try to crouch or walk
 - **Low Gravity** - Reduces gravity allowing you to jump higher and fall slower

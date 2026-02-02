@@ -49,6 +49,7 @@ namespace RollTheDice
         [JsonPropertyName("millionaire")] public MillionaireConfig Millionaire { get; set; } = new MillionaireConfig();
         [JsonPropertyName("cutter")] public CutterConfig Cutter { get; set; } = new CutterConfig();
         [JsonPropertyName("return_to_sender")] public ReturnToSenderConfig ReturnToSender { get; set; } = new ReturnToSenderConfig();
+        [JsonPropertyName("jammer")] public JammerConfig Jammer { get; set; } = new JammerConfig();
     }
 
     public class MapConfig
