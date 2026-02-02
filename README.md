@@ -26,6 +26,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Chicken Leader** - Spawns a flock of chickens that follow you around the map
 - **Cutter** - kills everyone instant with a knife
 - **Damage Multiplier** - Multiplies the damage positively and/or negatively
+- **Deaf** - Silence player sounds (e.g. steps)
 - **Decrease Health** - Reduces your health to make you more vulnerable
 - **Decrease Money** - Takes away some of your hard-earned cash
 - **Fog Of War** - Creates a foggy environment obscuring visibility

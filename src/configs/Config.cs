@@ -50,6 +50,7 @@ namespace RollTheDice
         [JsonPropertyName("cutter")] public CutterConfig Cutter { get; set; } = new CutterConfig();
         [JsonPropertyName("return_to_sender")] public ReturnToSenderConfig ReturnToSender { get; set; } = new ReturnToSenderConfig();
         [JsonPropertyName("jammer")] public JammerConfig Jammer { get; set; } = new JammerConfig();
+        [JsonPropertyName("deaf")] public DeafConfig Deaf { get; set; } = new DeafConfig();
     }
 
     public class MapConfig
