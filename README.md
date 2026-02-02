@@ -18,6 +18,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 
 ## Currently Available Dices
 
+- **Bankrupt** - Removes all the money from the player
 - **Big Taser Battery** - Gives you extra taser shots to zap enemies multiple times
 - **Change Name** - Randomly changes your player name to confuse opponents
 - **Change Player Model** - Disguises you as an enemy team player model

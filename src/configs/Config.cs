@@ -45,6 +45,7 @@ namespace RollTheDice
         [JsonPropertyName("loud_steps")] public LoudStepsConfig LoudSteps { get; set; } = new LoudStepsConfig();
         [JsonPropertyName("longer_flashes")] public LongerFlashesConfig LongerFlashes { get; set; } = new LongerFlashesConfig();
         [JsonPropertyName("reset_on_reload")] public ResetOnReloadConfig ResetOnReload { get; set; } = new ResetOnReloadConfig();
+        [JsonPropertyName("bankrupt")] public BankruptConfig Bankrupt { get; set; } = new BankruptConfig();
     }
 
     public class MapConfig
