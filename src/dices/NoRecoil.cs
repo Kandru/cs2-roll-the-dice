@@ -86,7 +86,8 @@ namespace RollTheDice.Dices
             if (player == null
                 || !player.IsValid
                 || player.PlayerPawn?.Value == null
-                || !player.PlayerPawn.Value.IsValid)
+                || !player.PlayerPawn.Value.IsValid
+                || player.PlayerPawn.Value.AimPunchServices == null)
             {
                 return;
             }
@@ -118,48 +119,27 @@ namespace RollTheDice.Dices
             {
                 return;
             }
+            // Complete recoil removal
+            player.PlayerPawn.Value.AimPunchServices.PredictableBaseAngle.X = 0;
+            player.PlayerPawn.Value.AimPunchServices.PredictableBaseAngle.Y = 0;
+            player.PlayerPawn.Value.AimPunchServices.PredictableBaseAngle.Z = 0;
 
-            // Handle Deagle and Revolver differently
-            if (weaponName.Contains("deagle") || weaponName.Contains("revolver"))
-            {
-                // Softer recoil control for heavy pistols
-                player.PlayerPawn.Value.AimPunchAngle.X *= 0.2f;
-                player.PlayerPawn.Value.AimPunchAngle.Y *= 0.2f;
-                player.PlayerPawn.Value.AimPunchAngleVel.X *= 0.2f;
-                player.PlayerPawn.Value.AimPunchAngleVel.Y *= 0.2f;
-                weapon.AccuracyPenalty *= 0.2f;
-            }
-            // Handle other pistols
-            else if (weaponName.Contains("pistol")
-                || weaponName.Contains("glock")
-                || weaponName.Contains("usp")
-                || weaponName.Contains("p250"))
-            {
-                // Moderate recoil control for regular pistols
-                player.PlayerPawn.Value.AimPunchAngle.X *= 0.1f;
-                player.PlayerPawn.Value.AimPunchAngle.Y *= 0.1f;
-                player.PlayerPawn.Value.AimPunchAngleVel.X *= 0.1f;
-                player.PlayerPawn.Value.AimPunchAngleVel.Y *= 0.1f;
-                weapon.AccuracyPenalty *= 0.1f;
-            }
-            // All other weapons (rifles, SMGs, etc)
-            else
-            {
-                // Complete recoil removal
-                player.PlayerPawn.Value.AimPunchAngle.X = 0;
-                player.PlayerPawn.Value.AimPunchAngle.Y = 0;
-                player.PlayerPawn.Value.AimPunchAngle.Z = 0;
+            player.PlayerPawn.Value.AimPunchServices.PredictableBaseAngleVel.X = 0;
+            player.PlayerPawn.Value.AimPunchServices.PredictableBaseAngleVel.Y = 0;
+            player.PlayerPawn.Value.AimPunchServices.PredictableBaseAngleVel.Z = 0;
 
-                player.PlayerPawn.Value.AimPunchAngleVel.X = 0;
-                player.PlayerPawn.Value.AimPunchAngleVel.Y = 0;
-                player.PlayerPawn.Value.AimPunchAngleVel.Z = 0;
+            player.PlayerPawn.Value.AimPunchServices.UnpredictableBaseAngle.X = 0;
+            player.PlayerPawn.Value.AimPunchServices.UnpredictableBaseAngle.Y = 0;
+            player.PlayerPawn.Value.AimPunchServices.UnpredictableBaseAngle.Z = 0;
 
-                weapon.AccuracyPenalty = 0;
-            }
+            player.PlayerPawn.Value.AimPunchServices.UnpredictableBaseAngle.X = 0;
+            player.PlayerPawn.Value.AimPunchServices.UnpredictableBaseAngle.Y = 0;
+            player.PlayerPawn.Value.AimPunchServices.UnpredictableBaseAngle.Z = 0;
 
+            weapon.AccuracyPenalty = 0;
             // Reset tick-based recoil
-            player.PlayerPawn.Value.AimPunchTickBase = -1;
-            player.PlayerPawn.Value.AimPunchTickFraction = 0;
+            player.PlayerPawn.Value.AimPunchServices.PredictableBaseTick = -1;
+            player.PlayerPawn.Value.AimPunchServices.UnpredictableBaseTick = -1;
         }
     }
 }
