@@ -3,13 +3,12 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
-using RollTheDice.Utils;
 
 namespace RollTheDice.Dices
 {
-    public class StripWeapons : DiceBlueprint
+    public class RandomWeapon : DiceBlueprint
     {
-        public override string ClassName => "StripWeapons";
+        public override string ClassName => "RandomWeapon";
         public readonly Random _random = new();
         private readonly List<string> _weaponsToKeep = [
             CsItem.C4.ToString().ToLower(System.Globalization.CultureInfo.CurrentCulture),
@@ -30,11 +29,10 @@ namespace RollTheDice.Dices
             $"weapon_{CsItem.DefaultKnifeT.ToString().ToLower(System.Globalization.CultureInfo.CurrentCulture)}",
         ];
         public override List<string> Events => [
-            "EventEnterBuyzone",
-            "EventItemPickup"
+            "EventEnterBuyzone"
         ];
 
-        public StripWeapons(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
+        public RandomWeapon(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
             Console.WriteLine(_localizer["dice.class.initialize"].Value.Replace("{name}", ClassName));
         }
@@ -81,6 +79,48 @@ namespace RollTheDice.Dices
                 // remove weapon
                 weapon.AcceptInput("kill");
             }
+            // get randomized weapon
+            bool givePrimary = false;
+            bool giveSecondary = false;
+
+            if (_config.Dices.RandomWeapon.RandomSecondaryAndPrimaryWeapon)
+            {
+                givePrimary = true;
+                giveSecondary = true;
+            }
+            else
+            {
+                int choice = _random.Next(0, 2); // 0: Primary, 1: Secondary
+                if (choice == 0)
+                {
+                    givePrimary = true;
+                }
+                else
+                {
+                    giveSecondary = true;
+                }
+            }
+
+            if (givePrimary && _config.Dices.RandomWeapon.PrimaryWeapons.Count > 0)
+            {
+                string randomPrimary = _config.Dices.RandomWeapon.PrimaryWeapons[_random.Next(_config.Dices.RandomWeapon.PrimaryWeapons.Count)];
+                _ = player.GiveNamedItem(randomPrimary);
+            }
+            if (giveSecondary && _config.Dices.RandomWeapon.SecondaryWeapons.Count > 0)
+            {
+                string randomSecondary = _config.Dices.RandomWeapon.SecondaryWeapons[_random.Next(_config.Dices.RandomWeapon.SecondaryWeapons.Count)];
+                _ = player.GiveNamedItem(randomSecondary);
+            }
+
+            if (givePrimary)
+            {
+                player.ExecuteClientCommand("slot1");
+            }
+            else if (giveSecondary)
+            {
+                player.ExecuteClientCommand("slot2");
+            }
+
             // give player one valid weapon in his hands
             foreach (CHandle<CBasePlayerWeapon> weapon in player.Pawn.Value.WeaponServices.MyWeapons)
             {
@@ -89,7 +129,7 @@ namespace RollTheDice.Dices
                 break;
             }
             // disallow buyzone
-            if (_config.Dices.StripWeapons.DisableBuymenu)
+            if (_config.Dices.RandomWeapon.DisableBuymenu)
             {
                 player.PlayerPawn.Value.InBuyZone = false;
                 Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawn", "m_bInBuyZone");
@@ -107,63 +147,12 @@ namespace RollTheDice.Dices
             if (player?.IsValid != true
                 || player.PlayerPawn?.Value == null
                 || !_players.Contains(player)
-                || !_config.Dices.StripWeapons.DisableBuymenu)
+                || !_config.Dices.RandomWeapon.DisableBuymenu)
             {
                 return HookResult.Continue;
             }
             player.PlayerPawn.Value.InBuyZone = false;
             Utilities.SetStateChanged(player.PlayerPawn.Value, "CCSPlayerPawn", "m_bInBuyZone");
-            return HookResult.Continue;
-        }
-
-        public HookResult EventItemPickup(EventItemPickup @event, GameEventInfo info)
-        {
-            CCSPlayerController? player = @event.Userid;
-            if (player?.IsValid != true
-                || player.PlayerPawn?.Value == null
-                || !_players.Contains(player)
-                || !_config.Dices.StripWeapons.DisableWeaponPickup)
-            {
-                return HookResult.Continue;
-            }
-            string weapon = @event.Item;
-            Server.NextFrame(() =>
-            {
-                if (player == null
-                    || !player.IsValid
-                    || player.Pawn?.Value?.WeaponServices == null
-                    || player.Pawn?.Value?.LifeState != (byte)LifeState_t.LIFE_ALIVE)
-                {
-                    return;
-                }
-                foreach (CHandle<CBasePlayerWeapon> weaponHandle in player.Pawn.Value.WeaponServices.MyWeapons)
-                {
-                    // skip invalid weapon handles
-                    if (weaponHandle == null
-                        || !weaponHandle.IsValid)
-                    {
-                        continue;
-                    }
-                    // get weapon from handle
-                    CBasePlayerWeapon? playerWeapon = weaponHandle.Value;
-                    // skip invalid weapon
-                    if (playerWeapon == null
-                        || !playerWeapon.IsValid)
-                    {
-                        continue;
-                    }
-                    string? weapon_name = Entities.PlayerWeaponName(playerWeapon);
-                    if (weapon_name != null && weapon_name.Contains(weapon))
-                    {
-                        // set weapon as currently active weapon
-                        player.Pawn.Value.WeaponServices.ActiveWeapon.Raw = weaponHandle.Raw;
-                        // drop active weapon
-                        player.DropActiveWeapon();
-                        // delete weapon entity
-                        playerWeapon.AddEntityIOEvent("Kill", playerWeapon, null, "", 0.1f);
-                    }
-                }
-            });
             return HookResult.Continue;
         }
     }

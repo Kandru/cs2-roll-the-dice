@@ -52,20 +52,9 @@ namespace RollTheDice.Dices
 
         public void NotifyPlayers(CCSPlayerController player, string diceName, Dictionary<string, string> data)
         {
-            // send message to all players
-            if (!_localizer[$"dice_{diceName}_all"].ResourceNotFound)
-            {
-                string message = _localizer[$"dice_{diceName}_all"].Value;
-                foreach (KeyValuePair<string, string> kvp in data)
-                {
-                    message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
-                }
-                Server.PrintToChatAll(message);
-                // update description if available
-                Description = message;
-            }
-            // send message to other players (and maybe player)
-            else if (!_localizer[$"dice_{diceName}_other"].ResourceNotFound)
+            // send message to other players (not player) if enabled
+            if (!_localizer[$"dice_{diceName}_other"].ResourceNotFound
+                && _globalConfig.NotifyOtherPlayers)
             {
                 // send message to others
                 string message = _localizer[$"dice_{diceName}_other"].Value;
@@ -78,16 +67,23 @@ namespace RollTheDice.Dices
                     entry.PrintToChat(message);
                 }
             }
-            // if player should get a message
-            if (!_localizer[$"dice_{diceName}_player"].ResourceNotFound)
+            // send message to player who rolled the dice
+            if (!_localizer[$"dice_{diceName}_player"].ResourceNotFound
+                && (_globalConfig.NotifyPlayerViaChatMsg || _globalConfig.NotifyPlayerViaCenterMsg))
             {
                 string message = _localizer[$"dice_{diceName}_player"].Value;
                 foreach (KeyValuePair<string, string> kvp in data)
                 {
                     message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
                 }
-                player.PrintToCenter(message);
-                player.PrintToChat(_localizer["command.prefix"].Value + message);
+                if (_globalConfig.NotifyPlayerViaCenterMsg)
+                {
+                    player.PrintToCenter(message);
+                }
+                if (_globalConfig.NotifyPlayerViaChatMsg)
+                {
+                    player.PrintToChat(_localizer["command.prefix"].Value + message);
+                }
                 // update description if available
                 Description = message;
             }

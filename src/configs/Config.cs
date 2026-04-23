@@ -37,6 +37,22 @@ namespace RollTheDice
         [JsonPropertyName("fog_of_war")] public FogOfWarConfig FogOfWar { get; set; } = new FogOfWarConfig();
         [JsonPropertyName("play_as_chicken")] public PlayAsChickenConfig PlayAsChicken { get; set; } = new PlayAsChickenConfig();
         [JsonPropertyName("unlimited_ammo")] public InfiniteAmmoConfig InfiniteAmmo { get; set; } = new InfiniteAmmoConfig();
+        [JsonPropertyName("random_weapon")] public RandomWeaponConfig RandomWeapon { get; set; } = new RandomWeaponConfig();
+        [JsonPropertyName("damage_multiplier")] public DamageMultiplierConfig DamageMultiplier { get; set; } = new DamageMultiplierConfig();
+        [JsonPropertyName("headshot_only")] public HeadshotOnlyConfig HeadshotOnly { get; set; } = new HeadshotOnlyConfig();
+        [JsonPropertyName("no_headshot")] public NoHeadshotConfig NoHeadshot { get; set; } = new NoHeadshotConfig();
+        [JsonPropertyName("weird_grenades")] public WeirdGrenadesConfig WeirdGrenades { get; set; } = new WeirdGrenadesConfig();
+        [JsonPropertyName("loud_steps")] public LoudStepsConfig LoudSteps { get; set; } = new LoudStepsConfig();
+        [JsonPropertyName("longer_flashes")] public LongerFlashesConfig LongerFlashes { get; set; } = new LongerFlashesConfig();
+        [JsonPropertyName("reset_on_reload")] public ResetOnReloadConfig ResetOnReload { get; set; } = new ResetOnReloadConfig();
+        [JsonPropertyName("bankrupt")] public BankruptConfig Bankrupt { get; set; } = new BankruptConfig();
+        [JsonPropertyName("millionaire")] public MillionaireConfig Millionaire { get; set; } = new MillionaireConfig();
+        [JsonPropertyName("cutter")] public CutterConfig Cutter { get; set; } = new CutterConfig();
+        [JsonPropertyName("return_to_sender")] public ReturnToSenderConfig ReturnToSender { get; set; } = new ReturnToSenderConfig();
+        [JsonPropertyName("jammer")] public JammerConfig Jammer { get; set; } = new JammerConfig();
+        [JsonPropertyName("deaf")] public DeafConfig Deaf { get; set; } = new DeafConfig();
+        [JsonPropertyName("zoom_in")] public ZoomInConfig ZoomIn { get; set; } = new ZoomInConfig();
+        [JsonPropertyName("zoom_out")] public ZoomOutConfig ZoomOut { get; set; } = new ZoomOutConfig();
     }
 
     public class MapConfig
@@ -98,6 +114,13 @@ namespace RollTheDice
         [JsonPropertyName("price_to_dice")] public int PriceToDice { get; set; } = 0;
         // allow re-dice after respawn
         [JsonPropertyName("allow_dice_after_respawn")] public bool AllowDiceAfterRespawn { get; set; } = false;
+        // notify other players when a player rolls the dice
+        [JsonPropertyName("notify_other_players_about_dices_rolled")] public bool NotifyOtherPlayers { get; set; } = true;
+        // notify player via chat
+        [JsonPropertyName("notify_player_via_chatmsg")] public bool NotifyPlayerViaChatMsg { get; set; } = true;
+        // notify player via center message
+        [JsonPropertyName("notify_player_via_centermsg")] public bool NotifyPlayerViaCenterMsg { get; set; } = true;
+
         // dices configuration
         [JsonPropertyName("dices")] public DicesConfig Dices { get; set; } = new DicesConfig();
         // sound configuration

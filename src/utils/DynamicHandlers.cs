@@ -1,13 +1,14 @@
-using RollTheDice.Dices;
+
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.UserMessages;
+using RollTheDice.Dices;
 using System.Reflection;
 
 namespace RollTheDice.Utils
 {
     public static class DynamicHandlers
     {
-        public static void RegisterModuleListener(BasePlugin basePlugin, string listenerName, DiceBlueprint dice)
+        public static void RegisterModuleListener(BasePlugin basePlugin, string listenerName, DiceBlueprint plugin)
         {
             // get the listener type from CounterStrikeSharp.API.Core.Listeners
             Type? listenerType = typeof(Listeners).GetNestedType(listenerName);
@@ -16,13 +17,13 @@ namespace RollTheDice.Utils
                 return;
             }
             // get the method from the module
-            MethodInfo? method = dice.GetType().GetMethod(listenerName);
+            MethodInfo? method = plugin.GetType().GetMethod(listenerName);
             if (method == null)
             {
                 return;
             }
             // create delegate
-            Delegate handler = Delegate.CreateDelegate(listenerType, dice, method);
+            Delegate handler = Delegate.CreateDelegate(listenerType, plugin, method);
             // use reflection to call RegisterListener<T>
             MethodInfo? registerMethod = typeof(BasePlugin).GetMethods(BindingFlags.Public | BindingFlags.Instance)
                 .FirstOrDefault(static m => m.Name == "RegisterListener" && m.IsGenericMethodDefinition && m.GetParameters().Length == 1);
@@ -34,7 +35,7 @@ namespace RollTheDice.Utils
             _ = genericRegisterMethod.Invoke(basePlugin, [handler]);
         }
 
-        public static void DeregisterModuleListener(BasePlugin basePlugin, string listenerName, DiceBlueprint dice)
+        public static void DeregisterModuleListener(BasePlugin basePlugin, string listenerName, DiceBlueprint plugin)
         {
             // get the listener type from CounterStrikeSharp.API.Core.Listeners
             Type? listenerType = typeof(Listeners).GetNestedType(listenerName);
@@ -43,13 +44,13 @@ namespace RollTheDice.Utils
                 return;
             }
             // get the method from the module
-            MethodInfo? method = dice.GetType().GetMethod(listenerName);
+            MethodInfo? method = plugin.GetType().GetMethod(listenerName);
             if (method == null)
             {
                 return;
             }
             // create delegate
-            Delegate handler = Delegate.CreateDelegate(listenerType, dice, method);
+            Delegate handler = Delegate.CreateDelegate(listenerType, plugin, method);
             // use reflection to call RemoveListener<T>
             MethodInfo? removeMethod = typeof(BasePlugin).GetMethods(BindingFlags.Public | BindingFlags.Instance)
                 .FirstOrDefault(static m => m.Name == "RemoveListener" && m.IsGenericMethodDefinition && m.GetParameters().Length == 1);
@@ -61,7 +62,7 @@ namespace RollTheDice.Utils
             _ = genericRemoveMethod.Invoke(basePlugin, [handler]);
         }
 
-        public static void RegisterModuleEventHandler(BasePlugin basePlugin, string eventName, DiceBlueprint dice)
+        public static void RegisterModuleEventHandler(BasePlugin basePlugin, string eventName, DiceBlueprint plugin)
         {
             // get the event type from CounterStrikeSharp.API.Core
             Type? eventType = typeof(BasePlugin).Assembly.GetType($"CounterStrikeSharp.API.Core.{eventName}");
@@ -71,7 +72,7 @@ namespace RollTheDice.Utils
             }
 
             // get the method from the module
-            MethodInfo? method = dice.GetType().GetMethod(eventName);
+            MethodInfo? method = plugin.GetType().GetMethod(eventName);
             if (method == null)
             {
                 return;
@@ -79,7 +80,7 @@ namespace RollTheDice.Utils
 
             // create delegate using Func<T, GameEventInfo, HookResult> for event handlers
             Type gameEventHandlerType = typeof(BasePlugin).GetNestedType("GameEventHandler`1")!.MakeGenericType(eventType);
-            Delegate handler = Delegate.CreateDelegate(gameEventHandlerType, dice, method);
+            Delegate handler = Delegate.CreateDelegate(gameEventHandlerType, plugin, method);
 
             // use reflection to call RegisterEventHandler<T>
             MethodInfo? registerMethod = typeof(BasePlugin).GetMethods(BindingFlags.Public | BindingFlags.Instance)
@@ -123,10 +124,10 @@ namespace RollTheDice.Utils
             _ = genericDeregisterMethod.Invoke(basePlugin, [handler, HookMode.Pre]);
         }
 
-        public static void RegisterUserMessageHook(BasePlugin basePlugin, int messageId, DiceBlueprint dice, HookMode hookMode)
+        public static void RegisterUserMessageHook(BasePlugin basePlugin, int messageId, DiceBlueprint plugin, HookMode hookMode)
         {
             // get the method from the module
-            MethodInfo? method = dice.GetType().GetMethod($"HookUserMessage{messageId}");
+            MethodInfo? method = plugin.GetType().GetMethod($"HookUserMessage{messageId}");
             if (method == null)
             {
                 Console.WriteLine("[DynamicHandlers] Method not found for UserMessage ID: " + messageId);
@@ -135,7 +136,7 @@ namespace RollTheDice.Utils
 
             // create delegate using UserMessage.UserMessageHandler - not Func<UserMessage, HookResult>
             Type delegateType = typeof(UserMessage.UserMessageHandler);
-            Delegate handler = Delegate.CreateDelegate(delegateType, dice, method);
+            Delegate handler = Delegate.CreateDelegate(delegateType, plugin, method);
 
             // use reflection to call HookUserMessage with correct signature
             MethodInfo? hookMethod = typeof(BasePlugin).GetMethods(BindingFlags.Public | BindingFlags.Instance)
@@ -148,10 +149,10 @@ namespace RollTheDice.Utils
             _ = hookMethod.Invoke(basePlugin, [messageId, handler, hookMode]);
         }
 
-        public static void DeregisterUserMessageHook(BasePlugin basePlugin, int messageId, DiceBlueprint module, HookMode hookMode)
+        public static void DeregisterUserMessageHook(BasePlugin basePlugin, int messageId, DiceBlueprint plugin, HookMode hookMode)
         {
             // get the method from the module
-            MethodInfo? method = module.GetType().GetMethod($"HookUserMessage{messageId}");
+            MethodInfo? method = plugin.GetType().GetMethod($"HookUserMessage{messageId}");
             if (method == null)
             {
                 return;
@@ -159,7 +160,7 @@ namespace RollTheDice.Utils
 
             // create delegate using UserMessage.UserMessageHandler - not Func<UserMessage, HookResult>
             Type delegateType = typeof(UserMessage.UserMessageHandler);
-            Delegate handler = Delegate.CreateDelegate(delegateType, module, method);
+            Delegate handler = Delegate.CreateDelegate(delegateType, plugin, method);
 
             // use reflection to call UnhookUserMessage with correct signature
             MethodInfo? unhookMethod = typeof(BasePlugin).GetMethods(BindingFlags.Public | BindingFlags.Instance)
@@ -169,6 +170,55 @@ namespace RollTheDice.Utils
                 return;
             }
             _ = unhookMethod.Invoke(basePlugin, [messageId, handler, hookMode]);
+        }
+
+        public static void RegisterCommand(BasePlugin basePlugin, string command, string description, DiceBlueprint plugin)
+        {
+            // get the method from the module
+            MethodInfo? method = plugin.GetType().GetMethod($"Command{command.First().ToString().ToUpper(System.Globalization.CultureInfo.CurrentCulture) + command[1..]}");
+            if (method == null)
+            {
+                Console.WriteLine("[DynamicHandlers] Method not found for command name: " + command);
+                return;
+            }
+
+            // use reflection to call AddCommand with correct signature
+            MethodInfo? addCommandMethod = typeof(BasePlugin).GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .FirstOrDefault(static m => m.Name == "AddCommand" && m.GetParameters().Length == 3);
+            if (addCommandMethod == null)
+            {
+                Console.WriteLine("[DynamicHandlers] AddCommand method not found.");
+                return;
+            }
+
+            // get the delegate type from the AddCommand parameters (usually CommandDelegate)
+            Type delegateType = addCommandMethod.GetParameters()[2].ParameterType;
+            Delegate handler = Delegate.CreateDelegate(delegateType, plugin, method);
+
+            _ = addCommandMethod.Invoke(basePlugin, [command, description, handler]);
+        }
+
+        public static void DeregisterCommand(BasePlugin basePlugin, string command, DiceBlueprint plugin)
+        {
+            // get the method from the module
+            MethodInfo? method = plugin.GetType().GetMethod($"Command{command.First().ToString().ToUpper(System.Globalization.CultureInfo.CurrentCulture) + command[1..]}");
+            if (method == null)
+            {
+                return;
+            }
+
+            // find RemoveCommand method to get the correct delegate type
+            MethodInfo? removeCommandMethod = typeof(BasePlugin).GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                .FirstOrDefault(static m => m.Name == "RemoveCommand" && m.GetParameters().Length == 3);
+            if (removeCommandMethod == null)
+            {
+                return;
+            }
+
+            Type delegateType = removeCommandMethod.GetParameters()[2].ParameterType;
+            Delegate handler = Delegate.CreateDelegate(delegateType, plugin, method);
+
+            _ = removeCommandMethod.Invoke(basePlugin, [command, handler]);
         }
     }
 }
