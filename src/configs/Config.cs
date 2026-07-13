@@ -74,7 +74,7 @@ namespace RollTheDice
         // event to trigger RTD
         [JsonPropertyName("event")]
         [JsonConverter(typeof(JsonStringEnumConverter))]
-        public DiceTriggerEvent TriggerEvent { get; set; } = DiceTriggerEvent.RoundStart;
+        public DiceTriggerEvent TriggerEvent { get; set; } = DiceTriggerEvent.RoundFreezeEnd;
         // Force all players to RTD regardless of their personal setting
         [JsonPropertyName("force_all_players")] public bool ForceAllPlayers { get; set; } = false;
         // Allow players to opt-in for automatic RTD (only used when ForceAllPlayers is false)

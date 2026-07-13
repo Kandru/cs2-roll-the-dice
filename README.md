@@ -136,7 +136,7 @@ This plugin automatically creates a readable JSON configuration file. This confi
   "debug": false,
   "allow_rtd_during_warmup": false,
   "trigger": {
-    "event": "RoundStart",
+    "event": "RoundFreezeEnd",
     "force_all_players": false,
     "allow_player_auto_rtd": true,
     "roll_the_dice_every_x_seconds": 0
