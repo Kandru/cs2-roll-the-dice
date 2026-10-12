@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
 using System.Drawing;
+using System.Text.Json.Serialization;
 
 // based on https://gist.github.com/21Joakim/b5eb46bd9acb117349e9d76d3971f34e
 namespace RollTheDice.Dices
@@ -10,7 +11,6 @@ namespace RollTheDice.Dices
     public class FogOfWar : DiceBlueprint
     {
         public override string ClassName => "FogOfWar";
-        public override List<string> Listeners => [];
 
         public FogOfWar(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
         {
@@ -134,5 +134,18 @@ namespace RollTheDice.Dices
             envPlayerVisibility.FogMaxDensityMultiplier = visibility;
             Utilities.SetStateChanged(envPlayerVisibility, "CPlayerVisibility", "m_flFogMaxDensityMultiplier");
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class FogOfWarConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        [JsonPropertyName("color")] public string Color { get; set; } = "#a3a3a3";
+        [JsonPropertyName("exponent")] public float Exponent { get; set; } = 0.05f;
+        [JsonPropertyName("density")] public float Density { get; set; } = 1f;
+        [JsonPropertyName("distance")] public int EndDistance { get; set; } = 10000;
+        [JsonPropertyName("player_visibility")] public float PlayerVisibility { get; set; } = 1f;
     }
 }

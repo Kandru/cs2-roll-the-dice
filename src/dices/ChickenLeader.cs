@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -62,5 +63,15 @@ namespace RollTheDice.Dices
                 }
             }
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class ChickenLeaderConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        [JsonPropertyName("amount_chicken")] public int Amount { get; set; } = 8;
+        [JsonPropertyName("chicken_size")] public float ChickenSize { get; set; } = 2f;
     }
 }

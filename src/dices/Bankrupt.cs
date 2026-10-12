@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -32,5 +33,13 @@ namespace RollTheDice.Dices
                 { "playerName", player.PlayerName }
             });
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class BankruptConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
     }
 }

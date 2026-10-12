@@ -1,0 +1,104 @@
+/* Roll The Dice banner HUD. Hex colours only; hide with ph-off. */
+
+.HudScreen
+{
+	width: 100%;
+	height: 100%;
+	z-index: 100;
+}
+
+.BannerScreen
+{
+	z-index: 100;
+}
+
+.ph-card
+{
+	opacity: 1;
+	transform: translateY( 0px ) scale3d( 1, 1, 1 );
+	brightness: 1;
+	transition-property: opacity, transform, brightness;
+	transition-duration: 1.0s;
+	transition-timing-function: ease-out;
+	overflow: noclip noclip;
+	border-radius: 3px;
+}
+
+.ph-card.ph-fading
+{
+	opacity: 0;
+}
+
+.ph-card.ph-off
+{
+	visibility: collapse;
+	opacity: 0;
+	transition-duration: 0s;
+}
+
+.ph-bg
+{
+	width: 100%;
+	height: 100%;
+	background-color: gradient( linear, 0% 0%, 0% 100%, from( #12171ee8 ), to( #0b0f14f2 ) );
+	background-image: url("s2r://panorama/images/backgrounds/bluedots_large_png.vtex");
+	background-size: 360px 360px;
+	background-repeat: repeat;
+	background-img-opacity: 0.03;
+	border: 1px solid #ffffff14;
+	border-radius: 3px;
+	box-shadow: #000000c0 0px 8px 30px 0px;
+	world-blur: gaussian( 2 );
+	z-index: 0;
+}
+
+.ph-bar
+{
+	width: 3px;
+	height: 100%;
+	background-color: #f0a531;
+	z-index: 5;
+}
+
+.ph-bar-left
+{
+	horizontal-align: left;
+}
+
+.Banner
+{
+	horizontal-align: center;
+	vertical-align: top;
+	margin-top: 78px;
+	width: fit-children;
+	min-width: 220px;
+	max-width: 520px;
+	height: fit-children;
+	overflow: noclip noclip;
+}
+
+.BannerContent
+{
+	width: fit-children;
+	min-width: 220px;
+	padding: 10px 18px 10px 16px;
+	flow-children: down;
+	z-index: 2;
+}
+
+Label.ph-title
+{
+	width: fit-children;
+	min-width: 180px;
+	font-size: 16;
+	font-weight: bold;
+	color: #f5f7fa;
+	text-align: center;
+	horizontal-align: center;
+	text-shadow: 1px 1px 0px 2.0 #00000088;
+}
+
+.theme-gold .ph-bar
+{
+	background-color: #f0a531;
+}

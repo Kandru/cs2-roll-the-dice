@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
 using System.Drawing;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -78,5 +79,15 @@ namespace RollTheDice.Dices
                 }
             }
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class InvisibleConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        [JsonPropertyName("percentage_visible")] public float PercentageVisible { get; set; } = 0.5f;
+        [JsonPropertyName("hide_shadow")] public bool HideShadow { get; set; } = true;
     }
 }

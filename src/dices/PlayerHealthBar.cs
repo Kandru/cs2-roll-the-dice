@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Modules.UserMessages;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
 using RollTheDice.Utils;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -146,5 +147,13 @@ namespace RollTheDice.Dices
                 message.Send(player);
             }
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class PlayerHealthBarConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
     }
 }

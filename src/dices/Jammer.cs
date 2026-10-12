@@ -2,6 +2,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -66,5 +67,13 @@ namespace RollTheDice.Dices
                 : (player.Pawn.Value.HideHUD | (1 << 8)));
             Utilities.SetStateChanged(player.Pawn.Value, "CBasePlayerPawn", "m_iHideHUD");
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class JammerConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
     }
 }

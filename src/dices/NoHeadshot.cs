@@ -1,13 +1,13 @@
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
     public class NoHeadshot : DiceBlueprint
     {
         public override string ClassName => "NoHeadshot";
-        public readonly Random _random = new();
         public override List<string> Listeners => [
             "OnPlayerTakeDamagePre"
         ];
@@ -20,11 +20,7 @@ namespace RollTheDice.Dices
 
         public override void Add(CCSPlayerController player)
         {
-            // check if player is valid and has a pawn
-            if (player == null
-                || !player.IsValid
-                || player.Pawn?.Value == null
-                || !player.Pawn.Value.IsValid)
+            if (!IsAlivePlayer(player) || player.Pawn?.Value == null)
             {
                 return;
             }
@@ -38,27 +34,33 @@ namespace RollTheDice.Dices
 
         public override void Remove(CCSPlayerController player, DiceRemoveReason reason = DiceRemoveReason.GameLogic)
         {
-            _ = _players.Remove(player);
-            if (player.Pawn?.Value == null
-                || !player.Pawn.Value.IsValid)
+            base.Remove(player, reason);
+            if (player.Pawn?.Value is { IsValid: true } pawn)
             {
-                return;
+                _ = _playerWithNoHeadshot.Remove(pawn.Index);
             }
-            _ = _playerWithNoHeadshot.Remove(player.Pawn.Value.Index);
         }
 
         public override void Reset()
         {
-            _players.Clear();
+            base.Reset();
             _playerWithNoHeadshot.Clear();
         }
 
-        public HookResult OnPlayerTakeDamagePre(CBaseEntity entity, CTakeDamageInfo info)
+        public HookResult OnPlayerTakeDamagePre(CCSPlayerPawn player, CTakeDamageInfo info)
         {
             return info.Attacker.Value == null
                 || !_playerWithNoHeadshot.Contains(info.Attacker.Value.Index)
                 ? HookResult.Continue
-                : info.GetHitGroup() == HitGroup_t.HITGROUP_HEAD ? HookResult.Stop : HookResult.Continue;
+                : info.HitGroupId == HitGroup_t.HITGROUP_HEAD ? HookResult.Stop : HookResult.Continue;
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class NoHeadshotConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
     }
 }

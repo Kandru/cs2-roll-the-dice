@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -61,5 +62,14 @@ namespace RollTheDice.Dices
                 player.Pawn.Value.ActualGravityScale = gravityScale;
             }
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class HighGravityConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        [JsonPropertyName("gravity_scale")] public float GravityScale { get; set; } = 4f;
     }
 }

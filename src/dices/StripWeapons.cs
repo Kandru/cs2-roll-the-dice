@@ -4,6 +4,7 @@ using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Utils;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -166,5 +167,15 @@ namespace RollTheDice.Dices
             });
             return HookResult.Continue;
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class StripWeaponsConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        [JsonPropertyName("disable_buymenu")] public bool DisableBuymenu { get; set; } = true;
+        [JsonPropertyName("disable_pickup")] public bool DisableWeaponPickup { get; set; } = true;
     }
 }

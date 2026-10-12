@@ -47,19 +47,9 @@ jobs:
           echo "new_version=false" >> $GITHUB_ENV
         fi
 
-    - name: Install .NET
-      uses: actions/setup-dotnet@v2
-      if: env.new_version == 'true'
-      with:
-        dotnet-version: '10.0.x'
-  
-    - name: Install Dependencies
-      if: env.new_version == 'true'
-      run: dotnet restore
-
     - name: Build ${{ env.REPOSITORY_NAME }}
       if: env.new_version == 'true'
-      run: dotnet publish -c Release
+      run: make release
 
     - name: Prepare ${{ env.REPOSITORY_NAME }}.info
       if: env.new_version == 'true'

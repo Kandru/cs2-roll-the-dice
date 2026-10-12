@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -27,5 +28,13 @@ namespace RollTheDice.Dices
             player.Respawn();
             return HookResult.Continue;
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class ResetOnReloadConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
     }
 }

@@ -24,9 +24,12 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Change Player Model** - Disguises you as an enemy team player model
 - **Change Player Size** - Scales your player model size randomly (smaller or larger)
 - **Chicken Leader** - Spawns a flock of chickens that follow you around the map
+- **Cloak** - Fade out while standing still
 - **Cutter** - kills everyone instant with a knife
 - **Damage Multiplier** - Multiplies the damage positively and/or negatively
 - **Deaf** - Silence player sounds (e.g. steps)
+- **Disguise as Prop** - Become a map prop when standing still; USE cycles models
+- **Fast Map Action** - Instant plant, defuse, or hostage pickup depending on the map
 - **Decrease Health** - Reduces your health to make you more vulnerable
 - **Decrease Money** - Takes away some of your hard-earned cash
 - **Fog Of War** - Creates a foggy environment obscuring visibility
@@ -43,12 +46,14 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Longer Flashes** - Gives the ability to flash longer
 - **Loud Steps** - Don't even try to crouch or walk
 - **Low Gravity** - Reduces gravity allowing you to jump higher and fall slower
+- **Make Fake Gun Sounds** - Plays random weapon bursts while standing still
+- **Make Hostage Sounds** - Emits hostage pain sounds while idle
 - **Millionaire** - Gives you a lot of money to buy anything you can dream of
 - **No Explosives** - Replaces all your grenades with harmless vegetables and fruits
 - **No Headshot** - Headshots do not deal any damage
 - **No Recoil** - Removes weapon recoil for perfect accuracy
 - **One HP** - Sets your health to just 1 hit point - survive if you can!
-- **Play as Chicken** - swaps your player model with a big chicken. Bok-Bok
+- **Play as Chicken** - Become a big chicken with a real chicken hitbox. Bok-Bok
 - **Show Player Health Bar** - Displays health bars when aiming at players
 - **Random Weapon** - Gives a random weapon, either primary, secondary or both. Strips all other weapons.
 - **Reset On Reload** - Respawns a player everytime he's reloading
@@ -56,9 +61,11 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **ReturnToSender** - Sends a player back to spawn when hit
 - **Strip Weapons** - Removes all your weapons leaving you defenseless
 - **Suicide** - Instantly eliminates you from the round
+- **Third Person View** - Switches the camera to third person
 - **Vampire** - Converts damage you deal to enemies into health for yourself
 - **Weird Grenades** - Bought from somewhere cheap over the internet, they don't work as expected. Or do they?
 - **Zoom In** - Player's view is zoomed in
+- **Zoom Out** - Player's view is zoomed out
 
 ## Plugin Installation
 
@@ -423,34 +430,15 @@ Stores individual player settings automatically. Players are identified by Steam
 
 ## Compile Yourself
 
-Clone the project:
+Requires Docker. Clone and build with Make:
 
 ```bash
 git clone https://github.com/Kandru/cs2-roll-the-dice.git
-```
-
-Go to the project directory
-
-```bash
-  cd cs2-roll-the-dice
-```
-
-Install dependencies
-
-```bash
-  dotnet restore
-```
-
-Build debug files (to use on a development game server)
-
-```bash
-  dotnet build
-```
-
-Build release files (to use on a production game server)
-
-```bash
-  dotnet publish
+cd cs2-roll-the-dice
+make restore
+make debug    # development game server (uses OutputPath from the csproj when set)
+make release  # production publish
+make panorama # validate Panorama HUD sources
 ```
 
 ## License

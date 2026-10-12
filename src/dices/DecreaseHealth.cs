@@ -2,6 +2,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -77,5 +78,16 @@ namespace RollTheDice.Dices
             Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iHealth");
             Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iMaxHealth");
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class DecreaseHealthConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        [JsonPropertyName("min_health")] public int MinHealth { get; set; } = 10;
+        [JsonPropertyName("max_health")] public int MaxHealth { get; set; } = 30;
+        [JsonPropertyName("prevent_death")] public bool PreventDeath { get; set; } = true;
     }
 }

@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -20,11 +21,7 @@ namespace RollTheDice.Dices
 
         public override void Add(CCSPlayerController player)
         {
-            // check if player is valid and has a pawn
-            if (player == null
-                || !player.IsValid
-                || player.Pawn?.Value == null
-                || !player.Pawn.Value.IsValid)
+            if (!IsAlivePlayer(player) || player.Pawn?.Value == null)
             {
                 return;
             }
@@ -42,35 +39,38 @@ namespace RollTheDice.Dices
 
         public override void Remove(CCSPlayerController player, DiceRemoveReason reason = DiceRemoveReason.GameLogic)
         {
-            _ = _players.Remove(player);
-            if (player.Pawn?.Value == null
-                || !player.Pawn.Value.IsValid)
+            base.Remove(player, reason);
+            if (player.Pawn?.Value is { IsValid: true } pawn)
             {
-                return;
+                _ = _playerMultipliers.Remove(pawn.Index);
             }
-            _ = _playerMultipliers.Remove(player.Pawn.Value.Index);
         }
 
         public override void Reset()
         {
-            _players.Clear();
+            base.Reset();
             _playerMultipliers.Clear();
         }
 
-        public HookResult OnPlayerTakeDamagePre(CBaseEntity entity, CTakeDamageInfo info)
+        public HookResult OnPlayerTakeDamagePre(CCSPlayerPawn player, CTakeDamageInfo info)
         {
             if (info.Attacker.Value == null
-                || !_playerMultipliers.ContainsKey(info.Attacker.Value.Index))
+                || !_playerMultipliers.TryGetValue(info.Attacker.Value.Index, out float multiplier))
             {
                 return HookResult.Continue;
             }
-            if (_playerMultipliers.TryGetValue(info.Attacker.Value.Index, out float multiplier))
-            {
-                info.Damage *= multiplier;
-                return HookResult.Changed;
-            }
-
-            return HookResult.Continue;
+            info.Damage *= multiplier;
+            return HookResult.Changed;
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class DamageMultiplierConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        [JsonPropertyName("min_multiplier")] public float MinMultiplier { get; set; } = 0.5f;
+        [JsonPropertyName("max_multiplier")] public float MaxMultiPlier { get; set; } = 2.0f;
     }
 }

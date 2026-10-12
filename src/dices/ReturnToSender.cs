@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Utils;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -76,5 +77,13 @@ namespace RollTheDice.Dices
             }
             return false;
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class ReturnToSenderConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
     }
 }

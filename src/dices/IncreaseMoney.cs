@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -50,5 +51,15 @@ namespace RollTheDice.Dices
             player.InGameMoneyServices.Account = amount;
             Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInGameMoneyServices");
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class IncreaseMoneyConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        [JsonPropertyName("min_money")] public int MinMoney { get; set; } = 100;
+        [JsonPropertyName("max_money")] public int MaxMoney { get; set; } = 1000;
     }
 }

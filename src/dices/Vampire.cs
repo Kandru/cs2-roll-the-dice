@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -41,5 +42,14 @@ namespace RollTheDice.Dices
             attacker.PrintToCenterAlert($"+{(int)float.Round(@event.DmgHealth)} health!");
             return HookResult.Continue;
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class VampireConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        [JsonPropertyName("max_health")] public int MaxHealth { get; set; } = 200;
     }
 }

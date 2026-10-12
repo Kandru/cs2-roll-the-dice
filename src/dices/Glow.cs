@@ -5,6 +5,7 @@ using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
 using RollTheDice.Utils;
 using System.Drawing;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -99,5 +100,13 @@ namespace RollTheDice.Dices
             Entities.RemoveEntity(glowProxy);
             Entities.RemoveEntity(glow);
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class GlowConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
     }
 }

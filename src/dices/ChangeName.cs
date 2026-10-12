@@ -2,6 +2,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -90,5 +91,17 @@ namespace RollTheDice.Dices
             player.PlayerName = newName;
             Utilities.SetStateChanged(player, "CBasePlayerController", "m_iszPlayerName");
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class ChangeNameConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        [JsonPropertyName("player_names")]
+        public List<string> PlayerNames { get; set; } = [
+            "Anonymous", "Player", "Gamer", "Warrior", "Hero", "Legend", "Champion", "Stranger"
+        ];
     }
 }

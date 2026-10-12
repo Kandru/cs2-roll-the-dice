@@ -2,108 +2,124 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
+using RollTheDice.Hud;
+using System.Text.RegularExpressions;
 
 namespace RollTheDice.Dices
 {
-    public class DiceBlueprint(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer)
+    public partial class DiceBlueprint(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer)
     {
+        [GeneratedRegex(@"\{(?:green|purple|default|red|blue|yellow|orange|olive|lightpurple|lightblue|lightgreen|lightred|grey|gray|white|darkblue|darkred)\}", RegexOptions.IgnoreCase)]
+        private static partial Regex ChatColorTokens();
+
+        private static readonly List<string> NoNames = [];
+        private static readonly Dictionary<int, HookMode> NoUserMessages = [];
+
         public readonly PluginConfig _globalConfig = GlobalConfig;
         public readonly MapConfig _config = Config;
         public readonly IStringLocalizer _localizer = Localizer;
         public readonly List<CCSPlayerController> _players = [];
         public virtual string Description { get; private set; } = "Unknown Dice";
         public virtual string ClassName => "DiceBlueprint";
-        public virtual List<string> Events => [];
-        public virtual List<string> Listeners => [];
-        public virtual Dictionary<int, HookMode> UserMessages => [];
-        public virtual List<string> Precache => [];
+        public virtual List<string> Events => NoNames;
+        public virtual List<string> Listeners => NoNames;
+        public virtual Dictionary<int, HookMode> UserMessages => NoUserMessages;
+
+        protected static bool IsAlivePlayer(CCSPlayerController? player) =>
+            player is { IsValid: true }
+            && player.Pawn?.Value is { IsValid: true } pawn
+            && pawn.LifeState == (byte)LifeState_t.LIFE_ALIVE;
 
         public virtual void Add(CCSPlayerController player)
         {
-            // check if player is valid and has a pawn
-            if (player == null
-                || !player.IsValid
-                || player.Pawn?.Value == null
-                || !player.Pawn.Value.IsValid)
+            if (!IsAlivePlayer(player))
             {
                 return;
             }
             _players.Add(player);
-            NotifyPlayers(player, ClassName, new()
-            {
-                { "playerName", player.PlayerName }
-            });
+            NotifyPlayers(player, ClassName, new() { { "playerName", player.PlayerName } });
         }
 
         public virtual void Remove(CCSPlayerController player, DiceRemoveReason reason = DiceRemoveReason.GameLogic)
         {
             _ = _players.Remove(player);
+            Banner.Hide(player);
         }
 
         public virtual void Reset()
         {
+            foreach (CCSPlayerController player in _players)
+            {
+                Banner.Hide(player);
+            }
             _players.Clear();
         }
 
-        public virtual void Destroy()
-        {
-            Reset();
-        }
+        public virtual void Destroy() => Reset();
 
         public void NotifyPlayers(CCSPlayerController player, string diceName, Dictionary<string, string> data)
         {
-            // send message to other players (not player) if enabled
-            if (!_localizer[$"dice_{diceName}_other"].ResourceNotFound
-                && _globalConfig.NotifyOtherPlayers)
+            if (_globalConfig.NotifyOtherPlayers)
             {
-                // send message to others
-                string message = _localizer[$"dice_{diceName}_other"].Value;
-                foreach (KeyValuePair<string, string> kvp in data)
+                LocalizedString other = _localizer[$"dice_{diceName}_other"];
+                if (!other.ResourceNotFound)
                 {
-                    message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
-                }
-                foreach (CCSPlayerController entry in Utilities.GetPlayers().Where(p => p != player))
-                {
-                    entry.PrintToChat(message);
+                    string message = Format(other.Value, data);
+                    foreach (CCSPlayerController entry in Utilities.GetPlayers())
+                    {
+                        if (entry == player || !entry.IsValid || entry.IsBot || entry.IsHLTV)
+                        {
+                            continue;
+                        }
+                        entry.PrintToChat(message);
+                    }
                 }
             }
-            // send message to player who rolled the dice
-            if (!_localizer[$"dice_{diceName}_player"].ResourceNotFound
-                && (_globalConfig.NotifyPlayerViaChatMsg || _globalConfig.NotifyPlayerViaCenterMsg))
+
+            LocalizedString self = _localizer[$"dice_{diceName}_player"];
+            if (self.ResourceNotFound)
             {
-                string message = _localizer[$"dice_{diceName}_player"].Value;
-                foreach (KeyValuePair<string, string> kvp in data)
-                {
-                    message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
-                }
-                if (_globalConfig.NotifyPlayerViaCenterMsg)
-                {
-                    player.PrintToCenter(message);
-                }
-                if (_globalConfig.NotifyPlayerViaChatMsg)
-                {
-                    player.PrintToChat(_localizer["command.prefix"].Value + message);
-                }
-                // update description if available
-                Description = message;
+                return;
             }
+
+            string playerMessage = Format(self.Value, data);
+            if (_globalConfig.NotifyPlayerViaCenterMsg)
+            {
+                player.PrintToCenter(playerMessage);
+            }
+            if (_globalConfig.NotifyPlayerViaChatMsg)
+            {
+                player.PrintToChat(_localizer["command.prefix"].Value + playerMessage);
+            }
+            Description = playerMessage;
+            Banner.Show(player, StripChatColors(playerMessage));
         }
 
         public void NotifyStatus(CCSPlayerController player, string diceName, Dictionary<string, string> data)
         {
-            // if player should get a message
-            if (!_localizer[$"dice_{diceName}_status"].ResourceNotFound)
+            LocalizedString status = _localizer[$"dice_{diceName}_status"];
+            if (status.ResourceNotFound)
             {
-                string message = _localizer[$"dice_{diceName}_status"].Value;
-                foreach (KeyValuePair<string, string> kvp in data)
-                {
-                    message = message.Replace($"{{{kvp.Key}}}", kvp.Value);
-                }
-                player.PrintToCenter(message);
-                player.PrintToChat(_localizer["command.prefix"].Value + message);
-                // update description if available
-                Description = message;
+                return;
             }
+
+            string message = Format(status.Value, data);
+            player.PrintToCenter(message);
+            player.PrintToChat(_localizer["command.prefix"].Value + message);
+            Description = message;
+            Banner.Show(player, StripChatColors(message));
         }
+
+        private static string Format(string message, Dictionary<string, string> data)
+        {
+            foreach ((string key, string value) in data)
+            {
+                message = message.Replace($"{{{key}}}", value);
+            }
+            return message;
+        }
+
+        public static string StripChatColors(string message) =>
+            ChatColorTokens().Replace(message, string.Empty).Trim();
     }
 }

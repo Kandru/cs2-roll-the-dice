@@ -2,6 +2,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -135,5 +136,16 @@ namespace RollTheDice.Dices
                 });
             });
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class IncreaseSpeedConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        [JsonPropertyName("min_speed")] public float MinSpeed { get; set; } = 1.5f;
+        [JsonPropertyName("max_speed")] public float MaxSpeed { get; set; } = 2f;
+        [JsonPropertyName("reset_on_hostage_rescue")] public bool ResetOnHostageRescue { get; set; } = true;
     }
 }

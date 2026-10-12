@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -141,5 +142,13 @@ namespace RollTheDice.Dices
             player.PlayerPawn.Value.AimPunchServices.PredictableBaseTick = -1;
             player.PlayerPawn.Value.AimPunchServices.UnpredictableBaseTick = -1;
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class NoRecoilConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
     }
 }

@@ -34,6 +34,7 @@ namespace RollTheDice
             RegisterListener<Listeners.OnMapStart>(OnMapStart);
             RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
             RegisterListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
+            RegisterListener<Listeners.CheckTransmit>(Hud.CustomHud.OnCheckTransmit);
             // print message if hot reload
             if (hotReload)
             {
@@ -52,6 +53,7 @@ namespace RollTheDice
         {
             // reset dice rolls on unload
             DestroyModules();
+            Hud.CustomHud.Shutdown();
             // update configuration
             ReloadConfigFromDisk();
             // unregister listeners
@@ -63,6 +65,7 @@ namespace RollTheDice
             RemoveListener<Listeners.OnMapStart>(OnMapStart);
             RemoveListener<Listeners.OnMapEnd>(OnMapEnd);
             RemoveListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
+            RemoveListener<Listeners.CheckTransmit>(Hud.CustomHud.OnCheckTransmit);
             Console.WriteLine(Localizer["core.unload"]);
         }
 
@@ -72,6 +75,7 @@ namespace RollTheDice
             _playersThatRolledTheDice.Clear();
             // reset dices (necessary after warmup)
             RemoveDicesForPlayers();
+            Hud.CustomHud.ResetRound();
             // refresh game rules (to avoid caching warmup value)
             GameRules.Refresh();
             // abort if warmup
@@ -207,6 +211,7 @@ namespace RollTheDice
         private HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
         {
             RemoveDiceForPlayer(@event.Userid, DiceRemoveReason.Disconnect);
+            Hud.CustomHud.ReleasePlayer(@event.Userid);
             return HookResult.Continue;
         }
 
@@ -225,6 +230,7 @@ namespace RollTheDice
         private void OnMapEnd()
         {
             DestroyModules();
+            Hud.CustomHud.Shutdown();
             // reset states
             _isDuringRound = false;
             _playersThatRolledTheDice.Clear();
@@ -349,128 +355,59 @@ namespace RollTheDice
                 return;
             }
 
-            // Get all dice types that are not abstract and are subclasses of DiceBlueprint
             Dictionary<string, Type> diceTypes = typeof(DiceBlueprint).Assembly.GetTypes()
                 .Where(static t => t.IsSubclassOf(typeof(DiceBlueprint)) && !t.IsAbstract)
                 .ToDictionary(static t => t.Name, static t => t);
 
-            // Iterate through properties in DicesConfig and instantiate enabled dices
             foreach (PropertyInfo property in typeof(DicesConfig).GetProperties())
             {
-                if (diceTypes.TryGetValue(property.Name, out Type? diceType))
+                if (!diceTypes.TryGetValue(property.Name, out Type? diceType))
                 {
-                    object? configValue = property.GetValue(_currentMapConfig.Dices);
-                    if (configValue != null)
-                    {
-                        PropertyInfo? enabledProperty = configValue.GetType().GetProperty("Enabled");
-                        if (enabledProperty != null && enabledProperty.GetValue(configValue) is bool enabled && enabled)
-                        {
-                            DiceBlueprint instance = (DiceBlueprint)Activator.CreateInstance(diceType, Config, _currentMapConfig, Localizer)!;
-                            _dices.Add(instance);
-                        }
-                    }
+                    continue;
                 }
+
+                object? configValue = property.GetValue(_currentMapConfig.Dices);
+                if (configValue?.GetType().GetProperty("Enabled")?.GetValue(configValue) is not bool enabled || !enabled)
+                {
+                    continue;
+                }
+
+                DiceBlueprint instance = (DiceBlueprint)Activator.CreateInstance(diceType, Config, _currentMapConfig, Localizer)!;
+                _dices.Add(instance);
+                _diceUsageCount[instance] = 0;
             }
 
-            // set current rolled dices to 0
-            foreach (DiceBlueprint entry in _dices)
-            {
-                _diceUsageCount.Add(entry, 0);
-            }
-            // register listeners
-            RegisterListeners();
-            RegisterEventHandlers();
-            RegisterUserMessageHooks();
+            BindModuleHandlers(register: true);
         }
 
         private void DestroyModules()
         {
-            // deregister listeners
-            DeregisterListeners();
-            DeregisterEventHandlers();
-            DeregisterUserMessageHooks();
-            // destroy all cosmetics modules
+            BindModuleHandlers(register: false);
             foreach (DiceBlueprint module in _dices)
             {
                 module.Destroy();
             }
             _dices.Clear();
+            _diceUsageCount.Clear();
         }
 
-        private void RegisterListeners()
+        private void BindModuleHandlers(bool register)
         {
             foreach (DiceBlueprint module in _dices)
             {
-                //DebugPrint($"Initializing listener for module {module.GetType().Name}");
                 foreach (string listenerName in module.Listeners)
                 {
-                    //DebugPrint($"- {listenerName}");
-                    DynamicHandlers.RegisterModuleListener(this, listenerName, module);
+                    Bindings.BindModuleListener(this, listenerName, module, register);
                 }
-            }
-        }
 
-        private void DeregisterListeners()
-        {
-            foreach (DiceBlueprint module in _dices)
-            {
-                //DebugPrint($"Destroying listener for module {module.GetType().Name}");
-                foreach (string listenerName in module.Listeners)
-                {
-                    //DebugPrint($"- {listenerName}");
-                    DynamicHandlers.DeregisterModuleListener(this, listenerName, module);
-                }
-            }
-        }
-
-        private void RegisterEventHandlers()
-        {
-            foreach (DiceBlueprint module in _dices)
-            {
-                //DebugPrint($"Initializing event handlers for module {module.GetType().Name}");
                 foreach (string eventName in module.Events)
                 {
-                    //DebugPrint($"- {eventName}");
-                    DynamicHandlers.RegisterModuleEventHandler(this, eventName, module);
+                    Bindings.BindModuleEventHandler(this, eventName, module, register);
                 }
-            }
-        }
 
-        private void DeregisterEventHandlers()
-        {
-            foreach (DiceBlueprint module in _dices)
-            {
-                //DebugPrint($"Destroying event handlers for module {module.GetType().Name}");
-                foreach (string eventName in module.Events)
-                {
-                    //DebugPrint($"- {eventName}");
-                    DynamicHandlers.DeregisterModuleEventHandler(this, eventName, module);
-                }
-            }
-        }
-
-        private void RegisterUserMessageHooks()
-        {
-            foreach (DiceBlueprint module in _dices)
-            {
-                //DebugPrint($"Registering user messages for module {module.GetType().Name}");
                 foreach ((int userMessageId, HookMode hookMode) in module.UserMessages)
                 {
-                    //DebugPrint($"- UserMessage ID: {userMessageId}, HookMode: {hookMode}");
-                    DynamicHandlers.RegisterUserMessageHook(this, userMessageId, module, hookMode);
-                }
-            }
-        }
-
-        private void DeregisterUserMessageHooks()
-        {
-            foreach (DiceBlueprint module in _dices)
-            {
-                //DebugPrint($"Deregistering user messages for module {module.GetType().Name}");
-                foreach ((int userMessageId, HookMode hookMode) in module.UserMessages)
-                {
-                    //DebugPrint($"- UserMessage ID: {userMessageId}, HookMode: {hookMode}");
-                    DynamicHandlers.DeregisterUserMessageHook(this, userMessageId, module, hookMode);
+                    Bindings.BindUserMessage(this, userMessageId, module, hookMode, register);
                 }
             }
         }

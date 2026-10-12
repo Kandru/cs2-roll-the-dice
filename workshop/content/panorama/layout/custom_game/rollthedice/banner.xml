@@ -1,0 +1,17 @@
+<root>
+	<styles>
+		<include src="s2r://panorama/styles/csgostyles.vcss" />
+		<include src="s2r://panorama/styles/custom_game/rollthedice/hud.vcss" />
+	</styles>
+
+	<!-- Fullscreen transparent overlay; banner sits under the top player list. -->
+	<Panel class="HudScreen BannerScreen" hittest="false">
+		<Panel id="Banner" class="Banner ph-card ph-off theme-gold" hittest="false">
+			<Panel class="ph-bg" hittest="false" />
+			<Panel class="ph-bar ph-bar-left" hittest="false" />
+			<Panel class="BannerContent" hittest="false">
+				<Label class="ph-title additive stratum-bold-tf text-align-center" hittest="false" text="{s:dice}" />
+			</Panel>
+		</Panel>
+	</Panel>
+</root>

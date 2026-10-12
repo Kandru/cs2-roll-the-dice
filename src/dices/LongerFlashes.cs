@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -37,5 +38,15 @@ namespace RollTheDice.Dices
             player.PlayerPawn.Value.BlindUntilTime = Server.CurrentTime + player.PlayerPawn.Value.FlashDuration;
             return HookResult.Continue;
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class LongerFlashesConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        [JsonPropertyName("min_blindduration_factor")] public float MinBlinddurationFactor { get; set; } = 1.3f;
+        [JsonPropertyName("max_blindduration_factor")] public float MaxBlinddurationFactor { get; set; } = 3.0f;
     }
 }

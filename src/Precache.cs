@@ -5,7 +5,7 @@ namespace RollTheDice
 {
     public partial class RollTheDice : BasePlugin
     {
-        private readonly List<string> _precacheModels =
+        private static readonly HashSet<string> PrecacheModels =
         [
             "models/chicken/chicken.vmdl",
             "particles/burning_fx/env_fire_tiny.vpcf",
@@ -30,25 +30,23 @@ namespace RollTheDice
 
         private void OnServerPrecacheResources(ResourceManifest manifest)
         {
-            // TODO: workaround to precache models from dices (maybe an more autoamatic way?)
+            foreach (string model in PrecacheModels)
+            {
+                manifest.AddResource(model);
+            }
+
             foreach (string model in _currentMapConfig.Dices.NoExplosives.RandomModels)
             {
-                if (string.IsNullOrEmpty(model)
-                    || _precacheModels.Contains(model))
+                if (string.IsNullOrEmpty(model) || PrecacheModels.Contains(model))
                 {
                     continue;
                 }
                 manifest.AddResource(model);
             }
-            // add soundevent file to precache
+
             if (!string.IsNullOrEmpty(Config.Precache.SoundEventFile))
             {
                 manifest.AddResource(Config.Precache.SoundEventFile);
-            }
-            // precache all models
-            foreach (string model in _precacheModels)
-            {
-                manifest.AddResource(model);
             }
         }
     }

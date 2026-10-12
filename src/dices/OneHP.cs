@@ -1,6 +1,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -44,5 +45,13 @@ namespace RollTheDice.Dices
             Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iHealth");
             Utilities.SetStateChanged(player.Pawn.Value, "CBaseEntity", "m_iMaxHealth");
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class OneHPConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
     }
 }

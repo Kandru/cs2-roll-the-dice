@@ -2,6 +2,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
+using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
 {
@@ -64,5 +65,15 @@ namespace RollTheDice.Dices
             player.DesiredFOV = fov;
             Utilities.SetStateChanged(player, "CBasePlayerController", "m_iDesiredFOV");
         }
+    }
+}
+
+namespace RollTheDice.Configs
+{
+    public class ZoomOutConfig
+    {
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        [JsonPropertyName("min_zoom_factor")] public uint MinZoomFactor { get; set; } = 100;
+        [JsonPropertyName("max_zoom_factor")] public uint MaxZoomFactor { get; set; } = 150;
     }
 }

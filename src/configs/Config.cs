@@ -53,6 +53,12 @@ namespace RollTheDice
         [JsonPropertyName("deaf")] public DeafConfig Deaf { get; set; } = new DeafConfig();
         [JsonPropertyName("zoom_in")] public ZoomInConfig ZoomIn { get; set; } = new ZoomInConfig();
         [JsonPropertyName("zoom_out")] public ZoomOutConfig ZoomOut { get; set; } = new ZoomOutConfig();
+        [JsonPropertyName("cloak")] public CloakConfig Cloak { get; set; } = new CloakConfig();
+        [JsonPropertyName("fast_map_action")] public FastMapActionConfig FastMapAction { get; set; } = new FastMapActionConfig();
+        [JsonPropertyName("disguise_as_prop")] public DisguiseAsPropConfig DisguiseAsProp { get; set; } = new DisguiseAsPropConfig();
+        [JsonPropertyName("make_fake_gun_sounds")] public MakeFakeGunSoundsConfig MakeFakeGunSounds { get; set; } = new MakeFakeGunSoundsConfig();
+        [JsonPropertyName("make_hostage_sounds")] public MakeHostageSoundsConfig MakeHostageSounds { get; set; } = new MakeHostageSoundsConfig();
+        [JsonPropertyName("third_person_view")] public ThirdPersonViewConfig ThirdPersonView { get; set; } = new ThirdPersonViewConfig();
     }
 
     public class MapConfig
