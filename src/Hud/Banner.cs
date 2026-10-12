@@ -14,6 +14,7 @@ namespace RollTheDice.Hud
                 return;
             }
 
+            HudTheme.Apply(player);
             CustomHud.SetText(player, Panel, TextVar, text);
             CustomHud.ShowPanel(player, Panel);
         }
@@ -34,6 +35,7 @@ namespace RollTheDice.Hud
             CustomHud.SetText(player, Panel, TextVar, string.Empty);
             CustomHud.SetHasClass(player, Panel, "ph-fading", false);
             CustomHud.SetHasClass(player, Panel, "ph-off", true);
+            HudTheme.Apply(player);
         }
     }
 }

@@ -3,6 +3,7 @@ using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Extensions;
 using RollTheDice.Configs;
 using RollTheDice.Enums;
+using RollTheDice.Hud;
 using System.IO.Enumeration;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -126,6 +127,8 @@ namespace RollTheDice
         [JsonPropertyName("notify_player_via_chatmsg")] public bool NotifyPlayerViaChatMsg { get; set; } = true;
         // notify player via center message
         [JsonPropertyName("notify_player_via_centermsg")] public bool NotifyPlayerViaCenterMsg { get; set; } = true;
+        // banner accent theme (theme-* classes; see HudTheme)
+        [JsonPropertyName("theme")] public string Theme { get; set; } = "gold";
 
         // dices configuration
         [JsonPropertyName("dices")] public DicesConfig Dices { get; set; } = new DicesConfig();
@@ -151,6 +154,7 @@ namespace RollTheDice
             {
                 // load config from disk
                 Config.Reload();
+                HudTheme.BindConfig(Config);
                 // update player config
                 UpdatePlayerConfig();
                 // save config to disk
@@ -183,6 +187,7 @@ namespace RollTheDice
         public void OnConfigParsed(PluginConfig config)
         {
             Config = config;
+            HudTheme.BindConfig(config);
             Console.WriteLine(Localizer["core.config"]);
         }
 

@@ -1,6 +1,6 @@
 # Roll The Dice HUD (AI)
 
-C# under [`src/Hud/`](../src/Hud/): [`CustomHud.cs`](../src/Hud/CustomHud.cs) (spawn, transmit, `SetText` / `SetHasClass`, fade `ph-fading` → `ph-off`), [`Banner.cs`](../src/Hud/Banner.cs). One stylesheet: [`hud.vcss`](content/panorama/styles/custom_game/rollthedice/hud.vcss) (see [panorama-css.md](panorama-css.md)).
+C# under [`src/Hud/`](../src/Hud/): [`CustomHud.cs`](../src/Hud/CustomHud.cs) (spawn, transmit, `SetText` / `SetHasClass`, fade `ph-fading` → `ph-off`), [`Banner.cs`](../src/Hud/Banner.cs), [`HudTheme.cs`](../src/Hud/HudTheme.cs) (config `theme` → one `theme-*` on the card). One stylesheet: [`hud.vcss`](content/panorama/styles/custom_game/rollthedice/hud.vcss) (see [panorama-css.md](panorama-css.md)). Banner copy comes only from C# `IStringLocalizer` into `{s:dice}` — no hardcoded Label text in XML.
 
 `workshop/content` is the addon root (copy into `csgo_addons/<addon>/`). Layouts load as `panorama/layout/custom_game/rollthedice/<name>.vxml_c`.
 
@@ -26,3 +26,7 @@ No panel create / width / colour / image from C#. Layout edits need VPK republis
 | `banner.xml` | `Banner` | `Banner` (`{s:dice}`) |
 
 `make panorama` validates ids/`{s:…}` against C#.
+
+## Preview
+
+`make preview` serves [`preview/banner.html`](preview/banner.html) (uses [`preview/kit.css`](preview/kit.css)). Interactive controls mirror show / fade / hide / status text / theme. Browser approximation only - game Panorama is authoritative.

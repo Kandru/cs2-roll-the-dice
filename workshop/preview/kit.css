@@ -1,0 +1,279 @@
+/* Web mirror of workshop/content/panorama/styles/custom_game/rollthedice/hud.vcss.
+   Browser approximation only - the game is authoritative. Keep class names in sync. */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  min-height: 100vh;
+  background: #1a2330;
+  font-family: "Barlow Condensed", "Arial Narrow", system-ui, sans-serif;
+  color: #e8eef4;
+}
+
+.stage {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  --accent: #f0a531;
+  --preview-accent: var(--accent);
+}
+
+/* Mock CS2 viewport (preview-only) */
+.game-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 40%, #2a3a4a66 0%, transparent 70%),
+    linear-gradient(160deg, #1a2838 0%, #0d1520 45%, #152030 100%);
+  pointer-events: none;
+}
+
+.game-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.04;
+  background-image: radial-gradient(#ffffff 0.6px, transparent 0.6px);
+  background-size: 12px 12px;
+}
+
+/* Top player list stand-in — banner margin-top: 78px sits below this */
+.player-list {
+  position: absolute;
+  left: 50%;
+  top: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.player-chip {
+  width: 42px;
+  height: 48px;
+  border-radius: 2px;
+  background: linear-gradient(to bottom, #1c2836cc, #0e141ccc);
+  border: 1px solid #ffffff18;
+  box-shadow: 0 2px 8px #00000080;
+}
+
+.player-chip.t { border-bottom: 2px solid #eabe54; }
+.player-chip.ct { border-bottom: 2px solid #96c8fa; }
+.player-chip.dead { opacity: 0.35; }
+
+/* --- hud.vcss mirrors --- */
+
+.HudScreen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.BannerScreen {
+  z-index: 100;
+}
+
+.ph-card {
+  border-radius: 3px;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition: opacity 1s ease-out, transform 1s ease-out;
+  overflow: visible;
+}
+
+.ph-card.ph-fading {
+  opacity: 0;
+}
+
+.ph-card.ph-off {
+  visibility: hidden;
+  opacity: 0;
+  transition: none;
+}
+
+.ph-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Ccircle cx='2' cy='2' r='1' fill='%23ffffff' fill-opacity='0.04'/%3E%3C/svg%3E"),
+    linear-gradient(to bottom, #12171ee8, #0b0f14f2);
+  background-size: 24px 24px, auto;
+  border: 1px solid #ffffff14;
+  border-radius: 3px;
+  box-shadow: 0 8px 30px #000000c0;
+  z-index: 0;
+}
+
+.ph-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  height: 100%;
+  background: #f0a531;
+  z-index: 5;
+  border-radius: 3px 0 0 3px;
+}
+
+.ph-bar-left {
+  left: 0;
+}
+
+.Banner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 78px;
+  margin: 0 auto;
+  width: max-content;
+  min-width: 220px;
+  max-width: 520px;
+  z-index: 100;
+}
+
+.BannerContent {
+  position: relative;
+  z-index: 2;
+  width: max-content;
+  min-width: 220px;
+  padding: 10px 18px 10px 16px;
+}
+
+Label.ph-title,
+.ph-title {
+  display: block;
+  width: max-content;
+  min-width: 180px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: #f5f7fa;
+  text-align: center;
+  text-shadow: 1px 1px 0 #00000088;
+}
+
+/* Accent themes (config theme). Keep in sync with hud.vcss / HudTheme. */
+.theme-red .ph-bar { background: #e05a5a; }
+.theme-coral .ph-bar { background: #ff7a59; }
+.theme-orange .ph-bar { background: #ff8a3d; }
+.theme-copper .ph-bar { background: #e08a5a; }
+.theme-gold .ph-bar { background: #f0a531; }
+.theme-t .ph-bar { background: #eabe54; }
+.theme-lime .ph-bar { background: #c6f04a; }
+.theme-green .ph-bar { background: #6fdc78; }
+.theme-teal .ph-bar { background: #2ec9a6; }
+.theme-cyan .ph-bar { background: #3ee0f0; }
+.theme-blue .ph-bar { background: #5b8cff; }
+.theme-ct .ph-bar { background: #96c8fa; }
+.theme-purple .ph-bar { background: #b07cff; }
+.theme-magenta .ph-bar { background: #e85dff; }
+.theme-pink .ph-bar { background: #ff6b9a; }
+.theme-silver .ph-bar { background: #c9d2dc; }
+
+/* Preview chrome */
+.preview-controls {
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 300px;
+  pointer-events: auto;
+}
+
+.preview-controls button[data-mode] {
+  font: 700 13px "Barlow Condensed", sans-serif;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 8px 12px;
+  border: 1px solid #ffffff22;
+  border-radius: 3px;
+  background: #ffffff0d;
+  color: #e8eef4;
+  cursor: pointer;
+  text-align: left;
+}
+
+.preview-controls button[data-mode]:hover {
+  border-color: #ffffff44;
+  background: #ffffff1c;
+}
+
+.preview-controls button[data-mode].active {
+  border-color: var(--preview-accent);
+  color: var(--preview-accent);
+  background: #ffffff14;
+}
+
+.preview-note {
+  font-size: 12px;
+  color: #9aa2ac;
+  line-height: 1.4;
+}
+
+.preview-note code {
+  font-size: 11px;
+  color: #c8d0d8;
+}
+
+.preview-themes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.preview-theme-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.preview-theme {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 3px;
+  border: 2px solid #ffffff33;
+  cursor: pointer;
+  background: #666;
+}
+
+.preview-theme:hover {
+  border-color: #ffffff88;
+}
+
+.preview-theme.active {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 1px #00000088, 0 0 0 3px var(--swatch, #fff);
+}
+
+.state-label {
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  z-index: 200;
+  font-size: 12px;
+  color: #9aa2ac;
+  background: #0b0f14cc;
+  border: 1px solid #ffffff14;
+  border-radius: 3px;
+  padding: 8px 12px;
+  pointer-events: none;
+}
+
+.state-label strong {
+  color: var(--preview-accent);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}

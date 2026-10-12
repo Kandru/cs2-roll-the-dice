@@ -98,7 +98,20 @@ Label.ph-title
 	text-shadow: 1px 1px 0px 2.0 #00000088;
 }
 
-.theme-gold .ph-bar
-{
-	background-color: #f0a531;
-}
+/* Accent themes (config theme). Gold is the baked-in default; other themes override the bar. */
+.theme-red .ph-bar { background-color: #e05a5a; }
+.theme-coral .ph-bar { background-color: #ff7a59; }
+.theme-orange .ph-bar { background-color: #ff8a3d; }
+.theme-copper .ph-bar { background-color: #e08a5a; }
+.theme-gold .ph-bar { background-color: #f0a531; }
+.theme-t .ph-bar { background-color: #eabe54; }
+.theme-lime .ph-bar { background-color: #c6f04a; }
+.theme-green .ph-bar { background-color: #6fdc78; }
+.theme-teal .ph-bar { background-color: #2ec9a6; }
+.theme-cyan .ph-bar { background-color: #3ee0f0; }
+.theme-blue .ph-bar { background-color: #5b8cff; }
+.theme-ct .ph-bar { background-color: #96c8fa; }
+.theme-purple .ph-bar { background-color: #b07cff; }
+.theme-magenta .ph-bar { background-color: #e85dff; }
+.theme-pink .ph-bar { background-color: #ff6b9a; }
+.theme-silver .ph-bar { background-color: #c9d2dc; }

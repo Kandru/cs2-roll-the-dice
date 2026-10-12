@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Roll The Dice – Banner preview</title>
+<link rel="stylesheet" href="kit.css" />
+</head>
+<body>
+<div class="stage" data-theme="gold">
+  <div class="game-bg" aria-hidden="true"></div>
+
+  <!-- Stand-in for the top player list; banner margin-top: 78px sits below this. -->
+  <div class="player-list" aria-hidden="true">
+    <div class="player-chip t"></div>
+    <div class="player-chip t"></div>
+    <div class="player-chip t dead"></div>
+    <div class="player-chip t"></div>
+    <div class="player-chip t"></div>
+    <div style="width:24px"></div>
+    <div class="player-chip ct"></div>
+    <div class="player-chip ct dead"></div>
+    <div class="player-chip ct"></div>
+    <div class="player-chip ct"></div>
+    <div class="player-chip ct"></div>
+  </div>
+
+  <div class="preview-controls">
+    <div class="preview-note">
+      Mirrors <code>CustomHud</code> + <code>Banner</code>: dialog var <code>{s:dice}</code>,
+      classes <code>ph-off</code> / <code>ph-fading</code>, fade 1s. Chat color tokens are stripped
+      (server-side) before <code>SetText</code>.
+    </div>
+
+    <button type="button" data-mode="hidden" class="active">Hidden (ph-off)</button>
+    <button type="button" data-mode="show-chicken">Show: Play as Chicken</button>
+    <button type="button" data-mode="show-cloak">Show: Cloak</button>
+    <button type="button" data-mode="show-status">Status: Cloak 40%</button>
+    <button type="button" data-mode="show-long">Show: long message</button>
+    <button type="button" data-mode="show-speed">Show: Speed boost</button>
+    <button type="button" data-mode="show-colors">Show: stripped colors</button>
+    <button type="button" data-mode="cycle">Cycle dice messages</button>
+    <button type="button" data-mode="fade-out">Hide (fade out)</button>
+    <button type="button" data-mode="pulse">Pulse fade-in (same text)</button>
+
+    <div id="preview-themes" class="preview-themes"></div>
+  </div>
+
+  <!-- Mirrors banner.xml -->
+  <div class="HudScreen BannerScreen">
+    <div id="Banner" class="Banner ph-card ph-off theme-gold">
+      <div class="ph-bg"></div>
+      <div class="ph-bar ph-bar-left"></div>
+      <div class="BannerContent">
+        <span class="ph-title additive stratum-bold-tf text-align-center" id="dice"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="state-label">State: <strong id="state-name">hidden</strong></div>
+</div>
+
+<script>
+const FADE_MS = 1000;
+const COLOR_RE = /\{(?:green|purple|default|red|blue|yellow|orange|olive|lightpurple|lightblue|lightgreen|lightred|grey|gray|white|darkblue|darkred)\}/gi;
+
+const card = document.getElementById('Banner');
+const textEl = document.getElementById('dice');
+const stateEl = document.getElementById('state-name');
+const stage = document.querySelector('.stage');
+
+/** Same strip as DiceBlueprint.StripChatColors */
+function stripChatColors(message) {
+  return message.replace(COLOR_RE, '').replace(/\s+/g, ' ').trim();
+}
+
+const messages = {
+  chicken: 'You are now a big chicken!',
+  cloak: 'You got a cloak! Stand still!',
+  status: '40% visible',
+  long: 'You are now a Office Plant if you do not move!',
+  speed: 'Increased your speed by 75%!',
+  vampireRaw: 'You are now a {green}vampire{default}!',
+  moneyRaw: 'Increased your money by {green}$500{default}!',
+  taserRaw: 'You got {green}7{default} taser shots!',
+  thirdPerson: "You're now in Third Person Mode",
+  jammer: 'Your HUD has been jammed!',
+};
+
+const cycleList = [
+  stripChatColors(messages.chicken),
+  stripChatColors(messages.cloak),
+  stripChatColors(messages.vampireRaw),
+  stripChatColors(messages.moneyRaw),
+  stripChatColors(messages.taserRaw),
+  stripChatColors(messages.speed),
+  stripChatColors(messages.thirdPerson),
+  stripChatColors(messages.jammer),
+];
+
+const THEMES = {
+  red: '#e05a5a',
+  coral: '#ff7a59',
+  orange: '#ff8a3d',
+  copper: '#e08a5a',
+  gold: '#f0a531',
+  t: '#eabe54',
+  lime: '#c6f04a',
+  green: '#6fdc78',
+  teal: '#2ec9a6',
+  cyan: '#3ee0f0',
+  blue: '#5b8cff',
+  ct: '#96c8fa',
+  purple: '#b07cff',
+  magenta: '#e85dff',
+  pink: '#ff6b9a',
+  silver: '#c9d2dc',
+};
+
+let fadeTimer = null;
+let cycleTimer = null;
+let cycleIndex = 0;
+let visible = false;
+
+function setStateName(name) {
+  stateEl.textContent = name;
+}
+
+function setModeButtons(mode) {
+  document.querySelectorAll('.preview-controls button[data-mode]').forEach((b) => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+}
+
+function stopTimers() {
+  clearTimeout(fadeTimer);
+  clearInterval(cycleTimer);
+  fadeTimer = null;
+  cycleTimer = null;
+}
+
+function setText(text) {
+  textEl.textContent = text;
+}
+
+/** CustomHud.ShowPanel: clear ph-off; if newly visible, ph-fading then clear next frame */
+function showPanel() {
+  const wasVisible = visible;
+  visible = true;
+  card.classList.remove('ph-off');
+  if (wasVisible) {
+    card.classList.remove('ph-fading');
+    return;
+  }
+  card.classList.add('ph-fading');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      if (visible && !card.classList.contains('ph-off')) {
+        card.classList.remove('ph-fading');
+      }
+    });
+  });
+}
+
+/** CustomHud.HidePanel + Banner.Hide: ph-fading, clear text, then ph-off after 1s */
+function hidePanel(done) {
+  visible = false;
+  card.classList.add('ph-fading');
+  setText('');
+  clearTimeout(fadeTimer);
+  fadeTimer = setTimeout(() => {
+    card.classList.add('ph-off');
+    card.classList.remove('ph-fading');
+    if (done) done();
+  }, FADE_MS);
+}
+
+/** CustomHud pulse when already visible (text change / PulseFadeIn) */
+function pulseFadeIn() {
+  if (!visible) {
+    showPanel();
+    return;
+  }
+  card.classList.add('ph-fading');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => card.classList.remove('ph-fading'));
+  });
+}
+
+function setMode(mode) {
+  stopTimers();
+  setModeButtons(mode);
+
+  switch (mode) {
+    case 'hidden':
+      visible = false;
+      card.classList.add('ph-off');
+      card.classList.remove('ph-fading');
+      setText('');
+      setStateName('hidden (ph-off)');
+      break;
+
+    case 'show-chicken':
+      setText(stripChatColors(messages.chicken));
+      showPanel();
+      setStateName('visible · PlayAsChicken');
+      break;
+
+    case 'show-cloak':
+      setText(stripChatColors(messages.cloak));
+      showPanel();
+      setStateName('visible · Cloak');
+      break;
+
+    case 'show-status':
+      setText(stripChatColors(messages.status));
+      showPanel();
+      setStateName('visible · Cloak status');
+      break;
+
+    case 'show-long':
+      setText(stripChatColors(messages.long));
+      showPanel();
+      setStateName('visible · long text');
+      break;
+
+    case 'show-speed':
+      setText(stripChatColors(messages.speed));
+      showPanel();
+      setStateName('visible · IncreaseSpeed');
+      break;
+
+    case 'show-colors':
+      setText(stripChatColors(messages.vampireRaw));
+      showPanel();
+      setStateName('visible · stripped {green}');
+      break;
+
+    case 'cycle':
+      cycleIndex = 0;
+      setText(cycleList[0]);
+      showPanel();
+      setStateName(`cycle · ${cycleIndex + 1}/${cycleList.length}`);
+      cycleTimer = setInterval(() => {
+        cycleIndex = (cycleIndex + 1) % cycleList.length;
+        setText(cycleList[cycleIndex]);
+        pulseFadeIn();
+        setStateName(`cycle · ${cycleIndex + 1}/${cycleList.length}`);
+      }, 2200);
+      break;
+
+    case 'fade-out':
+      if (!visible) {
+        setText(stripChatColors(messages.chicken));
+        visible = true;
+        card.classList.remove('ph-off', 'ph-fading');
+      }
+      setStateName('fading out…');
+      hidePanel(() => {
+        setModeButtons('hidden');
+        setStateName('hidden (ph-off)');
+      });
+      break;
+
+    case 'pulse':
+      if (!visible) {
+        setText(stripChatColors(messages.chicken));
+        showPanel();
+      } else {
+        pulseFadeIn();
+      }
+      setStateName('pulse fade-in');
+      break;
+
+    default:
+      break;
+  }
+}
+
+function applyTheme(name) {
+  const theme = THEMES[name] ? name : 'gold';
+  const accent = THEMES[theme];
+  for (const cls of [...card.classList]) {
+    if (cls.startsWith('theme-')) card.classList.remove(cls);
+  }
+  card.classList.add(`theme-${theme}`);
+  stage.dataset.theme = theme;
+  stage.style.setProperty('--accent', accent);
+  stage.style.setProperty('--preview-accent', accent);
+  document.querySelectorAll('#preview-themes .preview-theme').forEach((btn) => {
+    const active = btn.dataset.theme === theme;
+    btn.classList.toggle('active', active);
+    if (active) btn.style.setProperty('--swatch', accent);
+  });
+  try {
+    localStorage.setItem('rtd-preview-theme', theme);
+  } catch (_) { /* ignore */ }
+}
+
+function mountThemes() {
+  const host = document.getElementById('preview-themes');
+  host.innerHTML = `
+    <div class="preview-note">Theme (config theme)</div>
+    <div class="preview-theme-row">
+      ${Object.entries(THEMES).map(([t, accent]) =>
+        `<button type="button" class="preview-theme" data-theme="${t}" title="${t}" aria-label="${t}" style="--swatch:${accent};background:${accent}"></button>`
+      ).join('')}
+    </div>
+  `;
+  let initial = 'gold';
+  try {
+    const saved = localStorage.getItem('rtd-preview-theme');
+    if (saved && THEMES[saved]) initial = saved;
+  } catch (_) { /* ignore */ }
+  applyTheme(initial);
+  host.querySelectorAll('.preview-theme').forEach((btn) => {
+    btn.addEventListener('click', () => applyTheme(btn.dataset.theme));
+  });
+}
+
+document.querySelectorAll('.preview-controls button[data-mode]').forEach((btn) => {
+  btn.addEventListener('click', () => setMode(btn.dataset.mode));
+});
+
+mountThemes();
+setMode('hidden');
+</script>
+</body>
+</html>
