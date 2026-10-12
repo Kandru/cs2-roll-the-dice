@@ -6,7 +6,7 @@ C# under [`src/Hud/`](../src/Hud/): [`CustomHud.cs`](../src/Hud/CustomHud.cs) (s
 
 ## Panorama versions
 
-Repo sources stay `banner.xml`, `hud.vcss` - never add `vN` to those names here. `PanoramaVersion` in [`Version.cs`](../src/Version.cs) selects `banner_vN` at runtime. On workshop copy, rename layouts and the stylesheet include by hand. Bump only when panel ids / dialog vars / classes / structure would break old DLLs.
+Repo sources stay `banner.xml`, `hud.vcss`.
 
 ## Server can only
 

@@ -9,7 +9,7 @@ namespace RollTheDice.Hud
     public static class CustomHud
     {
         private const string LayoutResource =
-            "panorama/layout/custom_game/rollthedice/banner_" + global::RollTheDice.RollTheDice.PanoramaVersion + ".vxml_c";
+            "panorama/layout/custom_game/rollthedice/banner.vxml_c";
 
         private static readonly TimeSpan CloseTransmitGrace = TimeSpan.FromSeconds(1.0);
 
