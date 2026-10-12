@@ -11,6 +11,8 @@ namespace RollTheDice
 {
     public partial class RollTheDice : BasePlugin, IPluginConfig<PluginConfig>
     {
+        private const int GiveDiceChatLineLimit = 200;
+
         [ConsoleCommand("givedice", "Give Dice to player")]
         [RequiresPermissions("@rollthedice/admin")]
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY, minArgs: 0, usage: "[player] [dice]")]
@@ -21,37 +23,30 @@ namespace RollTheDice
 
             if (string.IsNullOrWhiteSpace(playerName))
             {
-                command.ReplyToCommand(Localizer["command.givedice.availabledices"]);
-                foreach (DiceBlueprint entry in _dices)
-                {
-                    command.ReplyToCommand($"- {entry.ClassName}");
-                }
+                ReplyAvailableDices(command);
                 return;
             }
 
-            bool isWildcard = string.IsNullOrWhiteSpace(playerName) || playerName == "*";
-
-            List<CCSPlayerController> targetPlayers = [.. Utilities.GetPlayers()
-                .Where(p => p.IsValid && !p.IsHLTV && !p.IsBot)
-                .Where(p => isWildcard || p.PlayerName.Contains(playerName, StringComparison.OrdinalIgnoreCase))];
-
-            if (targetPlayers.Count == 0)
+            List<CCSPlayerController>? targets = FindGiveDiceTargets(playerName);
+            if (targets == null)
+            {
+                command.ReplyToCommand(Localizer["command.givedice.toomanyplayers"]);
+                return;
+            }
+            if (targets.Count == 0)
             {
                 command.ReplyToCommand(Localizer["command.givedice.noplayers"]);
                 return;
             }
 
-            if (!isWildcard && targetPlayers.Count > 1)
+            if (!TryResolveGiveDiceName(diceName, command, out string? resolvedDiceName))
             {
-                command.ReplyToCommand(Localizer["command.givedice.toomanyplayers"]);
                 return;
             }
 
-            foreach (CCSPlayerController target in targetPlayers)
+            foreach (CCSPlayerController target in targets)
             {
-                // RollTheDiceForPlayer handles removing old dice
-                (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(target, string.IsNullOrWhiteSpace(diceName) ? null : diceName);
-
+                (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(target, resolvedDiceName);
                 if (string.IsNullOrEmpty(rolledDice))
                 {
                     continue;
@@ -59,6 +54,95 @@ namespace RollTheDice
 
                 _playersThatRolledTheDice[target] = diceDescription ?? rolledDice;
                 PlayDiceSoundForPlayer(target, rolledDice, false);
+                command.ReplyToCommand(Localizer["command.givedice.success"].Value
+                    .Replace("{dice}", rolledDice)
+                    .Replace("{player}", target.PlayerName));
+            }
+        }
+
+        // null = ambiguous; empty = none. Includes bots (admin debugging only).
+        private static List<CCSPlayerController>? FindGiveDiceTargets(string playerName)
+        {
+            IEnumerable<CCSPlayerController> players = Utilities.GetPlayers().Where(static p => p.IsValid && !p.IsHLTV);
+            if (playerName == "*")
+            {
+                return [.. players];
+            }
+
+            List<CCSPlayerController> matches = [.. players
+                .Where(p => p.PlayerName.Contains(playerName, StringComparison.OrdinalIgnoreCase))];
+            if (matches.Count <= 1)
+            {
+                return matches;
+            }
+
+            List<CCSPlayerController> exact = [.. matches
+                .Where(p => string.Equals(p.PlayerName, playerName, StringComparison.OrdinalIgnoreCase))];
+            return exact.Count == 1 ? exact : null;
+        }
+
+        private bool TryResolveGiveDiceName(string diceName, CommandInfo command, out string? resolvedName)
+        {
+            resolvedName = null;
+            if (string.IsNullOrWhiteSpace(diceName))
+            {
+                return true;
+            }
+
+            List<DiceBlueprint> matches = [.. _dices
+                .Where(d => d.ClassName.Contains(diceName, StringComparison.OrdinalIgnoreCase))];
+            DiceBlueprint? exact = matches
+                .Find(d => string.Equals(d.ClassName, diceName, StringComparison.OrdinalIgnoreCase));
+
+            if (exact != null)
+            {
+                resolvedName = exact.ClassName;
+                return true;
+            }
+            if (matches.Count == 1)
+            {
+                resolvedName = matches[0].ClassName;
+                return true;
+            }
+            if (matches.Count == 0)
+            {
+                command.ReplyToCommand(Localizer["command.givedice.nodicefound"]);
+            }
+            else
+            {
+                command.ReplyToCommand(Localizer["command.givedice.ambiguousdice"].Value
+                    .Replace("{dices}", string.Join(", ", matches.Select(static d => d.ClassName))));
+            }
+            return false;
+        }
+
+        private void ReplyAvailableDices(CommandInfo command)
+        {
+            if (_dices.Count == 0)
+            {
+                command.ReplyToCommand(Localizer["core.nodicesenabled"]);
+                return;
+            }
+
+            command.ReplyToCommand(Localizer["command.givedice.availabledices"]);
+            string prefix = Localizer["command.prefix"].Value;
+            System.Text.StringBuilder line = new(prefix);
+            foreach (string name in _dices.Select(static d => d.ClassName))
+            {
+                if (line.Length > prefix.Length && line.Length + name.Length + 2 > GiveDiceChatLineLimit)
+                {
+                    command.ReplyToCommand(line.ToString());
+                    _ = line.Clear().Append(prefix);
+                }
+                if (line.Length > prefix.Length)
+                {
+                    _ = line.Append(", ");
+                }
+                _ = line.Append(name);
+            }
+            if (line.Length > prefix.Length)
+            {
+                command.ReplyToCommand(line.ToString());
             }
         }
 

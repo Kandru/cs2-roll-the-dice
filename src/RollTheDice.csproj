@@ -7,11 +7,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <OutputPath>/home/kalle/Dokumente/tools/docker/cs2server/data/game/csgo/addons/counterstrikesharp/plugins/RollTheDice/</OutputPath>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="CounterStrikeSharp.API" Version="*">
       <PrivateAssets>none</PrivateAssets>

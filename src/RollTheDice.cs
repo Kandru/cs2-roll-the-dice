@@ -263,49 +263,26 @@ namespace RollTheDice
 
         private (string?, string?) RollTheDiceForPlayer(CCSPlayerController? player, string? diceName = null)
         {
-            if (player == null || !player.IsValid)
+            if (player == null || !player.IsValid || _dices.Count == 0)
             {
                 return (null, null);
             }
-            // remove old dice first
+
             RemoveDiceForPlayer(player, DiceRemoveReason.NewDice);
-            // roll the dice for the player - get random dice and add player
-            if (_dices.Count > 0)
+
+            // diceName is expected to be an exact ClassName when provided (resolved by !givedice)
+            DiceBlueprint? dice = diceName != null
+                ? _dices.FirstOrDefault(d => string.Equals(d.ClassName, diceName, StringComparison.OrdinalIgnoreCase))
+                : GetWeightedRandomDice();
+            if (dice == null)
             {
-                if (diceName != null)
-                {
-                    // find dice by name
-                    List<DiceBlueprint> matchingDices = [.. _dices.Where(d => d.ClassName.Contains(diceName, StringComparison.OrdinalIgnoreCase))];
-                    DiceBlueprint? foundDice = matchingDices.Count == 1 ? matchingDices.First() : _dices.FirstOrDefault(d => string.Equals(d.ClassName, diceName, StringComparison.OrdinalIgnoreCase));
-                    if (foundDice != null)
-                    {
-                        // execute dice
-                        foundDice.Add(player);
-                        // track usage
-                        if (!_diceUsageCount.ContainsKey(foundDice))
-                        {
-                            _diceUsageCount[foundDice] = 0;
-                        }
-                        _diceUsageCount[foundDice]++;
-                        return (foundDice.ClassName, foundDice.Description);
-                    }
-                }
-                else
-                {
-                    // use weighted random selection for better distribution
-                    DiceBlueprint randomDice = GetWeightedRandomDice();
-                    // execute dice
-                    randomDice.Add(player);
-                    // track usage
-                    if (!_diceUsageCount.ContainsKey(randomDice))
-                    {
-                        _diceUsageCount[randomDice] = 0;
-                    }
-                    _diceUsageCount[randomDice]++;
-                    return (randomDice.ClassName, randomDice.Description);
-                }
+                return (null, null);
             }
-            return (null, null);
+
+            dice.Add(player);
+            _diceUsageCount.TryGetValue(dice, out int usage);
+            _diceUsageCount[dice] = usage + 1;
+            return (dice.ClassName, dice.Description);
         }
 
         private DiceBlueprint GetWeightedRandomDice()
