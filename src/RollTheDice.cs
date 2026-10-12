@@ -29,11 +29,13 @@ namespace RollTheDice
             RegisterEventHandler<EventRoundStart>(OnRoundStart);
             RegisterEventHandler<EventRoundFreezeEnd>(OnRoundFreezeEnd);
             RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
+            RegisterEventHandler<EventCsIntermission>(OnCsIntermission);
             RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
             RegisterListener<Listeners.OnMapStart>(OnMapStart);
             RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
             RegisterListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
+            RegisterListener<Listeners.OnTick>(Hud.Banner.SyncViewers);
             RegisterListener<Listeners.CheckTransmit>(Hud.CustomHud.OnCheckTransmit);
             // print message if hot reload
             if (hotReload)
@@ -44,6 +46,7 @@ namespace RollTheDice
                 // initialize configuration
                 LoadMapConfig(_currentMap);
                 _isDuringRound = true;
+                Hud.Banner.Resume();
                 // initialize dice modules
                 InitializeModules();
             }
@@ -53,6 +56,7 @@ namespace RollTheDice
         {
             // reset dice rolls on unload
             DestroyModules();
+            Hud.Banner.Shutdown();
             Hud.CustomHud.Shutdown();
             // update configuration
             ReloadConfigFromDisk();
@@ -60,11 +64,13 @@ namespace RollTheDice
             DeregisterEventHandler<EventRoundStart>(OnRoundStart);
             DeregisterEventHandler<EventRoundFreezeEnd>(OnRoundFreezeEnd);
             DeregisterEventHandler<EventRoundEnd>(OnRoundEnd);
+            DeregisterEventHandler<EventCsIntermission>(OnCsIntermission);
             DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             DeregisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
             RemoveListener<Listeners.OnMapStart>(OnMapStart);
             RemoveListener<Listeners.OnMapEnd>(OnMapEnd);
             RemoveListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
+            RemoveListener<Listeners.OnTick>(Hud.Banner.SyncViewers);
             RemoveListener<Listeners.CheckTransmit>(Hud.CustomHud.OnCheckTransmit);
             Console.WriteLine(Localizer["core.unload"]);
         }
@@ -73,9 +79,10 @@ namespace RollTheDice
         {
             // reset players that rolled the dice
             _playersThatRolledTheDice.Clear();
+            // hide banner before dice reset so Remove/Reset cannot re-show it
+            Hud.Banner.Suspend();
             // reset dices (necessary after warmup)
             RemoveDicesForPlayers();
-            Hud.CustomHud.ResetRound();
             // refresh game rules (to avoid caching warmup value)
             GameRules.Refresh();
             // abort if warmup
@@ -88,6 +95,7 @@ namespace RollTheDice
             Server.PrintToChatAll(Localizer["core.announcement"]);
             // allow dice rolls
             _isDuringRound = true;
+            Hud.Banner.Resume();
             // roll the dice on round start if enabled
             if (Config.DiceTrigger.TriggerEvent == DiceTriggerEvent.RoundStart)
             {
@@ -183,9 +191,7 @@ namespace RollTheDice
 
         private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
         {
-            RemoveDicesForPlayers();
-            // disallow dice rolls
-            _isDuringRound = false;
+            EndRoundHud();
             // reduct cooldown if applicable
             if (Config.CooldownRounds > 0)
             {
@@ -198,19 +204,34 @@ namespace RollTheDice
                     }
                 }
             }
-            // continue event
             return HookResult.Continue;
+        }
+
+        private HookResult OnCsIntermission(EventCsIntermission @event, GameEventInfo info)
+        {
+            EndRoundHud();
+            return HookResult.Continue;
+        }
+
+        private void EndRoundHud()
+        {
+            Hud.Banner.Suspend();
+            RemoveDicesForPlayers();
+            _isDuringRound = false;
         }
 
         private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
         {
             RemoveDiceForPlayer(@event.Userid, DiceRemoveReason.Death);
+            // dice Remove overrides often skip Banner.Hide — force the overlay off
+            Hud.Banner.Hide(@event.Userid);
             return HookResult.Continue;
         }
 
         private HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
         {
             RemoveDiceForPlayer(@event.Userid, DiceRemoveReason.Disconnect);
+            Hud.Banner.Release(@event.Userid);
             Hud.CustomHud.ReleasePlayer(@event.Userid);
             return HookResult.Continue;
         }
@@ -230,6 +251,7 @@ namespace RollTheDice
         private void OnMapEnd()
         {
             DestroyModules();
+            Hud.Banner.Shutdown();
             Hud.CustomHud.Shutdown();
             // reset states
             _isDuringRound = false;

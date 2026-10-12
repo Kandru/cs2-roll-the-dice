@@ -15,7 +15,9 @@ Repo sources stay `banner.xml`, `hud.vcss` - never add `vN` to those names here.
 
 No panel create / width / colour / image from C#. Layout edits need VPK republish.
 
-**Round restart:** layouts survive rounds; client resets XML defaults while server keeps last classes/vars. `CustomHud.ResetRound()` → `Banner.WriteDefaults`. Never Kill/respawn live layouts; `Shutdown` only on map end/unload.
+**Round restart / suspend:** layouts survive rounds; client resets XML defaults while server keeps last classes/vars. `Banner.Suspend()` clears owner/shown text and runs `CustomHud.ResetRound()` → `Banner.WriteDefaults` on round start, round end, and `cs_intermission`. `Banner.Resume()` only when the round is active (warmup with RTD disabled stays suspended). `Banner.Shutdown()` clears state without rewriting clients (map end / unload). Never Kill/respawn live layouts; `CustomHud.Shutdown` only on map end/unload.
+
+**Spectator mirror:** `Banner` stores per-owner `{s:dice}` text. Alive viewers see their own text; dead/spectating viewers get the text of `ObserverPawn.ObserverServices.ObserverTarget` (`OBS_MODE_IN_EYE` / `CHASE` / `FIXED`). `OnTick` + immediate sync on `Show` keep spectate switches up to date. Death forces `Banner.Hide` for that owner even when a dice skips `base.Remove`.
 
 **Fade:** show = `ph-fading` then clear next frame; hide = `ph-fading` 1s then `ph-off`.
 

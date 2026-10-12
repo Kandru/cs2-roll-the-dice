@@ -19,8 +19,17 @@ namespace RollTheDice.Hud
         private static readonly Dictionary<int, Dictionary<string, bool>> _classBySlot = [];
         private static readonly Dictionary<int, Dictionary<string, string>> _textBySlot = [];
 
+        public static bool IsHumanViewer(CCSPlayerController? player) =>
+            player is { IsValid: true, IsBot: false, IsHLTV: false };
+
         public static bool EnsureSpawned(CCSPlayerController player) =>
             IsHumanViewer(player) && EnsureLayout();
+
+        public static bool IsVisible(CCSPlayerController player) =>
+            player is { IsValid: true } && _visibleSlots.Contains(player.Slot);
+
+        public static bool HasTransmitInterest() =>
+            _visibleSlots.Count > 0 || _closingUntil.Count > 0;
 
         public static void ShowPanel(CCSPlayerController player, string panelId)
         {
@@ -376,7 +385,5 @@ namespace RollTheDice.Hud
             }
         }
 
-        private static bool IsHumanViewer(CCSPlayerController? player) =>
-            player is { IsValid: true, IsBot: false, IsHLTV: false };
     }
 }
