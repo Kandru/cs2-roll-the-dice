@@ -65,7 +65,7 @@ namespace RollTheDice.Dices
 
         public override void Add(CCSPlayerController player)
         {
-            if (!IsAlivePlayer(player) || player.Pawn?.Value is not { IsValid: true } pawn)
+            if (!IsAlivePlayer(player) || player.PlayerPawn?.Value is not { IsValid: true } pawn)
             {
                 return;
             }
@@ -182,7 +182,7 @@ namespace RollTheDice.Dices
                 _ = _redirectAllowSlots.Remove(player.Slot);
                 Entities.RemoveEntity(state.CollisionPair);
                 Entities.RemoveEntity(state.Chicken);
-                if (player.Pawn?.Value is { IsValid: true } pawn)
+                if (player.PlayerPawn?.Value is { IsValid: true } pawn)
                 {
                     if (pawn.Entity != null)
                     {
