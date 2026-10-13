@@ -46,7 +46,6 @@ namespace RollTheDice
                 // initialize configuration
                 LoadMapConfig(_currentMap);
                 _isDuringRound = true;
-                Hud.Banner.Resume();
                 // initialize dice modules
                 InitializeModules();
             }
@@ -95,7 +94,6 @@ namespace RollTheDice
             Server.PrintToChatAll(Localizer["core.announcement"]);
             // allow dice rolls
             _isDuringRound = true;
-            Hud.Banner.Resume();
             // roll the dice on round start if enabled
             if (Config.DiceTrigger.TriggerEvent == DiceTriggerEvent.RoundStart)
             {

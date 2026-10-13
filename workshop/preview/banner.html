@@ -299,7 +299,7 @@ function applyTheme(name) {
 function mountThemes() {
   const host = document.getElementById('preview-themes');
   host.innerHTML = `
-    <div class="preview-note">Theme (config theme)</div>
+    <div class="preview-note">Theme (config panorama_theme)</div>
     <div class="preview-theme-row">
       ${Object.entries(THEMES).map(([t, accent]) =>
         `<button type="button" class="preview-theme" data-theme="${t}" title="${t}" aria-label="${t}" style="--swatch:${accent};background:${accent}"></button>`

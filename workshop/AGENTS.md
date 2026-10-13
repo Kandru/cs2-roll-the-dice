@@ -1,6 +1,6 @@
 # Roll The Dice HUD (AI)
 
-C# under [`src/Hud/`](../src/Hud/): [`CustomHud.cs`](../src/Hud/CustomHud.cs) (spawn, transmit, `SetText` / `SetHasClass`, fade `ph-fading` → `ph-off`), [`Banner.cs`](../src/Hud/Banner.cs), [`HudTheme.cs`](../src/Hud/HudTheme.cs) (config `theme` → one `theme-*` on the card). One stylesheet: [`hud.vcss`](content/panorama/styles/custom_game/rollthedice/hud.vcss) (see [panorama-css.md](panorama-css.md)). Banner copy comes only from C# `IStringLocalizer` into `{s:dice}` — no hardcoded Label text in XML.
+C# under [`src/Hud/`](../src/Hud/): [`CustomHud.cs`](../src/Hud/CustomHud.cs) (spawn, transmit, `SetText` / `SetHasClass`, fade `ph-fading` → `ph-off`), [`Banner.cs`](../src/Hud/Banner.cs), [`HudTheme.cs`](../src/Hud/HudTheme.cs) (config `panorama_theme` → one `theme-*` on the card). One stylesheet: [`hud.vcss`](content/panorama/styles/custom_game/rollthedice/hud.vcss) (see [panorama-css.md](panorama-css.md)). Banner copy comes only from C# `IStringLocalizer` into `{s:dice}` — no hardcoded Label text in XML.
 
 `workshop/content` is the addon root (copy into `csgo_addons/<addon>/`). Layouts load as `panorama/layout/custom_game/rollthedice/<name>.vxml_c`.
 
@@ -15,9 +15,9 @@ Repo sources stay `banner.xml`, `hud.vcss`.
 
 No panel create / width / colour / image from C#. Layout edits need VPK republish.
 
-**Round restart / suspend:** layouts survive rounds; client resets XML defaults while server keeps last classes/vars. `Banner.Suspend()` clears owner/shown text and runs `CustomHud.ResetRound()` → `Banner.WriteDefaults` on round start, round end, and `cs_intermission`. `Banner.Resume()` only when the round is active (warmup with RTD disabled stays suspended). `Banner.Shutdown()` clears state without rewriting clients (map end / unload). Never Kill/respawn live layouts; `CustomHud.Shutdown` only on map end/unload.
+**Round / notify:** `Banner.Notify` (center + panorama) and `Banner.Show` (panorama status); config `notify_player_via_centermsg` / `notify_player_via_panorama` via `BindConfig`. `Suspend()` clears owner/shown text + `CustomHud.ResetRound` (round start/end, intermission). `Shutdown()` clears state only (map end/unload). Never Kill/respawn live layouts mid-round.
 
-**Spectator mirror:** `Banner` stores per-owner `{s:dice}` text. Alive viewers see their own text; dead/spectating viewers get the text of `ObserverPawn.ObserverServices.ObserverTarget` (`OBS_MODE_IN_EYE` / `CHASE` / `FIXED`). `OnTick` + immediate sync on `Show` keep spectate switches up to date. Death forces `Banner.Hide` for that owner even when a dice skips `base.Remove`.
+**Spectator mirror:** per-owner text (incl. bots; only humans get `Present`). Resolve watch target by `ObserverTarget` handle → `PlayerPawn` (`ObserverPawn` then `PlayerPawn`). Alive non-observers see their own text. `OnTick` + `Show` sync. Death forces `Banner.Hide`.
 
 **Fade:** show = `ph-fading` then clear next frame; hide = `ph-fading` 1s then `ph-off`.
 

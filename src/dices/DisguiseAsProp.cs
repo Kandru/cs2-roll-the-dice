@@ -127,7 +127,7 @@ namespace RollTheDice.Dices
                     state.Status = "plant";
                     SetPlayerVisible(player, false);
                     ShowProp(player, state);
-                    Banner.Show(player, StripChatColors(ModelLabel(state.PropName)));
+                    Banner.Show(player, ModelLabel(state.PropName));
                     continue;
                 }
 
@@ -155,7 +155,7 @@ namespace RollTheDice.Dices
                     state.Status = "player";
                     SetPlayerVisible(player, true);
                     HideProp(state.Prop);
-                    Banner.Show(player, StripChatColors(_localizer["dice_DisguiseAsProp_disabled"].Value));
+                    Banner.Show(player, _localizer["dice_DisguiseAsProp_disabled"].Value);
                 }
             }
         }
@@ -175,8 +175,7 @@ namespace RollTheDice.Dices
                 { "playerName", player.PlayerName },
                 { "model", label }
             });
-            Banner.Show(player, StripChatColors(
-                _localizer["dice_DisguiseAsProp_status"].Value.Replace("{model}", label)));
+            Banner.Show(player, _localizer["dice_DisguiseAsProp_status"].Value.Replace("{model}", label));
         }
 
         private void ShowProp(CCSPlayerController player, PropState state)

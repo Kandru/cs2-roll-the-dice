@@ -2,7 +2,7 @@ using CounterStrikeSharp.API.Core;
 
 namespace RollTheDice.Hud
 {
-    /// <summary>Applies config <c>theme</c> classes (<c>theme-*</c>) to the banner card.</summary>
+    /// <summary>Applies config <c>panorama_theme</c> classes (<c>theme-*</c>) to the banner card.</summary>
     public static class HudTheme
     {
         /// <summary>Keep in sync with hud.vcss / preview (validated by <c>make panorama</c>). Rainbow order.</summary>
@@ -18,7 +18,7 @@ namespace RollTheDice.Hud
 
         public static void BindConfig(PluginConfig config)
         {
-            _activeIndex = ResolveIndex(config.Theme);
+            _activeIndex = ResolveIndex(config.PanoramaTheme);
         }
 
         public static void Apply(CCSPlayerController player)

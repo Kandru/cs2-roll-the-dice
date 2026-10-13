@@ -1,25 +1,59 @@
+using System.Text.RegularExpressions;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 
 namespace RollTheDice.Hud
 {
-    public static class Banner
+    public static partial class Banner
     {
         public const string Panel = "Banner";
         public const string TextVar = "dice";
 
+        [GeneratedRegex(@"\{(?:green|purple|default|red|blue|yellow|orange|olive|lightpurple|lightblue|lightgreen|lightred|grey|gray|white|darkblue|darkred)\}", RegexOptions.IgnoreCase)]
+        private static partial Regex ChatColorTokens();
+
         private static readonly Dictionary<int, string> _ownerText = [];
         private static readonly Dictionary<int, string> _shownText = [];
-        private static bool _suspended;
+        private static bool _centerEnabled = true;
+        private static bool _panoramaEnabled = true;
 
-        public static void Show(CCSPlayerController player, string text)
+        public static void BindConfig(PluginConfig config)
         {
-            if (_suspended || player is not { IsValid: true } || !player.PawnIsAlive)
+            _centerEnabled = config.NotifyPlayerViaCenterMsg;
+            _panoramaEnabled = config.NotifyPlayerViaPanorama;
+        }
+
+        /// <summary>Center and/or panorama dice info (config-gated). Bots skip center; text is kept for spectators.</summary>
+        public static void Notify(CCSPlayerController player, string message)
+        {
+            if (player is not { IsValid: true })
             {
                 return;
             }
 
-            string next = text ?? string.Empty;
+            if (_centerEnabled && !player.IsBot)
+            {
+                player.PrintToCenter(message);
+            }
+
+            Show(player, message);
+        }
+
+        /// <summary>Panorama only. Hides when panorama is disabled.</summary>
+        public static void Show(CCSPlayerController player, string text)
+        {
+            if (player is not { IsValid: true } || !player.PawnIsAlive)
+            {
+                return;
+            }
+
+            if (!_panoramaEnabled)
+            {
+                Hide(player);
+                return;
+            }
+
+            string next = ChatColorTokens().Replace(text ?? string.Empty, string.Empty).Trim();
             int slot = player.Slot;
             if (_ownerText.TryGetValue(slot, out string? prev) && prev == next)
             {
@@ -47,17 +81,12 @@ namespace RollTheDice.Hud
                 return;
             }
 
-            int slot = player.Slot;
-            if (_ownerText.Remove(slot))
-            {
-                SyncViewers();
-            }
-            _ = _shownText.Remove(slot);
+            _ = _shownText.Remove(player.Slot);
+            Hide(player);
         }
 
         public static void Suspend()
         {
-            _suspended = true;
             _ownerText.Clear();
             _shownText.Clear();
             CustomHud.ResetRound();
@@ -65,16 +94,13 @@ namespace RollTheDice.Hud
 
         public static void Shutdown()
         {
-            _suspended = true;
             _ownerText.Clear();
             _shownText.Clear();
         }
 
-        public static void Resume() => _suspended = false;
-
         public static void SyncViewers()
         {
-            if (_suspended || (_ownerText.Count == 0 && !CustomHud.HasTransmitInterest()))
+            if (_ownerText.Count == 0 && !CustomHud.HasTransmitInterest())
             {
                 return;
             }
@@ -108,13 +134,13 @@ namespace RollTheDice.Hud
 
         private static string? ResolveText(CCSPlayerController viewer)
         {
-            if (viewer.PawnIsAlive)
+            CCSPlayerController? owner = GetSpectatedOwner(viewer);
+            if (owner is null && viewer.PawnIsAlive)
             {
-                return _ownerText.GetValueOrDefault(viewer.Slot);
+                owner = viewer;
             }
 
-            CCSPlayerController? target = GetSpectatedOwner(viewer);
-            return target is null ? null : _ownerText.GetValueOrDefault(target.Slot);
+            return owner is null ? null : _ownerText.GetValueOrDefault(owner.Slot);
         }
 
         private static void Present(CCSPlayerController viewer, string text)
@@ -133,16 +159,18 @@ namespace RollTheDice.Hud
             }
 
             HudTheme.Apply(viewer);
-            CustomHud.SetText(viewer, Panel, TextVar, text);
-            CustomHud.ShowPanel(viewer, Panel);
+            if (!CustomHud.SetText(viewer, Panel, TextVar, text)
+                || !CustomHud.ShowPanel(viewer, Panel))
+            {
+                return;
+            }
+
             _shownText[slot] = text;
         }
 
         private static void ClearPresentation(CCSPlayerController viewer)
         {
-            int slot = viewer.Slot;
-            bool hadShown = _shownText.Remove(slot);
-            if (!hadShown && !CustomHud.IsVisible(viewer))
+            if (!_shownText.Remove(viewer.Slot) && !CustomHud.IsVisible(viewer))
             {
                 return;
             }
@@ -153,29 +181,30 @@ namespace RollTheDice.Hud
 
         private static CCSPlayerController? GetSpectatedOwner(CCSPlayerController viewer)
         {
-            if (viewer.ObserverPawn?.Value is not { IsValid: true, ObserverServices: not null } obsPawn)
+            CCSPlayerController? From(CBasePlayerPawn? pawn)
             {
+                CBaseEntity? target = pawn?.ObserverServices?.ObserverTarget.Value;
+                if (target is not { IsValid: true })
+                {
+                    return null;
+                }
+
+                nint handle = target.Handle;
+                foreach (CCSPlayerController candidate in Utilities.GetPlayers())
+                {
+                    if (candidate.IsValid
+                        && candidate != viewer
+                        && candidate.PlayerPawn?.Value is { IsValid: true } candidatePawn
+                        && candidatePawn.Handle == handle)
+                    {
+                        return candidate;
+                    }
+                }
+
                 return null;
             }
 
-            CPlayer_ObserverServices services = obsPawn.ObserverServices;
-            ObserverMode_t mode = (ObserverMode_t)services.ObserverMode;
-            if (mode is not (ObserverMode_t.OBS_MODE_IN_EYE
-                or ObserverMode_t.OBS_MODE_CHASE
-                or ObserverMode_t.OBS_MODE_FIXED))
-            {
-                return null;
-            }
-
-            if (services.ObserverTarget.Value is not CCSPlayerPawnBase { IsValid: true } targetPawn)
-            {
-                return null;
-            }
-
-            CCSPlayerController? controller = targetPawn.OriginalController.Value;
-            return controller is { IsValid: true } && controller != viewer
-                ? controller
-                : null;
+            return From(viewer.ObserverPawn?.Value) ?? From(viewer.PlayerPawn?.Value);
         }
     }
 }

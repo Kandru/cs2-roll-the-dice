@@ -74,8 +74,7 @@ namespace RollTheDice.Dices
 
                 (string weapon, string sound, int total, float length) = Sounds[_random.Next(Sounds.Length)];
                 EmitBurst(player.Handle, sound, length, total);
-                Banner.Show(player, StripChatColors(
-                    _localizer["dice_MakeFakeGunSoundsWeapon_player"].Value.Replace("{weapon}", weapon)));
+                Banner.Show(player, _localizer["dice_MakeFakeGunSoundsWeapon_player"].Value.Replace("{weapon}", weapon));
 
                 if (_globalConfig.NotifyOtherPlayers)
                 {

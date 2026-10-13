@@ -31,25 +31,30 @@ namespace RollTheDice.Hud
         public static bool HasTransmitInterest() =>
             _visibleSlots.Count > 0 || _closingUntil.Count > 0;
 
-        public static void ShowPanel(CCSPlayerController player, string panelId)
+        public static bool ShowPanel(CCSPlayerController player, string panelId)
         {
             if (player is not { IsValid: true })
             {
-                return;
+                return false;
             }
 
             int slot = player.Slot;
             bool wasVisible = _visibleSlots.Contains(slot);
             _ = _visibleSlots.Add(slot);
             _ = _closingUntil.Remove(slot);
-            SetHasClass(player, panelId, "ph-off", false);
-            if (wasVisible)
+            if (!SetHasClass(player, panelId, "ph-off", false))
             {
-                SetHasClass(player, panelId, "ph-fading", false);
-                return;
+                _ = _visibleSlots.Remove(slot);
+                return false;
             }
 
-            SetHasClass(player, panelId, "ph-fading", true);
+            if (wasVisible)
+            {
+                _ = SetHasClass(player, panelId, "ph-fading", false);
+                return true;
+            }
+
+            _ = SetHasClass(player, panelId, "ph-fading", true);
             Server.NextFrame(() =>
             {
                 if (Utilities.GetPlayerFromSlot(slot) is { IsValid: true } live
@@ -58,6 +63,7 @@ namespace RollTheDice.Hud
                     SetHasClass(live, panelId, "ph-fading", false);
                 }
             });
+            return true;
         }
 
         public static void HidePanel(CCSPlayerController player, string panelId)
@@ -72,11 +78,11 @@ namespace RollTheDice.Hud
             _ = _visibleSlots.Remove(player.Slot);
         }
 
-        public static void SetText(CCSPlayerController player, string panelId, string name, string value)
+        public static bool SetText(CCSPlayerController player, string panelId, string name, string value)
         {
             if (player is not { IsValid: true })
             {
-                return;
+                return false;
             }
 
             string text = value ?? string.Empty;
@@ -85,12 +91,12 @@ namespace RollTheDice.Hud
                 && vars.TryGetValue(name, out string? prev)
                 && prev == text)
             {
-                return;
+                return true;
             }
 
             if (!TryWrite(player, out CCSCustomHudLayout hud))
             {
-                return;
+                return false;
             }
 
             hud.SetDialogVariableStringForPlayer(player, panelId, name, text);
@@ -99,6 +105,7 @@ namespace RollTheDice.Hud
                 _textBySlot[slot] = vars = new Dictionary<string, string>(StringComparer.Ordinal);
             }
             vars[name] = text;
+            return true;
         }
 
         public static bool SetHasClass(CCSPlayerController player, string panelId, string className, bool enabled)

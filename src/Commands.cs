@@ -5,6 +5,7 @@ using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Extensions;
 using RollTheDice.Dices;
+using RollTheDice.Hud;
 using RollTheDice.Utils;
 
 namespace RollTheDice
@@ -186,7 +187,7 @@ namespace RollTheDice
             if (_playersThatRolledTheDice.TryGetValue(player, out string? diceVal))
             {
                 string message = Localizer["command.rollthedice.alreadyrolled"].Value.Replace("{dice}", diceVal);
-                player.PrintToCenter(diceVal);
+                Banner.Notify(player, diceVal);
                 command.ReplyToCommand(message);
                 return;
             }

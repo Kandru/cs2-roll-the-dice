@@ -71,7 +71,7 @@ namespace RollTheDice.Dices
                     {
                         string status = _localizer["dice_Cloak_gui_status"].Value
                             .Replace("{percentage}", ((next / 255.0) * 100).ToString("0.#") + "%");
-                        Banner.Show(player, StripChatColors(status));
+                        Banner.Show(player, status);
                     }
                     continue;
                 }
@@ -80,7 +80,7 @@ namespace RollTheDice.Dices
                 {
                     _visibility[player] = 255;
                     SetVisibility(player, 255);
-                    Banner.Show(player, StripChatColors(_localizer["dice_Cloak_player"].Value));
+                    Banner.Show(player, _localizer["dice_Cloak_player"].Value);
                 }
             }
         }

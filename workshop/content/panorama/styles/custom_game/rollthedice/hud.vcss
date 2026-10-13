@@ -98,7 +98,7 @@ Label.ph-title
 	text-shadow: 1px 1px 0px 2.0 #00000088;
 }
 
-/* Accent themes (config theme). Gold is the baked-in default; other themes override the bar. */
+/* Accent themes (config panorama_theme). Gold is the baked-in default; other themes override the bar. */
 .theme-red .ph-bar { background-color: #e05a5a; }
 .theme-coral .ph-bar { background-color: #ff7a59; }
 .theme-orange .ph-bar { background-color: #ff8a3d; }

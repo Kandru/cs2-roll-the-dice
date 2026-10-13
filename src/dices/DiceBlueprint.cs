@@ -3,15 +3,11 @@ using CounterStrikeSharp.API.Core;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
 using RollTheDice.Hud;
-using System.Text.RegularExpressions;
 
 namespace RollTheDice.Dices
 {
-    public partial class DiceBlueprint(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer)
+    public class DiceBlueprint(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer)
     {
-        [GeneratedRegex(@"\{(?:green|purple|default|red|blue|yellow|orange|olive|lightpurple|lightblue|lightgreen|lightred|grey|gray|white|darkblue|darkred)\}", RegexOptions.IgnoreCase)]
-        private static partial Regex ChatColorTokens();
-
         private static readonly List<string> NoNames = [];
         private static readonly Dictionary<int, HookMode> NoUserMessages = [];
 
@@ -83,16 +79,12 @@ namespace RollTheDice.Dices
             }
 
             string playerMessage = Format(self.Value, data);
-            if (_globalConfig.NotifyPlayerViaCenterMsg)
-            {
-                player.PrintToCenter(playerMessage);
-            }
             if (_globalConfig.NotifyPlayerViaChatMsg)
             {
                 player.PrintToChat(_localizer["command.prefix"].Value + playerMessage);
             }
             Description = playerMessage;
-            Banner.Show(player, StripChatColors(playerMessage));
+            Banner.Notify(player, playerMessage);
         }
 
         public void NotifyStatus(CCSPlayerController player, string diceName, Dictionary<string, string> data)
@@ -104,10 +96,9 @@ namespace RollTheDice.Dices
             }
 
             string message = Format(status.Value, data);
-            player.PrintToCenter(message);
             player.PrintToChat(_localizer["command.prefix"].Value + message);
             Description = message;
-            Banner.Show(player, StripChatColors(message));
+            Banner.Notify(player, message);
         }
 
         private static string Format(string message, Dictionary<string, string> data)
@@ -118,8 +109,5 @@ namespace RollTheDice.Dices
             }
             return message;
         }
-
-        public static string StripChatColors(string message) =>
-            ChatColorTokens().Replace(message, string.Empty).Trim();
     }
 }

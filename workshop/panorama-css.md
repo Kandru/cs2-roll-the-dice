@@ -18,7 +18,7 @@ Web CSS is dropped with no log. Run `make panorama` (`tools/validate_panorama.py
 
 ## Shared / do not
 
-Shared: `.ph-card` / `.ph-fading` / `.ph-off` · `.ph-bg` / `.ph-bar` · `Label.ph-title` · `.theme-*` (config `theme`). Hide with `ph-off` - never class name `hidden`/`Hidden`. Label `text` must be a dialog var (`{s:dice}`); wording lives in C# lang files.
+Shared: `.ph-card` / `.ph-fading` / `.ph-off` · `.ph-bg` / `.ph-bar` · `Label.ph-title` · `.theme-*` (config `panorama_theme`). Hide with `ph-off` - never class name `hidden`/`Hidden`. Label `text` must be a dialog var (`{s:dice}`); wording lives in C# lang files.
 
 Do not: `display`/flex/grid, `calc()`, `var()`, `@define`, `@media`, `::before`/`::after`, `background-size: contain`, `visibility: hidden`, `overflow: hidden`, unitful `font-size`, `vertical-align: center`.
 

@@ -127,8 +127,10 @@ namespace RollTheDice
         [JsonPropertyName("notify_player_via_chatmsg")] public bool NotifyPlayerViaChatMsg { get; set; } = true;
         // notify player via center message
         [JsonPropertyName("notify_player_via_centermsg")] public bool NotifyPlayerViaCenterMsg { get; set; } = true;
+        // notify player via panorama banner HUD
+        [JsonPropertyName("notify_player_via_panorama")] public bool NotifyPlayerViaPanorama { get; set; } = true;
         // banner accent theme (theme-* classes; see HudTheme)
-        [JsonPropertyName("theme")] public string Theme { get; set; } = "gold";
+        [JsonPropertyName("panorama_theme")] public string PanoramaTheme { get; set; } = "gold";
 
         // dices configuration
         [JsonPropertyName("dices")] public DicesConfig Dices { get; set; } = new DicesConfig();
@@ -155,6 +157,7 @@ namespace RollTheDice
                 // load config from disk
                 Config.Reload();
                 HudTheme.BindConfig(Config);
+                Banner.BindConfig(Config);
                 // update player config
                 UpdatePlayerConfig();
                 // save config to disk
@@ -188,6 +191,7 @@ namespace RollTheDice
         {
             Config = config;
             HudTheme.BindConfig(config);
+            Banner.BindConfig(config);
             Console.WriteLine(Localizer["core.config"]);
         }
 

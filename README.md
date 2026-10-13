@@ -155,7 +155,8 @@ This plugin automatically creates a readable JSON configuration file. This confi
   "notify_other_players_about_dices_rolled": true,
   "notify_player_via_chatmsg": true,
   "notify_player_via_centermsg": true,
-  "theme": "gold",
+  "notify_player_via_panorama": true,
+  "panorama_theme": "gold",
   "dices": {
     "big_taser_battery": {
       "enabled": true,
