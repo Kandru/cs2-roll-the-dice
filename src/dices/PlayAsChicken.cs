@@ -55,6 +55,7 @@ namespace RollTheDice.Dices
             public bool HadCollision { get; init; }
             public float TeleportAfter { get; init; }
             public int NextSound { get; set; }
+            public int PreviousMaxHealth { get; init; }
         }
 
         public PlayAsChicken(PluginConfig GlobalConfig, MapConfig Config, IStringLocalizer Localizer) : base(GlobalConfig, Config, Localizer)
@@ -165,8 +166,10 @@ namespace RollTheDice.Dices
                 HadCollision = hadCollision,
                 TeleportAfter = Server.CurrentTime + PropTeleportSettleDelay,
                 NextSound = (int)Server.CurrentTime + NextWait(),
+                PreviousMaxHealth = Math.Max(1, pawn.MaxHealth),
             };
             _chickenIndexToPlayer[chicken.Index] = player;
+            SetHealth(pawn, Math.Max(1, _config.Dices.PlayAsChicken.Health));
             NotifyPlayers(player, ClassName, new() { { "playerName", player.PlayerName } });
         }
 
@@ -195,6 +198,10 @@ namespace RollTheDice.Dices
                         pawn.Collision.CollisionGroup = state.PreviousCollisionGroup;
                         pawn.Collision.CollisionAttribute.CollisionGroup = state.PreviousCollisionAttributeGroup;
                         pawn.Collision.CollisionAttribute.InteractsAs = state.PreviousInteractsAs;
+                    }
+                    if (pawn.LifeState == (byte)LifeState_t.LIFE_ALIVE)
+                    {
+                        RestoreHealthRatio(pawn, state.PreviousMaxHealth);
                     }
                 }
                 SetPlayerScale(player, 1f);
@@ -517,6 +524,28 @@ namespace RollTheDice.Dices
             Utilities.SetStateChanged(prop, "CBaseEntity", "m_CBodyComponent");
         }
 
+        /// <summary>Maps remaining chicken HP onto the max health the player had before the dice.</summary>
+        private static void RestoreHealthRatio(CCSPlayerPawn pawn, int previousMaxHealth)
+        {
+            int chickenMax = Math.Max(1, pawn.MaxHealth);
+            int restoredMax = Math.Max(1, previousMaxHealth);
+            float ratio = Math.Clamp(pawn.Health / (float)chickenMax, 0f, 1f);
+            int health = (int)Math.Round(ratio * restoredMax);
+            if (health < 1)
+            {
+                health = 1;
+            }
+            SetHealth(pawn, health, restoredMax);
+        }
+
+        private static void SetHealth(CCSPlayerPawn pawn, int health, int? maxHealth = null)
+        {
+            pawn.Health = health;
+            pawn.MaxHealth = maxHealth ?? health;
+            Utilities.SetStateChanged(pawn, "CBaseEntity", "m_iHealth");
+            Utilities.SetStateChanged(pawn, "CBaseEntity", "m_iMaxHealth");
+        }
+
         private static void SetPlayerScale(CCSPlayerController? player, float scale)
         {
             if (player?.Pawn?.Value?.CBodyComponent?.SceneNode == null
@@ -575,5 +604,6 @@ namespace RollTheDice.Configs
         [JsonPropertyName("min_sound_wait_time")] public int MinSoundWaitTime { get; set; } = 3;
         [JsonPropertyName("max_sound_wait_time")] public int MaxSoundWaitTime { get; set; } = 7;
         [JsonPropertyName("chicken_size")] public float ChickenSize { get; set; } = 5f;
+        [JsonPropertyName("health")] public int Health { get; set; } = 150;
     }
 }
