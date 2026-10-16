@@ -35,6 +35,30 @@ namespace RollTheDice.Hud
             }
         }
 
+        /// <summary>Like <see cref="Apply"/> for another panel, but writes only the classes that differ from the XML default (<c>theme-gold</c>).</summary>
+        public static void ApplyTo(CCSPlayerController player, string panelId)
+        {
+            int active = _activeIndex;
+            if (active == GoldIndex)
+            {
+                return;
+            }
+            CustomHud.SetHasClass(player, panelId, Classes[GoldIndex], false);
+            CustomHud.SetHasClass(player, panelId, Classes[active], true);
+        }
+
+        /// <summary>Undo <see cref="ApplyTo"/>: back to the authored <c>theme-gold</c>.</summary>
+        public static void WriteDefault(CCSPlayerController player, string panelId)
+        {
+            int active = _activeIndex;
+            if (active == GoldIndex)
+            {
+                return;
+            }
+            CustomHud.SetHasClass(player, panelId, Classes[active], false);
+            CustomHud.SetHasClass(player, panelId, Classes[GoldIndex], true);
+        }
+
         private static string[] BuildClasses()
         {
             string[] classes = new string[All.Length];

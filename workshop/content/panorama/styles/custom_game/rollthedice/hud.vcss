@@ -98,6 +98,534 @@ Label.ph-title
 	text-shadow: 1px 1px 0px 2.0 #00000088;
 }
 
+/* ---------------------------------------------------------------------------
+   Reel: slot-machine roll animation (Reel.cs). Purely visual - the dice is
+   already rolled when the reel opens. Root #Reel carries every state class:
+   ph-off / ph-fading, is-stopped, is-running, replay-0|1, spin-N, hold-N,
+   win-<tone>, theme-*. Rows ReelRow<n> carry tone-* (filler, global).
+   Winner always lands in row 20 -> one fixed keyframe distance:
+   19 rows * 44px = 836px, overshoot to 850px, spring back.
+   No rotateX/perspective in Panorama: the drum look comes from overlays.
+   --------------------------------------------------------------------------- */
+
+.Reel
+{
+	horizontal-align: center;
+	vertical-align: middle;
+	width: 380px;
+	height: fit-children;
+	overflow: noclip noclip;
+	opacity: 1;
+	transform: translateY( 120px );
+	transition-property: opacity, transform;
+	transition-duration: 0.25s;
+	transition-timing-function: ease-out;
+}
+
+.Reel.ph-fading
+{
+	opacity: 0;
+	transform: translateY( 132px );
+	transition-duration: 0.18s;
+	transition-timing-function: ease-in;
+}
+
+.Reel.ph-off
+{
+	visibility: collapse;
+	opacity: 0;
+	transition-duration: 0s;
+}
+
+.ReelContent
+{
+	width: 380px;
+	height: fit-children;
+	flow-children: down;
+	z-index: 2;
+}
+
+.RrHead
+{
+	width: 356px;
+	height: 36px;
+	margin-left: 12px;
+	flow-children: right;
+}
+
+Label.RrTitle
+{
+	width: 246px;
+	vertical-align: middle;
+	margin-left: 4px;
+	font-size: 15;
+	letter-spacing: 1.6px;
+	text-transform: uppercase;
+	color: #f5f7fa;
+}
+
+Label.RrSource
+{
+	width: 106px;
+	vertical-align: middle;
+	font-size: 14;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	text-align: right;
+	color: #a3acb6;
+}
+
+.RrFrame
+{
+	width: 356px;
+	height: 132px;
+	margin-left: 12px;
+}
+
+.RrWindow
+{
+	width: 328px;
+	height: 132px;
+	horizontal-align: center;
+	overflow: clip clip;
+	border-radius: 3px;
+	background-color: #080b0f;
+}
+
+.RrStrip
+{
+	width: 100%;
+	height: fit-children;
+	flow-children: down;
+	transform: translateY( 0px );
+}
+
+@keyframes 'rr-spin'
+{
+	0%
+	{
+		transform: translateY( 0px );
+	}
+	86%
+	{
+		transform: translateY( -850px );
+	}
+	100%
+	{
+		transform: translateY( -836px );
+	}
+}
+
+.Reel.replay-0 .RrStrip,
+.Reel.replay-1 .RrStrip
+{
+	animation-name: rr-spin;
+	animation-duration: 2.0s;
+	animation-timing-function: ease-out;
+	animation-iteration-count: 1;
+	animation-fill-mode: forwards;
+}
+
+.Reel.spin-10 .RrStrip { animation-duration: 1.0s; }
+.Reel.spin-15 .RrStrip { animation-duration: 1.5s; }
+.Reel.spin-20 .RrStrip { animation-duration: 2.0s; }
+.Reel.spin-25 .RrStrip { animation-duration: 2.5s; }
+.Reel.spin-30 .RrStrip { animation-duration: 3.0s; }
+.Reel.spin-35 .RrStrip { animation-duration: 3.5s; }
+.Reel.spin-40 .RrStrip { animation-duration: 4.0s; }
+.Reel.spin-45 .RrStrip { animation-duration: 4.5s; }
+.Reel.spin-50 .RrStrip { animation-duration: 5.0s; }
+
+.RrRow
+{
+	width: 100%;
+	height: 44px;
+	flow-children: right;
+}
+
+.RrStripe
+{
+	width: 3px;
+	height: 28px;
+	vertical-align: middle;
+	border-radius: 2px;
+	background-color: #5aa9e6;
+}
+
+.RrSym
+{
+	width: 35px;
+	height: 44px;
+}
+
+/* Tone shape: a rotated square, clipped to its top half (good), bottom half (bad) or shown small (neutral). */
+.RrSymBox
+{
+	width: 17px;
+	height: 9px;
+	horizontal-align: center;
+	vertical-align: middle;
+	overflow: clip clip;
+}
+
+.RrSymTip
+{
+	width: 6px;
+	height: 6px;
+	margin-left: 5px;
+	margin-top: 1px;
+	background-color: #5aa9e6;
+	transform: rotateZ( 45deg );
+}
+
+Label.RrName
+{
+	width: 276px;
+	vertical-align: middle;
+	font-size: 16;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	color: #e8eef4;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tone-good .RrStripe, .Reel.win-good .RrWinRow .RrStripe { background-color: #9ccf4f; }
+.tone-bad .RrStripe, .Reel.win-bad .RrWinRow .RrStripe { background-color: #e05a5a; }
+.tone-neutral .RrStripe, .Reel.win-neutral .RrWinRow .RrStripe { background-color: #5aa9e6; }
+.tone-good .RrSymTip, .Reel.win-good .RrWinRow .RrSymTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #9ccf4f; }
+.tone-bad .RrSymTip, .Reel.win-bad .RrWinRow .RrSymTip { width: 12px; height: 12px; margin-left: 2px; margin-top: -6px; background-color: #e05a5a; }
+.tone-neutral .RrSymTip, .Reel.win-neutral .RrWinRow .RrSymTip { width: 6px; height: 6px; margin-left: 5px; margin-top: 1px; background-color: #5aa9e6; }
+
+/* Drum illusion: overlays above the strip (later siblings draw on top). */
+.RrWinLine
+{
+	width: 100%;
+	height: 44px;
+	margin-top: 44px;
+	border-top: 1px solid #f0a531aa;
+	border-bottom: 1px solid #f0a531aa;
+	background-color: #f0a53114;
+	transition-property: background-color, box-shadow;
+	transition-duration: 0.25s;
+	transition-timing-function: ease-out;
+}
+
+.Reel.is-stopped .RrWinLine
+{
+	background-color: #f0a53133;
+	box-shadow: #f0a53155 0px 0px 18px 0px;
+}
+
+.RrShadeTop
+{
+	width: 100%;
+	height: 50px;
+	vertical-align: top;
+	background-color: gradient( linear, 0% 0%, 0% 100%, from( #000000eb ), to( #00000000 ) );
+}
+
+.RrShadeBottom
+{
+	width: 100%;
+	height: 50px;
+	vertical-align: bottom;
+	background-color: gradient( linear, 0% 0%, 0% 100%, from( #00000000 ), to( #000000eb ) );
+}
+
+.RrSideLeft
+{
+	width: 16px;
+	height: 100%;
+	horizontal-align: left;
+	background-color: gradient( linear, 0% 0%, 100% 0%, from( #00000080 ), to( #00000000 ) );
+}
+
+.RrSideRight
+{
+	width: 16px;
+	height: 100%;
+	horizontal-align: right;
+	background-color: gradient( linear, 0% 0%, 100% 0%, from( #00000000 ), to( #00000080 ) );
+}
+
+.RrGloss
+{
+	width: 100%;
+	height: 40px;
+	vertical-align: top;
+	background-color: gradient( linear, 0% 0%, 0% 100%, from( #ffffff12 ), to( #ffffff00 ) );
+}
+
+.RrRim
+{
+	width: 100%;
+	height: 100%;
+	border: 1px solid #f0a53166;
+	border-radius: 3px;
+}
+
+/* Arrows: rotated square, half clipped by a 10x18 box. */
+.RrArrow
+{
+	width: 10px;
+	height: 18px;
+	vertical-align: middle;
+	overflow: clip clip;
+}
+
+.RrArrowLeft
+{
+	horizontal-align: left;
+	margin-left: 2px;
+}
+
+.RrArrowRight
+{
+	horizontal-align: right;
+	margin-right: 2px;
+}
+
+.RrArrowTip
+{
+	width: 13px;
+	height: 13px;
+	margin-top: 3px;
+	background-color: #f0a531;
+	transform: rotateZ( 45deg );
+}
+
+.RrArrowLeft .RrArrowTip { margin-left: -7px; }
+.RrArrowRight .RrArrowTip { margin-left: 4px; }
+
+/* Stop feedback. Keyed on replay-0/1 so it replays on every roll. */
+@keyframes 'rr-pop'
+{
+	0%
+	{
+		transform: scale3d( 1, 1, 1 );
+	}
+	40%
+	{
+		transform: scale3d( 1.06, 1.06, 1 );
+	}
+	100%
+	{
+		transform: scale3d( 1, 1, 1 );
+	}
+}
+
+@keyframes 'rr-nudge-left'
+{
+	0%
+	{
+		transform: translateX( 0px );
+	}
+	40%
+	{
+		transform: translateX( 4px );
+	}
+	100%
+	{
+		transform: translateX( 0px );
+	}
+}
+
+@keyframes 'rr-nudge-right'
+{
+	0%
+	{
+		transform: translateX( 0px );
+	}
+	40%
+	{
+		transform: translateX( -4px );
+	}
+	100%
+	{
+		transform: translateX( 0px );
+	}
+}
+
+.Reel.is-stopped.replay-0 .RrWinRow,
+.Reel.is-stopped.replay-1 .RrWinRow
+{
+	animation-name: rr-pop;
+	animation-duration: 0.35s;
+	animation-timing-function: ease-out;
+}
+
+.Reel.is-stopped.replay-0 .RrArrowLeft,
+.Reel.is-stopped.replay-1 .RrArrowLeft
+{
+	animation-name: rr-nudge-left;
+	animation-duration: 0.35s;
+	animation-timing-function: ease-out;
+}
+
+.Reel.is-stopped.replay-0 .RrArrowRight,
+.Reel.is-stopped.replay-1 .RrArrowRight
+{
+	animation-name: rr-nudge-right;
+	animation-duration: 0.35s;
+	animation-timing-function: ease-out;
+}
+
+.Reel.is-stopped .RrWinRow Label.RrName
+{
+	color: #ffffff;
+}
+
+.Reel.is-stopped Label.RrTitle
+{
+	color: #f6cd8b;
+}
+
+/* Hold-time bar (span pattern): hold-N set on open, is-running on stop. */
+.RrDrainTrack
+{
+	width: 328px;
+	height: 2px;
+	margin-top: 8px;
+	margin-left: 26px;
+	overflow: clip clip;
+	border-radius: 1px;
+	background-color: #ffffff12;
+	opacity: 0;
+	transition-property: opacity;
+	transition-duration: 0.15s;
+	transition-timing-function: ease-out;
+}
+
+.Reel.is-stopped .RrDrainTrack
+{
+	opacity: 1;
+}
+
+.RrDrain
+{
+	width: 100%;
+	height: 100%;
+	background-color: #f0a531;
+	clip: rect( 0%, 100%, 100%, 0% );
+	transition-property: clip;
+	transition-duration: 0s;
+	transition-timing-function: linear;
+}
+
+.Reel.hold-05 .RrDrain { transition-duration: 0.5s; }
+.Reel.hold-10 .RrDrain { transition-duration: 1.0s; }
+.Reel.hold-15 .RrDrain { transition-duration: 1.5s; }
+.Reel.hold-20 .RrDrain { transition-duration: 2.0s; }
+.Reel.hold-25 .RrDrain { transition-duration: 2.5s; }
+.Reel.hold-30 .RrDrain { transition-duration: 3.0s; }
+.Reel.hold-35 .RrDrain { transition-duration: 3.5s; }
+.Reel.hold-40 .RrDrain { transition-duration: 4.0s; }
+.Reel.hold-45 .RrDrain { transition-duration: 4.5s; }
+.Reel.hold-50 .RrDrain { transition-duration: 5.0s; }
+.Reel.is-running .RrDrain { clip: rect( 0%, 0%, 100%, 0% ); }
+
+.RrFooter
+{
+	width: 356px;
+	height: fit-children;
+	margin-top: 6px;
+	margin-left: 12px;
+	margin-bottom: 10px;
+}
+
+Label.RrCredit
+{
+	horizontal-align: right;
+	margin-right: 14px;
+	font-size: 14;
+	letter-spacing: 0.6px;
+	color: #a3acb6;
+}
+
+/* reel themes: generated by tools/gen_reel_panorama.py - do not edit by hand */
+.Reel.theme-red .RrArrowTip, .Reel.theme-red .RrDrain { background-color: #e05a5a; }
+.Reel.theme-red .RrRim { border-color: #e05a5a66; }
+.Reel.theme-red .RrWinLine { border-color: #e05a5aaa; background-color: #e05a5a14; }
+.Reel.theme-red.is-stopped .RrWinLine { background-color: #e05a5a33; box-shadow: #e05a5a55 0px 0px 18px 0px; }
+.Reel.theme-red.is-stopped Label.RrTitle { color: #eea4a4; }
+.Reel.theme-coral .RrArrowTip, .Reel.theme-coral .RrDrain { background-color: #ff7a59; }
+.Reel.theme-coral .RrRim { border-color: #ff7a5966; }
+.Reel.theme-coral .RrWinLine { border-color: #ff7a59aa; background-color: #ff7a5914; }
+.Reel.theme-coral.is-stopped .RrWinLine { background-color: #ff7a5933; box-shadow: #ff7a5955 0px 0px 18px 0px; }
+.Reel.theme-coral.is-stopped Label.RrTitle { color: #ffb6a4; }
+.Reel.theme-orange .RrArrowTip, .Reel.theme-orange .RrDrain { background-color: #ff8a3d; }
+.Reel.theme-orange .RrRim { border-color: #ff8a3d66; }
+.Reel.theme-orange .RrWinLine { border-color: #ff8a3daa; background-color: #ff8a3d14; }
+.Reel.theme-orange.is-stopped .RrWinLine { background-color: #ff8a3d33; box-shadow: #ff8a3d55 0px 0px 18px 0px; }
+.Reel.theme-orange.is-stopped Label.RrTitle { color: #ffbf94; }
+.Reel.theme-copper .RrArrowTip, .Reel.theme-copper .RrDrain { background-color: #e08a5a; }
+.Reel.theme-copper .RrRim { border-color: #e08a5a66; }
+.Reel.theme-copper .RrWinLine { border-color: #e08a5aaa; background-color: #e08a5a14; }
+.Reel.theme-copper.is-stopped .RrWinLine { background-color: #e08a5a33; box-shadow: #e08a5a55 0px 0px 18px 0px; }
+.Reel.theme-copper.is-stopped Label.RrTitle { color: #eebfa4; }
+.Reel.theme-gold .RrArrowTip, .Reel.theme-gold .RrDrain { background-color: #f0a531; }
+.Reel.theme-gold .RrRim { border-color: #f0a53166; }
+.Reel.theme-gold .RrWinLine { border-color: #f0a531aa; background-color: #f0a53114; }
+.Reel.theme-gold.is-stopped .RrWinLine { background-color: #f0a53133; box-shadow: #f0a53155 0px 0px 18px 0px; }
+.Reel.theme-gold.is-stopped Label.RrTitle { color: #f7ce8e; }
+.Reel.theme-t .RrArrowTip, .Reel.theme-t .RrDrain { background-color: #eabe54; }
+.Reel.theme-t .RrRim { border-color: #eabe5466; }
+.Reel.theme-t .RrWinLine { border-color: #eabe54aa; background-color: #eabe5414; }
+.Reel.theme-t.is-stopped .RrWinLine { background-color: #eabe5433; box-shadow: #eabe5455 0px 0px 18px 0px; }
+.Reel.theme-t.is-stopped Label.RrTitle { color: #f3dba1; }
+.Reel.theme-lime .RrArrowTip, .Reel.theme-lime .RrDrain { background-color: #c6f04a; }
+.Reel.theme-lime .RrRim { border-color: #c6f04a66; }
+.Reel.theme-lime .RrWinLine { border-color: #c6f04aaa; background-color: #c6f04a14; }
+.Reel.theme-lime.is-stopped .RrWinLine { background-color: #c6f04a33; box-shadow: #c6f04a55 0px 0px 18px 0px; }
+.Reel.theme-lime.is-stopped Label.RrTitle { color: #e0f79b; }
+.Reel.theme-green .RrArrowTip, .Reel.theme-green .RrDrain { background-color: #6fdc78; }
+.Reel.theme-green .RrRim { border-color: #6fdc7866; }
+.Reel.theme-green .RrWinLine { border-color: #6fdc78aa; background-color: #6fdc7814; }
+.Reel.theme-green.is-stopped .RrWinLine { background-color: #6fdc7833; box-shadow: #6fdc7855 0px 0px 18px 0px; }
+.Reel.theme-green.is-stopped Label.RrTitle { color: #b0ecb5; }
+.Reel.theme-teal .RrArrowTip, .Reel.theme-teal .RrDrain { background-color: #2ec9a6; }
+.Reel.theme-teal .RrRim { border-color: #2ec9a666; }
+.Reel.theme-teal .RrWinLine { border-color: #2ec9a6aa; background-color: #2ec9a614; }
+.Reel.theme-teal.is-stopped .RrWinLine { background-color: #2ec9a633; box-shadow: #2ec9a655 0px 0px 18px 0px; }
+.Reel.theme-teal.is-stopped Label.RrTitle { color: #8ce1ce; }
+.Reel.theme-cyan .RrArrowTip, .Reel.theme-cyan .RrDrain { background-color: #3ee0f0; }
+.Reel.theme-cyan .RrRim { border-color: #3ee0f066; }
+.Reel.theme-cyan .RrWinLine { border-color: #3ee0f0aa; background-color: #3ee0f014; }
+.Reel.theme-cyan.is-stopped .RrWinLine { background-color: #3ee0f033; box-shadow: #3ee0f055 0px 0px 18px 0px; }
+.Reel.theme-cyan.is-stopped Label.RrTitle { color: #95eef7; }
+.Reel.theme-blue .RrArrowTip, .Reel.theme-blue .RrDrain { background-color: #5b8cff; }
+.Reel.theme-blue .RrRim { border-color: #5b8cff66; }
+.Reel.theme-blue .RrWinLine { border-color: #5b8cffaa; background-color: #5b8cff14; }
+.Reel.theme-blue.is-stopped .RrWinLine { background-color: #5b8cff33; box-shadow: #5b8cff55 0px 0px 18px 0px; }
+.Reel.theme-blue.is-stopped Label.RrTitle { color: #a5c0ff; }
+.Reel.theme-ct .RrArrowTip, .Reel.theme-ct .RrDrain { background-color: #96c8fa; }
+.Reel.theme-ct .RrRim { border-color: #96c8fa66; }
+.Reel.theme-ct .RrWinLine { border-color: #96c8faaa; background-color: #96c8fa14; }
+.Reel.theme-ct.is-stopped .RrWinLine { background-color: #96c8fa33; box-shadow: #96c8fa55 0px 0px 18px 0px; }
+.Reel.theme-ct.is-stopped Label.RrTitle { color: #c5e1fc; }
+.Reel.theme-purple .RrArrowTip, .Reel.theme-purple .RrDrain { background-color: #b07cff; }
+.Reel.theme-purple .RrRim { border-color: #b07cff66; }
+.Reel.theme-purple .RrWinLine { border-color: #b07cffaa; background-color: #b07cff14; }
+.Reel.theme-purple.is-stopped .RrWinLine { background-color: #b07cff33; box-shadow: #b07cff55 0px 0px 18px 0px; }
+.Reel.theme-purple.is-stopped Label.RrTitle { color: #d4b7ff; }
+.Reel.theme-magenta .RrArrowTip, .Reel.theme-magenta .RrDrain { background-color: #e85dff; }
+.Reel.theme-magenta .RrRim { border-color: #e85dff66; }
+.Reel.theme-magenta .RrWinLine { border-color: #e85dffaa; background-color: #e85dff14; }
+.Reel.theme-magenta.is-stopped .RrWinLine { background-color: #e85dff33; box-shadow: #e85dff55 0px 0px 18px 0px; }
+.Reel.theme-magenta.is-stopped Label.RrTitle { color: #f2a6ff; }
+.Reel.theme-pink .RrArrowTip, .Reel.theme-pink .RrDrain { background-color: #ff6b9a; }
+.Reel.theme-pink .RrRim { border-color: #ff6b9a66; }
+.Reel.theme-pink .RrWinLine { border-color: #ff6b9aaa; background-color: #ff6b9a14; }
+.Reel.theme-pink.is-stopped .RrWinLine { background-color: #ff6b9a33; box-shadow: #ff6b9a55 0px 0px 18px 0px; }
+.Reel.theme-pink.is-stopped Label.RrTitle { color: #ffaec7; }
+.Reel.theme-silver .RrArrowTip, .Reel.theme-silver .RrDrain { background-color: #c9d2dc; }
+.Reel.theme-silver .RrRim { border-color: #c9d2dc66; }
+.Reel.theme-silver .RrWinLine { border-color: #c9d2dcaa; background-color: #c9d2dc14; }
+.Reel.theme-silver.is-stopped .RrWinLine { background-color: #c9d2dc33; box-shadow: #c9d2dc55 0px 0px 18px 0px; }
+.Reel.theme-silver.is-stopped Label.RrTitle { color: #e1e6ec; }
+/* /reel themes */
+
 /* Accent themes (config panorama_theme). Gold is the baked-in default; other themes override the bar. */
 .theme-red .ph-bar { background-color: #e05a5a; }
 .theme-coral .ph-bar { background-color: #ff7a59; }

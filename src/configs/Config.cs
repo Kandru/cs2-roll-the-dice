@@ -98,6 +98,30 @@ namespace RollTheDice
         [JsonPropertyName("play_on_command_only")] public bool PlayOnCommandOnly { get; set; } = false;
     }
 
+    public class ReelConfig
+    {
+        // show the slot-machine reel when a dice is rolled (needs notify_player_via_panorama)
+        [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
+        // spin duration in seconds (1.0 - 5.0, steps of 0.5)
+        [JsonPropertyName("spin_seconds")] public float SpinSeconds { get; set; } = 2.0f;
+        // how long the result stays before the reel fades out (0.5 - 5.0, steps of 0.5)
+        [JsonPropertyName("hold_seconds")] public float HoldSeconds { get; set; } = 1.5f;
+        // sound per row passing the win line (sound event or "sounds/..." path, empty = off)
+        [JsonPropertyName("tick_sound")] public string TickSound { get; set; } = "UIPanorama.container_weapon_ticker";
+        // marker per dice on the reel: "good", "bad" or "neutral" (missing dices use the built-in default)
+        [JsonPropertyName("tones")] public Dictionary<string, string> Tones { get; set; } = DefaultTones();
+
+        private static Dictionary<string, string> DefaultTones()
+        {
+            Dictionary<string, string> tones = [];
+            foreach ((string dice, ReelTone tone) in Reel.DefaultTones)
+            {
+                tones[dice] = tone.ToString().ToLowerInvariant();
+            }
+            return tones;
+        }
+    }
+
     public class PrecacheConfig
     {
         [JsonPropertyName("soundevent_file")] public string SoundEventFile { get; set; } = "soundevents/soundevents_rollthedice.vsndevts";
@@ -131,6 +155,8 @@ namespace RollTheDice
         [JsonPropertyName("notify_player_via_panorama")] public bool NotifyPlayerViaPanorama { get; set; } = true;
         // banner accent theme (theme-* classes; see HudTheme)
         [JsonPropertyName("panorama_theme")] public string PanoramaTheme { get; set; } = "gold";
+        // slot-machine reel shown while the dice rolls (visual only)
+        [JsonPropertyName("reel")] public ReelConfig Reel { get; set; } = new ReelConfig();
 
         // dices configuration
         [JsonPropertyName("dices")] public DicesConfig Dices { get; set; } = new DicesConfig();
@@ -158,6 +184,7 @@ namespace RollTheDice
                 Config.Reload();
                 HudTheme.BindConfig(Config);
                 Banner.BindConfig(Config);
+                Reel.BindConfig(Config);
                 // update player config
                 UpdatePlayerConfig();
                 // save config to disk
@@ -192,6 +219,7 @@ namespace RollTheDice
             Config = config;
             HudTheme.BindConfig(config);
             Banner.BindConfig(config);
+            Reel.BindConfig(config);
             Console.WriteLine(Localizer["core.config"]);
         }
 

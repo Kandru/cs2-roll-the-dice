@@ -31,6 +31,12 @@ namespace RollTheDice.Hud
                 return;
             }
 
+            // a spinning reel replaces the center message; the banner follows when it stops
+            if (Reel.TryDeferBanner(player, message))
+            {
+                return;
+            }
+
             if (_centerEnabled && !player.IsBot)
             {
                 player.PrintToCenter(message);
@@ -43,6 +49,11 @@ namespace RollTheDice.Hud
         public static void Show(CCSPlayerController player, string text)
         {
             if (player is not { IsValid: true } || !player.PawnIsAlive)
+            {
+                return;
+            }
+
+            if (Reel.TryDeferBanner(player, text))
             {
                 return;
             }
@@ -148,7 +159,7 @@ namespace RollTheDice.Hud
             int slot = viewer.Slot;
             if (_shownText.TryGetValue(slot, out string? shown)
                 && shown == text
-                && CustomHud.IsVisible(viewer))
+                && CustomHud.IsVisible(viewer, Panel))
             {
                 return;
             }
@@ -170,7 +181,7 @@ namespace RollTheDice.Hud
 
         private static void ClearPresentation(CCSPlayerController viewer)
         {
-            if (!_shownText.Remove(viewer.Slot) && !CustomHud.IsVisible(viewer))
+            if (!_shownText.Remove(viewer.Slot) && !CustomHud.IsVisible(viewer, Panel))
             {
                 return;
             }
@@ -179,7 +190,7 @@ namespace RollTheDice.Hud
             CustomHud.SetText(viewer, Panel, TextVar, string.Empty);
         }
 
-        private static CCSPlayerController? GetSpectatedOwner(CCSPlayerController viewer)
+        internal static CCSPlayerController? GetSpectatedOwner(CCSPlayerController viewer)
         {
             CCSPlayerController? From(CBasePlayerPawn? pawn)
             {

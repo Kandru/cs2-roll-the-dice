@@ -157,6 +157,17 @@ This plugin automatically creates a readable JSON configuration file. This confi
   "notify_player_via_centermsg": true,
   "notify_player_via_panorama": true,
   "panorama_theme": "gold",
+  "reel": {
+    "enabled": true,
+    "spin_seconds": 2,
+    "hold_seconds": 1.5,
+    "tick_sound": "UIPanorama.container_weapon_ticker",
+    "tones": {
+      "Bankrupt": "bad",
+      "BigTaserBattery": "good",
+      "ChangeName": "neutral"
+    }
+  },
   "dices": {
     "big_taser_battery": {
       "enabled": true,
@@ -409,6 +420,16 @@ Money it costs to roll the dice.
 ### allow_dice_after_respawn
 
 Allows players to use `!rtd` again after respawning in the same round.
+
+### reel
+
+Slot-machine reel shown in the screen centre (below the crosshair) whenever a dice is rolled: via `!rtd`, the automatic roll and `!givedice`. It is purely visual - the dice is chosen and applied exactly as before, the reel only shows the result. While it spins, the player's center message is replaced by the reel, and the banner, the chat line and `dice_sound` follow when it stops. Spectators watching the player see the reel too; bots never get one. Requires `notify_player_via_panorama` and the workshop addon.
+
+- **enabled**: Shows the reel (`false` = notifications as before).
+- **spin_seconds**: Spin duration, 1.0 - 5.0 in steps of 0.5.
+- **hold_seconds**: How long the result stays before the reel fades out, 0.5 - 5.0 in steps of 0.5.
+- **tick_sound**: Played for each row passing the win line (sound event or `sounds/...` path, empty = off).
+- **tones**: Marker per dice class shown on the reel: `good` (▲), `bad` (▼) or `neutral` (◆). Dices missing here use the built-in default.
 
 ### dices
 

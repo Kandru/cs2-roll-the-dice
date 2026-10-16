@@ -24,7 +24,7 @@ DOCKER_RUN = docker run --rm \
 
 .DEFAULT_GOAL := help
 
-.PHONY: help debug release restore clean dirs panorama preview
+.PHONY: help debug release restore clean dirs panorama panorama-gen preview
 
 help: ## Show this help
 	@echo "CS2 Roll The Dice"
@@ -54,6 +54,10 @@ clean: dirs ## Remove build artifacts
 panorama: ## Validate HUD Panorama XML and CSS
 	python3 tools/validate_panorama.py
 
+panorama-gen: ## Regenerate the reel rows (banner.xml) and reel theme rules (hud.vcss)
+	python3 tools/gen_reel_panorama.py
+
 preview: ## Serve HUD browser preview (workshop/preview)
 	@echo "Open http://127.0.0.1:8765/banner.html"
+	@echo "Open http://127.0.0.1:8765/reel.html"
 	python3 -m http.server 8765 --directory workshop/preview
