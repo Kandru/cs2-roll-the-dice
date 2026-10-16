@@ -5,19 +5,21 @@ using CounterStrikeSharp.API.Modules.Utils;
 
 namespace RollTheDice.Hud
 {
-    /// <summary>Single-panel CCSCustomHudLayout driver for the Roll The Dice banner.</summary>
+    /// <summary>CCSCustomHudLayout driver for the Roll The Dice banner and reel (one layout, per-panel visibility).</summary>
     public static class CustomHud
     {
         private const string LayoutResource =
             "panorama/layout/custom_game/rollthedice/banner.vxml_c";
 
-        private static readonly TimeSpan CloseTransmitGrace = TimeSpan.FromSeconds(1.0);
+        public static readonly TimeSpan DefaultCloseGrace = TimeSpan.FromSeconds(1.0);
 
         private static CCSCustomHudLayout? _layout;
-        private static readonly HashSet<int> _visibleSlots = [];
-        private static readonly Dictionary<int, DateTime> _closingUntil = [];
+        private static readonly Dictionary<int, HashSet<string>> _visibleBySlot = [];
+        private static readonly Dictionary<(int Slot, string Panel), DateTime> _closingUntil = [];
         private static readonly Dictionary<int, Dictionary<string, bool>> _classBySlot = [];
         private static readonly Dictionary<int, Dictionary<string, string>> _textBySlot = [];
+        private static readonly Dictionary<string, bool> _globalClasses = new(StringComparer.Ordinal);
+        private static readonly Dictionary<string, string> _globalTexts = new(StringComparer.Ordinal);
 
         public static bool IsHumanViewer(CCSPlayerController? player) =>
             player is { IsValid: true, IsBot: false, IsHLTV: false };
@@ -25,11 +27,13 @@ namespace RollTheDice.Hud
         public static bool EnsureSpawned(CCSPlayerController player) =>
             IsHumanViewer(player) && EnsureLayout();
 
-        public static bool IsVisible(CCSPlayerController player) =>
-            player is { IsValid: true } && _visibleSlots.Contains(player.Slot);
+        public static bool IsVisible(CCSPlayerController player, string panelId) =>
+            player is { IsValid: true }
+            && _visibleBySlot.TryGetValue(player.Slot, out HashSet<string>? panels)
+            && panels.Contains(panelId);
 
         public static bool HasTransmitInterest() =>
-            _visibleSlots.Count > 0 || _closingUntil.Count > 0;
+            _visibleBySlot.Count > 0 || _closingUntil.Count > 0;
 
         public static bool ShowPanel(CCSPlayerController player, string panelId)
         {
@@ -39,12 +43,12 @@ namespace RollTheDice.Hud
             }
 
             int slot = player.Slot;
-            bool wasVisible = _visibleSlots.Contains(slot);
-            _ = _visibleSlots.Add(slot);
-            _ = _closingUntil.Remove(slot);
+            bool wasVisible = IsVisible(player, panelId);
+            MarkVisible(slot, panelId, true);
+            _ = _closingUntil.Remove((slot, panelId));
             if (!SetHasClass(player, panelId, "ph-off", false))
             {
-                _ = _visibleSlots.Remove(slot);
+                MarkVisible(slot, panelId, false);
                 return false;
             }
 
@@ -58,7 +62,7 @@ namespace RollTheDice.Hud
             Server.NextFrame(() =>
             {
                 if (Utilities.GetPlayerFromSlot(slot) is { IsValid: true } live
-                    && _visibleSlots.Contains(slot))
+                    && IsVisible(live, panelId))
                 {
                     SetHasClass(live, panelId, "ph-fading", false);
                 }
@@ -66,7 +70,8 @@ namespace RollTheDice.Hud
             return true;
         }
 
-        public static void HidePanel(CCSPlayerController player, string panelId)
+        /// <summary>Fade now (<c>ph-fading</c>), collapse (<c>ph-off</c>) once <paramref name="grace"/> has passed.</summary>
+        public static void HidePanel(CCSPlayerController player, string panelId, TimeSpan? grace = null)
         {
             if (player is not { IsValid: true })
             {
@@ -74,8 +79,8 @@ namespace RollTheDice.Hud
             }
 
             SetHasClass(player, panelId, "ph-fading", true);
-            _closingUntil[player.Slot] = DateTime.UtcNow + CloseTransmitGrace;
-            _ = _visibleSlots.Remove(player.Slot);
+            _closingUntil[(player.Slot, panelId)] = DateTime.UtcNow + (grace ?? DefaultCloseGrace);
+            MarkVisible(player.Slot, panelId, false);
         }
 
         public static bool SetText(CCSPlayerController player, string panelId, string name, string value)
@@ -138,11 +143,52 @@ namespace RollTheDice.Hud
             return true;
         }
 
+        /// <summary>Same text for every viewer (GlobalLayoutState). A variable is either global or per player, never both.</summary>
+        public static bool SetGlobalText(string panelId, string name, string value)
+        {
+            string text = value ?? string.Empty;
+            string key = panelId + '\0' + name;
+            if (_globalTexts.TryGetValue(key, out string? prev) && prev == text)
+            {
+                return true;
+            }
+
+            if (_layout is not { IsValid: true } hud)
+            {
+                return false;
+            }
+
+            hud.SetDialogVariableString(panelId, name, text);
+            _globalTexts[key] = text;
+            return true;
+        }
+
+        /// <summary>Same class for every viewer (GlobalLayoutState).</summary>
+        public static bool SetGlobalClass(string panelId, string className, bool enabled)
+        {
+            string key = panelId + '\0' + className;
+            if (_globalClasses.TryGetValue(key, out bool prev) && prev == enabled)
+            {
+                return true;
+            }
+
+            if (_layout is not { IsValid: true } hud)
+            {
+                return false;
+            }
+
+            hud.SetHasClass(panelId, className, enabled);
+            _globalClasses[key] = enabled;
+            return true;
+        }
+
+        public static bool HasLayout() => _layout is { IsValid: true };
+
         public static void OnCheckTransmit(CCheckTransmitInfoList infoList)
         {
             ExpireClosing();
             if (_layout is not { IsValid: true } layout
-                || (_visibleSlots.Count == 0 && _closingUntil.Count == 0))
+                || (_visibleBySlot.Count == 0 && _closingUntil.Count == 0))
             {
                 return;
             }
@@ -156,7 +202,7 @@ namespace RollTheDice.Hud
                 }
 
                 int slot = viewer!.Slot;
-                if (_visibleSlots.Contains(slot) || _closingUntil.ContainsKey(slot))
+                if (_visibleBySlot.ContainsKey(slot) || IsClosing(slot))
                 {
                     info.TransmitEntities.Add(index);
                 }
@@ -169,6 +215,7 @@ namespace RollTheDice.Hud
 
         public static void ResetRound()
         {
+            Reel.CancelAll();
             HashSet<int> live = [];
             foreach (CCSPlayerController player in Utilities.GetPlayers())
             {
@@ -180,10 +227,11 @@ namespace RollTheDice.Hud
                 RestoreDefaults(player);
             }
 
-            PurgeOrphans(_visibleSlots, live);
+            PurgeOrphans(_visibleBySlot, live);
             PurgeOrphans(_classBySlot, live);
             PurgeOrphans(_textBySlot, live);
-            PurgeOrphans(_closingUntil, live);
+            PurgeClosing(slot => !live.Contains(slot));
+            Reel.WriteGlobalDefaults();
         }
 
         public static void ReleasePlayer(CCSPlayerController? player)
@@ -199,10 +247,9 @@ namespace RollTheDice.Hud
 
         public static void Shutdown()
         {
-            _visibleSlots.Clear();
+            _visibleBySlot.Clear();
             _closingUntil.Clear();
-            _classBySlot.Clear();
-            _textBySlot.Clear();
+            ClearCaches();
             if (_layout is { IsValid: true } layout)
             {
                 layout.AcceptInput("Kill");
@@ -219,14 +266,57 @@ namespace RollTheDice.Hud
 
             ClearSlot(player.Slot);
             Banner.WriteDefaults(player);
+            Reel.WriteDefaults(player);
         }
 
         private static void ClearSlot(int slot)
         {
-            _ = _visibleSlots.Remove(slot);
-            _ = _closingUntil.Remove(slot);
+            _ = _visibleBySlot.Remove(slot);
             _ = _classBySlot.Remove(slot);
             _ = _textBySlot.Remove(slot);
+            PurgeClosing(s => s == slot);
+        }
+
+        /// <summary>A new layout entity starts at the XML defaults for everyone: drop every cache.</summary>
+        private static void ClearCaches()
+        {
+            _classBySlot.Clear();
+            _textBySlot.Clear();
+            _globalClasses.Clear();
+            _globalTexts.Clear();
+            Reel.OnLayoutReset();
+        }
+
+        private static void MarkVisible(int slot, string panelId, bool visible)
+        {
+            if (visible)
+            {
+                if (!_visibleBySlot.TryGetValue(slot, out HashSet<string>? panels))
+                {
+                    _visibleBySlot[slot] = panels = new HashSet<string>(StringComparer.Ordinal);
+                }
+                _ = panels.Add(panelId);
+                return;
+            }
+
+            if (_visibleBySlot.TryGetValue(slot, out HashSet<string>? current)
+                && current.Remove(panelId)
+                && current.Count == 0)
+            {
+                _ = _visibleBySlot.Remove(slot);
+            }
+        }
+
+        private static bool IsClosing(int slot)
+        {
+            foreach ((int closingSlot, _) in _closingUntil.Keys)
+            {
+                if (closingSlot == slot)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         private static void ExpireClosing()
@@ -237,15 +327,15 @@ namespace RollTheDice.Hud
             }
 
             DateTime now = DateTime.UtcNow;
-            List<int>? expired = null;
-            foreach ((int slot, DateTime until) in _closingUntil)
+            List<(int Slot, string Panel)>? expired = null;
+            foreach (((int Slot, string Panel) key, DateTime until) in _closingUntil)
             {
                 if (now < until)
                 {
                     continue;
                 }
                 expired ??= [];
-                expired.Add(slot);
+                expired.Add(key);
             }
 
             if (expired == null)
@@ -253,15 +343,15 @@ namespace RollTheDice.Hud
                 return;
             }
 
-            foreach (int slot in expired)
+            foreach ((int slot, string panel) in expired)
             {
-                _ = _closingUntil.Remove(slot);
+                _ = _closingUntil.Remove((slot, panel));
                 if (Utilities.GetPlayerFromSlot(slot) is not { IsValid: true } player)
                 {
                     continue;
                 }
-                SetHasClass(player, Banner.Panel, "ph-off", true);
-                SetHasClass(player, Banner.Panel, "ph-fading", false);
+                SetHasClass(player, panel, "ph-off", true);
+                SetHasClass(player, panel, "ph-fading", false);
             }
         }
 
@@ -275,8 +365,9 @@ namespace RollTheDice.Hud
             if (_layout is { IsValid: true } stale)
             {
                 stale.AcceptInput("Kill");
-                _layout = null;
             }
+            _layout = null;
+            ClearCaches();
 
             foreach (CCSCustomHudLayout found in
                      Utilities.FindAllEntitiesByDesignerName<CCSCustomHudLayout>("custom_hud_layout"))
@@ -348,6 +439,28 @@ namespace RollTheDice.Hud
             }
         }
 
+        private static void PurgeClosing(Func<int, bool> drop)
+        {
+            List<(int Slot, string Panel)>? dead = null;
+            foreach ((int Slot, string Panel) key in _closingUntil.Keys)
+            {
+                if (!drop(key.Slot))
+                {
+                    continue;
+                }
+                dead ??= [];
+                dead.Add(key);
+            }
+            if (dead == null)
+            {
+                return;
+            }
+            foreach ((int Slot, string Panel) key in dead)
+            {
+                _closingUntil.Remove(key);
+            }
+        }
+
         private static void PurgeOrphans<T>(IDictionary<int, T> map, HashSet<int> live)
         {
             List<int>? dead = null;
@@ -367,28 +480,6 @@ namespace RollTheDice.Hud
             foreach (int slot in dead)
             {
                 map.Remove(slot);
-            }
-        }
-
-        private static void PurgeOrphans(HashSet<int> set, HashSet<int> live)
-        {
-            List<int>? dead = null;
-            foreach (int slot in set)
-            {
-                if (live.Contains(slot))
-                {
-                    continue;
-                }
-                dead ??= [];
-                dead.Add(slot);
-            }
-            if (dead == null)
-            {
-                return;
-            }
-            foreach (int slot in dead)
-            {
-                set.Remove(slot);
             }
         }
 

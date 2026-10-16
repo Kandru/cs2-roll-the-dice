@@ -47,7 +47,7 @@ namespace RollTheDice
 
             foreach (CCSPlayerController target in targets)
             {
-                (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(target, resolvedDiceName);
+                (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(target, resolvedDiceName, ReelSource.Admin);
                 if (string.IsNullOrEmpty(rolledDice))
                 {
                     continue;

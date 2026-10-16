@@ -81,7 +81,7 @@ namespace RollTheDice.Dices
             string playerMessage = Format(self.Value, data);
             if (_globalConfig.NotifyPlayerViaChatMsg)
             {
-                player.PrintToChat(_localizer["command.prefix"].Value + playerMessage);
+                SendChat(player, _localizer["command.prefix"].Value + playerMessage);
             }
             Description = playerMessage;
             Banner.Notify(player, playerMessage);
@@ -96,9 +96,18 @@ namespace RollTheDice.Dices
             }
 
             string message = Format(status.Value, data);
-            player.PrintToChat(_localizer["command.prefix"].Value + message);
+            SendChat(player, _localizer["command.prefix"].Value + message);
             Description = message;
             Banner.Notify(player, message);
+        }
+
+        // held back while the player's reel spins, so chat does not reveal the result early
+        private static void SendChat(CCSPlayerController player, string message)
+        {
+            if (!Reel.TryDeferChat(player, message))
+            {
+                player.PrintToChat(message);
+            }
         }
 
         private static string Format(string message, Dictionary<string, string> data)

@@ -36,6 +36,7 @@ namespace RollTheDice
             RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
             RegisterListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
             RegisterListener<Listeners.OnTick>(Hud.Banner.SyncViewers);
+            RegisterListener<Listeners.OnTick>(Hud.Reel.OnTick);
             RegisterListener<Listeners.CheckTransmit>(Hud.CustomHud.OnCheckTransmit);
             // print message if hot reload
             if (hotReload)
@@ -55,6 +56,7 @@ namespace RollTheDice
         {
             // reset dice rolls on unload
             DestroyModules();
+            Hud.Reel.Shutdown();
             Hud.Banner.Shutdown();
             Hud.CustomHud.Shutdown();
             // update configuration
@@ -70,6 +72,7 @@ namespace RollTheDice
             RemoveListener<Listeners.OnMapEnd>(OnMapEnd);
             RemoveListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
             RemoveListener<Listeners.OnTick>(Hud.Banner.SyncViewers);
+            RemoveListener<Listeners.OnTick>(Hud.Reel.OnTick);
             RemoveListener<Listeners.CheckTransmit>(Hud.CustomHud.OnCheckTransmit);
             Console.WriteLine(Localizer["core.unload"]);
         }
@@ -151,7 +154,7 @@ namespace RollTheDice
                             return;
                         }
                         // roll the dice
-                        (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(entry);
+                        (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(entry, source: Hud.ReelSource.Auto);
                         // check if rolledDice is null or empty
                         if (rolledDice is null or "")
                         {
@@ -181,7 +184,7 @@ namespace RollTheDice
                         && p.Pawn?.Value?.LifeState == (byte)LifeState_t.LIFE_ALIVE))
                 {
                     RemoveDiceForPlayer(entry, reason: DiceRemoveReason.NewDice);
-                    _ = RollTheDiceForPlayer(entry);
+                    _ = RollTheDiceForPlayer(entry, source: Hud.ReelSource.Auto);
                 }
                 RollTheDiceEveryXSeconds(seconds);
             });
@@ -220,6 +223,7 @@ namespace RollTheDice
 
         private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
         {
+            Hud.Reel.Cancel(@event.Userid);
             RemoveDiceForPlayer(@event.Userid, DiceRemoveReason.Death);
             // dice Remove overrides often skip Banner.Hide — force the overlay off
             Hud.Banner.Hide(@event.Userid);
@@ -229,6 +233,7 @@ namespace RollTheDice
         private HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
         {
             RemoveDiceForPlayer(@event.Userid, DiceRemoveReason.Disconnect);
+            Hud.Reel.Forget(@event.Userid);
             Hud.Banner.Release(@event.Userid);
             Hud.CustomHud.ReleasePlayer(@event.Userid);
             return HookResult.Continue;
@@ -249,6 +254,7 @@ namespace RollTheDice
         private void OnMapEnd()
         {
             DestroyModules();
+            Hud.Reel.Shutdown();
             Hud.Banner.Shutdown();
             Hud.CustomHud.Shutdown();
             // reset states
@@ -259,7 +265,7 @@ namespace RollTheDice
             _diceUsageCount.Clear();
         }
 
-        private (string?, string?) RollTheDiceForPlayer(CCSPlayerController? player, string? diceName = null)
+        private (string?, string?) RollTheDiceForPlayer(CCSPlayerController? player, string? diceName = null, Hud.ReelSource source = Hud.ReelSource.Rtd)
         {
             if (player == null || !player.IsValid || _dices.Count == 0)
             {
@@ -277,6 +283,8 @@ namespace RollTheDice
                 return (null, null);
             }
 
+            // visual only: the reel shows the dice chosen above and holds back its notifications until it stops
+            _ = Hud.Reel.Begin(player, dice.ClassName, source);
             dice.Add(player);
             _diceUsageCount.TryGetValue(dice, out int usage);
             _diceUsageCount[dice] = usage + 1;
@@ -375,6 +383,7 @@ namespace RollTheDice
             }
 
             BindModuleHandlers(register: true);
+            Hud.Reel.SetPool([.. _dices.Select(static d => d.ClassName)], Localizer);
         }
 
         private void DestroyModules()
@@ -386,6 +395,7 @@ namespace RollTheDice
             }
             _dices.Clear();
             _diceUsageCount.Clear();
+            Hud.Reel.SetPool([], Localizer);
         }
 
         private void BindModuleHandlers(bool register)
@@ -415,6 +425,11 @@ namespace RollTheDice
                 || !player.IsValid
                 || (!command && Config.Sounds.PlayOnCommandOnly)
                 || string.IsNullOrEmpty(Config.Sounds.DiceRollSound))
+            {
+                return;
+            }
+            // while the reel spins the dice sound becomes its stop sound
+            if (Hud.Reel.TryDeferSound(player, () => PlayDiceSoundForPlayer(player, rolledDice, command)))
             {
                 return;
             }

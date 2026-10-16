@@ -2,6 +2,7 @@
 """Validate the Roll The Dice Panorama addon (workshop/content/panorama)."""
 from __future__ import annotations
 
+import importlib.util
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -15,9 +16,12 @@ PREVIEW = ROOT / "workshop" / "preview"
 HUD_VCSS = STYLES / "hud.vcss"
 KIT_CSS = PREVIEW / "kit.css"
 BANNER_HTML = PREVIEW / "banner.html"
+REEL_HTML = PREVIEW / "reel.html"
 BANNER_CS = ROOT / "src" / "Hud" / "Banner.cs"
 CUSTOM_HUD_CS = ROOT / "src" / "Hud" / "CustomHud.cs"
+REEL_CS = ROOT / "src" / "Hud" / "Reel.cs"
 THEME_CS = ROOT / "src" / "Hud" / "HudTheme.cs"
+GEN_REEL = ROOT / "tools" / "gen_reel_panorama.py"
 
 # name -> accent hex (rainbow order; keep in sync with HudTheme / hud.vcss).
 THEMES: list[tuple[str, str]] = [
@@ -63,6 +67,9 @@ PANEL_ID_RE = re.compile(r'\bid="([^"]+)"')
 CS_PANEL_RE = re.compile(r'Panel\s*=\s*"([^"]+)"')
 CS_TEXT_VAR_RE = re.compile(r'TextVar\s*=\s*"([^"]+)"')
 CS_SET_TEXT_RE = re.compile(r'SetText\([^,]+,\s*[^,]+,\s*"([^"]+)"')
+CS_VAR_CONST_RE = re.compile(r'const\s+string\s+\w+Var\s*=\s*"([^"]+)"')
+CS_INT_CONST_RE = r"const\s+int\s+{name}\s*=\s*(\d+)\s*;"
+CS_STRING_CONST_RE = r'const\s+string\s+{name}\s*=\s*"([^"]+)"'
 THEME_BAR_RE = re.compile(
     r"\.theme-([a-z]+)\s+\.ph-bar\s*\{\s*background(?:-color)?\s*:\s*(#[0-9a-fA-F]{6})\s*;\s*\}"
 )
@@ -103,11 +110,13 @@ def check_themes() -> None:
     expect_theme_bars(THEME_BAR_RE.findall(css), "hud.vcss")
     expect_theme_bars(THEME_BAR_RE.findall(KIT_CSS.read_text(encoding="utf-8")), "kit.css")
 
-    html = BANNER_HTML.read_text(encoding="utf-8")
-    match = THEMES_JS_RE.search(html)
-    if not match:
-        fail("banner.html: missing const THEMES = { ... }")
-    expect_theme_bars(THEMES_JS_ENTRY_RE.findall(match.group(1)), "banner.html THEMES")
+    for preview in (BANNER_HTML, REEL_HTML):
+        if not preview.is_file():
+            fail(f"missing {preview}")
+        match = THEMES_JS_RE.search(preview.read_text(encoding="utf-8"))
+        if not match:
+            fail(f"{preview.name}: missing const THEMES = {{ ... }}")
+        expect_theme_bars(THEMES_JS_ENTRY_RE.findall(match.group(1)), f"{preview.name} THEMES")
 
     theme_cs = THEME_CS.read_text(encoding="utf-8")
     all_match = HUD_THEME_ALL_RE.search(theme_cs)
@@ -116,6 +125,45 @@ def check_themes() -> None:
     found = HUD_THEME_NAME_RE.findall(all_match.group(1))
     if found != THEME_NAMES:
         fail(f"HudTheme.cs All must match palette ({', '.join(THEME_NAMES)})")
+
+
+def cs_const(source: str, pattern: str, name: str, label: str) -> str:
+    match = re.search(pattern.format(name=name), source)
+    if not match:
+        fail(f"{label}: missing const {name}")
+    return match.group(1)
+
+
+def load_generator():
+    sys.dont_write_bytecode = True
+    spec = importlib.util.spec_from_file_location("gen_reel_panorama", GEN_REEL)
+    if spec is None or spec.loader is None:
+        fail(f"cannot load {GEN_REEL}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def reel_contract() -> tuple[set[str], set[str]]:
+    """Expand the Reel.cs row pool into panel ids and dialog vars; check it matches the generator."""
+    source = REEL_CS.read_text(encoding="utf-8")
+    rows = int(cs_const(source, CS_INT_CONST_RE, "RowCount", "Reel.cs"))
+    win = int(cs_const(source, CS_INT_CONST_RE, "WinRow", "Reel.cs"))
+    row_prefix = cs_const(source, CS_STRING_CONST_RE, "RowIdPrefix", "Reel.cs")
+    var_prefix = cs_const(source, CS_STRING_CONST_RE, "FillerVarPrefix", "Reel.cs")
+
+    gen = load_generator()
+    if (rows, win, row_prefix, var_prefix) != (gen.ROW_COUNT, gen.WIN_ROW, gen.ROW_ID_PREFIX, gen.FILLER_VAR_PREFIX):
+        fail("Reel.cs RowCount/WinRow/RowIdPrefix/FillerVarPrefix differ from tools/gen_reel_panorama.py")
+    if [name for name, _ in gen.THEMES] != THEME_NAMES or [a for _, a in gen.THEMES] != [a for _, a in THEMES]:
+        fail("tools/gen_reel_panorama.py THEMES must match the palette")
+    for path, text in gen.render().items():
+        if path.read_text(encoding="utf-8") != text:
+            fail(f"{path.name}: generated reel block out of date - run tools/gen_reel_panorama.py")
+
+    ids = {f"{row_prefix}{i}" for i in range(rows) if i != win}
+    variables = {f"{var_prefix}{i}" for i in range(rows) if i != win}
+    return ids, variables
 
 
 def main() -> None:
@@ -151,9 +199,15 @@ def main() -> None:
                 )
             xml_vars.update(VAR_RE.findall(value))
 
-    cs_text = BANNER_CS.read_text(encoding="utf-8") + "\n" + CUSTOM_HUD_CS.read_text(encoding="utf-8")
-    cs_panels = set(CS_PANEL_RE.findall(cs_text))
-    cs_vars = set(CS_TEXT_VAR_RE.findall(cs_text)) | set(CS_SET_TEXT_RE.findall(cs_text))
+    cs_text = "\n".join(p.read_text(encoding="utf-8") for p in (BANNER_CS, CUSTOM_HUD_CS, REEL_CS))
+    reel_ids, reel_vars = reel_contract()
+    cs_panels = set(CS_PANEL_RE.findall(cs_text)) | reel_ids
+    cs_vars = (
+        set(CS_TEXT_VAR_RE.findall(cs_text))
+        | set(CS_SET_TEXT_RE.findall(cs_text))
+        | set(CS_VAR_CONST_RE.findall(cs_text))
+        | reel_vars
+    )
 
     missing_panels = cs_panels - xml_ids
     if missing_panels:

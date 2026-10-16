@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Roll The Dice – Walzen-Demo</title>
+<link rel="stylesheet" href="kit.css" />
+<style>
+/* =====================================================================
+   Reel (Walze) – browser mirror of the planned reel_v1.xml / reel_v1.vcss.
+   Browser approximation only - the game is authoritative.
+
+   The reel itself only uses effects Panorama supports (RULESET §5.1):
+   linear gradients, borders, box-shadow, opacity, translateY, rotateZ,
+   scale3d, overflow clip, @keyframes, transitions. Browser stand-ins:
+   - flex       -> flow-children: right
+   - var(--*)   -> one generated rule per theme-* / tone-* class
+   - clip-path  -> clip: rect()
+   - two keyframe names (rr-spin-a/-b): a browser only restarts an
+     animation when its name changes; Panorama alternates replay-0/-1.
+   No rotateX/perspective in Panorama: the drum look is faked with
+   shade/gloss overlays above the strip.
+   ===================================================================== */
+
+.RrScreen { position: absolute; inset: 0; z-index: 100; pointer-events: none; }
+
+/* Card: centred, below the crosshair (Panorama: vertical-align middle + translateY). */
+.RrCard {
+  position: absolute; left: 0; right: 0; top: 50%; margin: 0 auto;
+  width: 380px;
+  opacity: 1;
+  transform: translateY( 120px );
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+.RrCard.is-fading {
+  opacity: 0;
+  transform: translateY( 132px );
+  transition: opacity 0.18s ease-in, transform 0.18s ease-in;
+}
+.RrCard.is-off { visibility: hidden; opacity: 0; transition: none; }
+
+.RrContent { position: relative; z-index: 2; padding: 0 12px 12px 12px; }
+
+.RrHead { height: 36px; display: flex; align-items: center; justify-content: space-between; padding: 0 2px 0 6px; }
+.RrTitle { font-size: 15px; font-weight: 700; letter-spacing: 1.6px; text-transform: uppercase; color: #f5f7fa; }
+.RrSource { font-size: 14px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #a3acb6; }
+.RrCard.is-stopped .RrTitle { color: var(--accent-light); }
+
+/* Frame = arrows + window */
+.RrFrame { position: relative; height: 132px; padding: 0 14px; }
+.RrWindow { position: relative; height: 132px; overflow: hidden; border-radius: 3px; background: #080b0f; }
+
+/* Strip: 22-row pool, winner always in row 20 -> one fixed keyframe distance. */
+.RrStrip { position: absolute; left: 0; top: 0; width: 100%; transform: translateY( 0px ); }
+.RrStrip.replay-0, .RrStrip.replay-1 { animation-duration: 2s; animation-timing-function: ease-out; animation-fill-mode: forwards; }
+.RrStrip.replay-0 { animation-name: rr-spin-a; }
+.RrStrip.replay-1 { animation-name: rr-spin-b; }
+.RrStrip.spin-10 { animation-duration: 1.0s; }
+.RrStrip.spin-15 { animation-duration: 1.5s; }
+.RrStrip.spin-20 { animation-duration: 2.0s; }
+.RrStrip.spin-25 { animation-duration: 2.5s; }
+.RrStrip.spin-30 { animation-duration: 3.0s; }
+.RrStrip.spin-35 { animation-duration: 3.5s; }
+.RrStrip.spin-40 { animation-duration: 4.0s; }
+.RrStrip.spin-45 { animation-duration: 4.5s; }
+.RrStrip.spin-50 { animation-duration: 5.0s; }
+
+/* 19 rows (836px) + 14px overshoot, then spring back onto row 20. */
+@keyframes rr-spin-a {
+  0%   { transform: translateY( 0px ); }
+  86%  { transform: translateY( -850px ); }
+  100% { transform: translateY( -836px ); }
+}
+@keyframes rr-spin-b {
+  0%   { transform: translateY( 0px ); }
+  86%  { transform: translateY( -850px ); }
+  100% { transform: translateY( -836px ); }
+}
+
+.RrRow { position: relative; height: 44px; display: flex; align-items: center; }
+.RrStripe { position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; border-radius: 2px; background: var(--tone); }
+/* Tone shape (no font glyph): rotated square clipped to ▲ (good), ▼ (bad) or a small ◆ (neutral). */
+.RrSym { width: 35px; height: 44px; display: flex; align-items: center; justify-content: center; }
+.RrSymBox { position: relative; width: 17px; height: 9px; overflow: hidden; }
+.RrSymTip { position: absolute; left: 5px; top: 1px; width: 6px; height: 6px; background: var(--tone); transform: rotateZ( 45deg ); }
+.tone-good .RrSymTip { left: 2px; top: 3px; width: 12px; height: 12px; }
+.tone-bad .RrSymTip  { left: 2px; top: -6px; width: 12px; height: 12px; }
+.RrName {
+  flex: 1; padding-right: 14px;
+  font-size: 16px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #e8eef4;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.tone-good    { --tone: #9ccf4f; }
+.tone-bad     { --tone: #e05a5a; }
+.tone-neutral { --tone: #5aa9e6; }
+
+/* Drum illusion: overlays above the strip (z-order = sibling order). */
+.RrShadeTop { position: absolute; left: 0; right: 0; top: 0; height: 50px; background: linear-gradient( #000000eb, #00000000 ); }
+.RrShadeBot { position: absolute; left: 0; right: 0; bottom: 0; height: 50px; background: linear-gradient( #00000000, #000000eb ); }
+.RrGloss { position: absolute; left: 0; right: 0; top: 0; height: 40px; background: linear-gradient( #ffffff12, #ffffff00 ); }
+.RrSideL { position: absolute; left: 0; top: 0; bottom: 0; width: 16px; background: linear-gradient( 90deg, #00000080, #00000000 ); }
+.RrSideR { position: absolute; right: 0; top: 0; bottom: 0; width: 16px; background: linear-gradient( 270deg, #00000080, #00000000 ); }
+.RrWinLine {
+  position: absolute; left: 0; right: 0; top: 44px; height: 44px;
+  border-top: 1px solid var(--accent-aa); border-bottom: 1px solid var(--accent-aa);
+  background: var(--accent-14);
+  transition: background-color 0.25s ease-out, box-shadow 0.25s ease-out;
+}
+.RrCard.is-stopped .RrWinLine { background: var(--accent-33); box-shadow: 0 0 18px var(--accent-55); }
+.RrRim { position: absolute; inset: 0; border: 1px solid var(--accent-66); border-radius: 3px; }
+
+/* Arrows: rotated square, half clipped (overflow clip + rotateZ). */
+.RrArrow { position: absolute; top: 57px; width: 10px; height: 18px; overflow: hidden; }
+.RrArrowL { left: 2px; }
+.RrArrowR { right: 2px; }
+.RrArrowTip { position: absolute; top: 2.5px; width: 13px; height: 13px; background: var(--accent); transform: rotateZ( 45deg ); }
+.RrArrowL .RrArrowTip { left: -6.5px; }
+.RrArrowR .RrArrowTip { left: 3.5px; }
+.RrCard.is-stopped .RrArrowL { animation: rr-nudge-l 0.35s ease-out; }
+.RrCard.is-stopped .RrArrowR { animation: rr-nudge-r 0.35s ease-out; }
+@keyframes rr-nudge-l { 0% { transform: translateX( 0px ); } 40% { transform: translateX( 4px ); } 100% { transform: translateX( 0px ); } }
+@keyframes rr-nudge-r { 0% { transform: translateX( 0px ); } 40% { transform: translateX( -4px ); } 100% { transform: translateX( 0px ); } }
+
+/* Winner pop after the stop (row 20 is authored with RrWinRow). */
+.RrCard.is-stopped .RrWinRow { animation: rr-pop 0.35s ease-out; }
+.RrCard.is-stopped .RrWinRow .RrName { color: #ffffff; text-shadow: 0 0 10px var(--accent-aa); }
+@keyframes rr-pop { 0% { transform: scale3d( 1, 1, 1 ); } 40% { transform: scale3d( 1.06, 1.06, 1 ); } 100% { transform: scale3d( 1, 1, 1 ); } }
+
+/* Hold-time drain (span pattern, RULESET §12.1): hold-N + is-running. */
+.RrDrainTrack { height: 2px; margin: 8px 14px 0 14px; background: #ffffff12; border-radius: 1px; overflow: hidden; opacity: 0; transition: opacity 0.15s ease-out; }
+.RrCard.is-stopped .RrDrainTrack { opacity: 1; }
+
+/* Credit line (static text; in Panorama a global dialog var written once at map start). */
+.RrFooter { display: flex; justify-content: flex-end; padding: 6px 14px 0 14px; }
+.RrCredit { font-size: 14px; font-weight: 600; letter-spacing: 0.6px; color: #a3acb6; }
+.RrDrain { width: 100%; height: 100%; background: var(--accent); clip-path: inset( 0 0 0 0 ); transition: clip-path 0s linear; }
+.RrDrain.hold-05 { transition-duration: 0.5s; } .RrDrain.hold-10 { transition-duration: 1.0s; }
+.RrDrain.hold-15 { transition-duration: 1.5s; } .RrDrain.hold-20 { transition-duration: 2.0s; }
+.RrDrain.hold-25 { transition-duration: 2.5s; } .RrDrain.hold-30 { transition-duration: 3.0s; }
+.RrDrain.hold-35 { transition-duration: 3.5s; } .RrDrain.hold-40 { transition-duration: 4.0s; }
+.RrDrain.hold-45 { transition-duration: 4.5s; } .RrDrain.hold-50 { transition-duration: 5.0s; }
+.RrDrain.is-running { clip-path: inset( 0 100% 0 0 ); }
+
+/* ---------- preview-only chrome ---------- */
+.Crosshair { position: absolute; left: 50%; top: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px; z-index: 90; pointer-events: none; }
+.Crosshair::before, .Crosshair::after { content: ""; position: absolute; background: #6fdc78; }
+.Crosshair::before { left: 9px; top: 0; width: 2px; height: 20px; }
+.Crosshair::after { top: 9px; left: 0; width: 20px; height: 2px; }
+
+.CenterMsg {
+  position: absolute; left: 0; right: 0; top: 50%; margin-top: 150px; text-align: center; z-index: 95;
+  font-size: 20px; font-weight: 700; color: #ffffff; text-shadow: 0 1px 3px #000; opacity: 0; transition: opacity 0.2s; pointer-events: none;
+}
+.CenterMsg.on { opacity: 1; }
+
+.Chat { position: absolute; left: 340px; bottom: 20px; width: 440px; z-index: 150; pointer-events: none; display: flex; flex-direction: column; gap: 3px; }
+.ChatLine { font-size: 14px; color: #e8eef4; text-shadow: 0 1px 2px #000; background: #0b0f1488; padding: 3px 8px; border-radius: 2px; }
+.ChatLine .p { color: #b07cff; }
+.ChatLine .g { color: #6fdc78; }
+
+/* Page layout: a 1920x1080 game screen scaled to the page width (Panorama
+   scales by height/1080), panels below it. */
+body { overflow-y: auto; }
+.stage { width: auto; height: auto; min-height: 100vh; overflow: visible; padding: 16px; }
+.ScreenFit { position: relative; width: 100%; max-width: 1920px; margin: 0 auto; overflow: hidden; border: 1px solid #ffffff14; border-radius: 3px; }
+.Screen { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; overflow: hidden; }
+.Screen .Chat { left: 24px; bottom: 240px; }
+.MockHud { position: absolute; bottom: 20px; height: 56px; padding: 0 18px; display: flex; align-items: center; gap: 14px; background: #0b0f1499; border-radius: 3px; font-size: 30px; font-weight: 700; color: #f5f7fa; pointer-events: none; }
+.MockHud.l { left: 24px; } .MockHud.r { right: 24px; }
+.MockHud small { font-size: 16px; color: #a3acb6; letter-spacing: 1px; }
+.Panels { display: grid; grid-template-columns: minmax( 260px, 1fr ) minmax( 300px, 1.3fr ) minmax( 300px, 1.3fr ); gap: 12px; max-width: 1920px; margin: 12px auto 0 auto; align-items: start; }
+@media ( max-width: 980px ) { .Panels { grid-template-columns: 1fr; } }
+.Panels .preview-controls { position: static; max-width: none; }
+.ColStack { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.preview-section { font-size: 11px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: #6b737c; margin-top: 6px; }
+.preview-row { display: flex; gap: 6px; align-items: center; font-size: 13px; color: #c8d0d8; }
+.preview-row select, .preview-row input[type=range] { flex: 1; min-width: 0; }
+.preview-row select { background: #0b0f14; color: #e8eef4; border: 1px solid #ffffff22; border-radius: 3px; padding: 6px; font: inherit; }
+.preview-row output { width: 40px; text-align: right; color: var(--preview-accent); font-weight: 700; }
+.preview-row input[type=range] { accent-color: var(--preview-accent); }
+.preview-row input[type=checkbox] { accent-color: var(--preview-accent); width: 16px; height: 16px; }
+.preview-controls button[data-mode].small { padding: 6px 10px; }
+
+.Box { background: #0b0f14e6; border: 1px solid #ffffff14; border-radius: 3px; padding: 10px 12px; font-size: 12px; color: #c8d0d8; }
+.Box h3 { font-size: 12px; letter-spacing: 1.4px; text-transform: uppercase; color: #9aa2ac; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.Box h3 span { color: var(--preview-accent); }
+.Log { height: 300px; overflow-y: auto; font-family: Consolas, monospace; font-size: 11.5px; line-height: 1.5; }
+.Log div { white-space: pre-wrap; }
+.Log .t { color: #6b737c; }
+.Log .sep { border-top: 1px solid #ffffff14; margin-top: 4px; padding-top: 4px; }
+.ClassList { height: 420px; overflow-y: auto; margin-top: 6px; }
+.ClassItem { display: flex; align-items: center; gap: 8px; padding: 3px 0; border-bottom: 1px solid #ffffff08; }
+.ClassItem .nm { flex: 1; min-width: 0; font-size: 13px; color: #e8eef4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ClassItem .nm small { color: #6b737c; font-size: 10.5px; margin-left: 4px; }
+.ToneBtn { width: 24px; height: 22px; border: 1px solid #ffffff1c; border-radius: 3px; background: #ffffff08; color: #6b737c; cursor: pointer; font-size: 11px; }
+.ToneBtn.on.tone-good    { background: #9ccf4f33; border-color: #9ccf4f; color: #9ccf4f; }
+.ToneBtn.on.tone-bad     { background: #e05a5a33; border-color: #e05a5a; color: #e05a5a; }
+.ToneBtn.on.tone-neutral { background: #5aa9e633; border-color: #5aa9e6; color: #5aa9e6; }
+.MiniBtn { font: 700 11px sans-serif; letter-spacing: 0.8px; text-transform: uppercase; padding: 4px 8px; border: 1px solid #ffffff22; border-radius: 3px; background: #ffffff0d; color: #c8d0d8; cursor: pointer; }
+.MiniBtn:hover { background: #ffffff1c; }
+.Export { display: none; margin-top: 6px; max-height: 160px; overflow: auto; font-family: Consolas, monospace; font-size: 11px; background: #000000; padding: 6px; border-radius: 3px; white-space: pre; }
+.Export.on { display: block; }
+.Stats { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 12px; }
+.Stats b { color: #e8eef4; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="stage" data-theme="gold">
+<div class="ScreenFit" id="screen-fit">
+<div class="Screen" id="screen">
+  <div class="game-bg" aria-hidden="true"></div>
+  <div class="MockHud l" aria-hidden="true">100 <small>HP</small> 100 <small>ARMOR</small></div>
+  <div class="MockHud r" aria-hidden="true">30 <small>/ 90</small></div>
+
+  <div class="player-list" aria-hidden="true">
+    <div class="player-chip t"></div><div class="player-chip t"></div><div class="player-chip t dead"></div><div class="player-chip t"></div><div class="player-chip t"></div>
+    <div style="width:24px"></div>
+    <div class="player-chip ct"></div><div class="player-chip ct dead"></div><div class="player-chip ct"></div><div class="player-chip ct"></div><div class="player-chip ct"></div>
+  </div>
+
+  <div class="Crosshair" aria-hidden="true"></div>
+  <div class="CenterMsg" id="center-msg"></div>
+
+  <!-- ===== Banner (mirrors banner.xml) ===== -->
+  <div class="HudScreen BannerScreen">
+    <div id="Banner" class="Banner ph-card ph-off theme-gold">
+      <div class="ph-bg"></div>
+      <div class="ph-bar ph-bar-left"></div>
+      <div class="BannerContent">
+        <span class="ph-title additive stratum-bold-tf text-align-center" id="dice"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Reel (mirrors planned reel_v1.xml) ===== -->
+  <div class="RrScreen">
+    <div id="rr-root" class="RrCard is-off">
+      <div class="ph-bg"></div>
+      <div class="ph-bar ph-bar-left"></div>
+      <div class="RrContent">
+        <div class="RrHead">
+          <span class="RrTitle" id="rr-title"></span>
+          <span class="RrSource" id="rr-source"></span>
+        </div>
+        <div class="RrFrame">
+          <div class="RrWindow">
+            <div class="RrStrip spin-20" id="rr-strip"></div>
+            <div class="RrWinLine"></div>
+            <div class="RrShadeTop"></div>
+            <div class="RrShadeBot"></div>
+            <div class="RrSideL"></div>
+            <div class="RrSideR"></div>
+            <div class="RrGloss"></div>
+            <div class="RrRim"></div>
+          </div>
+          <div class="RrArrow RrArrowL"><div class="RrArrowTip"></div></div>
+          <div class="RrArrow RrArrowR"><div class="RrArrowTip"></div></div>
+        </div>
+        <div class="RrDrainTrack"><div class="RrDrain" id="rr-drain"></div></div>
+        <div class="RrFooter"><span class="RrCredit" id="rr-credit">made by: kandru.net</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="Chat" id="chat"></div>
+</div>
+</div>
+
+<div class="Panels">
+  <!-- ===== Controls (preview only) ===== -->
+  <div class="Box">
+  <div class="preview-controls">
+    <div class="preview-note">
+      Walzen-Demo für <code>!rtd</code>. Rein visuell: das Ergebnis steht vor dem Spin fest
+      (<code>RollTheDiceForPlayer</code>), die Walze zeigt es nur an. Alles an der Walze nutzt nur Mittel, die Panorama kann.
+      Das Spielbild oben ist 1920×1080, maßstabsgetreu skaliert.
+    </div>
+
+    <div class="preview-section">Auslöser</div>
+    <button type="button" data-mode="rtd">!rtd würfeln</button>
+    <button type="button" data-mode="round">Rundenstart (Auto-Roll)</button>
+    <div class="preview-row">
+      <select id="give-select" aria-label="Effekt für !givedice"></select>
+      <button type="button" data-mode="give" class="small">!givedice</button>
+    </div>
+
+    <div class="preview-section">Abbruch</div>
+    <button type="button" data-mode="death">Spieler stirbt</button>
+
+    <div class="preview-section">Config (Vorschlag)</div>
+    <label class="preview-row"><input type="checkbox" id="cfg-enabled" checked /> Walze aktiv (<code>reel.enabled</code>)</label>
+    <label class="preview-row">Spin <input type="range" id="cfg-spin" min="1" max="5" step="0.5" value="2" /><output id="out-spin">2.0s</output></label>
+    <label class="preview-row">Halten <input type="range" id="cfg-hold" min="0.5" max="5" step="0.5" value="1.5" /><output id="out-hold">1.5s</output></label>
+
+    <div class="preview-section">Vorschau</div>
+    <label class="preview-row"><input type="checkbox" id="cfg-sound" checked /> Sound (Browser-Ersatzklänge)</label>
+    <label class="preview-row">Sprache
+      <select id="cfg-lang"><option value="de">Deutsch</option><option value="en">English</option></select>
+    </label>
+
+    <div id="preview-themes" class="preview-themes"></div>
+  </div>
+  </div>
+
+  <div class="ColStack">
+    <div class="Box">
+      <h3>Letzter Roll <span id="stat-dice">–</span></h3>
+      <div class="Stats">
+        <span>Netzwerk-Writes</span><b id="stat-writes">–</b>
+        <span>Tick-Timer</span><b id="stat-ticks">–</b>
+        <span>Root-Klassen</span><b id="stat-classes">–</b>
+      </div>
+    </div>
+    <div class="Box">
+      <h3>Server-Ablauf <button type="button" class="MiniBtn" id="log-clear">Leeren</button></h3>
+      <div class="Log" id="log"></div>
+    </div>
+  </div>
+    <div class="Box">
+      <h3>Einstufung prüfen <span id="tone-count"></span></h3>
+      <div class="preview-note">▲ gut · ▼ schlecht · ◆ neutral/chaotisch. Klick ändert die Einstufung (später per Config überschreibbar).</div>
+      <div style="display:flex; gap:6px; margin-top:6px;">
+        <button type="button" class="MiniBtn" id="export-toggle">Config-JSON</button>
+        <button type="button" class="MiniBtn" id="tone-reset">Zurücksetzen</button>
+      </div>
+      <div class="Export" id="export"></div>
+      <div class="ClassList" id="class-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------------------------------------------------------------
+   Dice data. reel = short label for the strip (proposed new lang keys
+   dice_<Class>_reel), full = existing dice_<Class>_name with sample values
+   (used for banner/chat after the stop).
+   --------------------------------------------------------------------- */
+const DICE = [
+  // key,                tone,      reel de,               reel en,              full de,                          full en
+  ['Bankrupt',           'bad',     'Pleite',              'Bankrupt',           'Pleite',                         'Bankrupt'],
+  ['BigTaserBattery',    'good',    'Taser-Akku',          'Taser Battery',      '5x Taser-Schüsse',               '5x taser shots'],
+  ['ChangeName',         'neutral', 'Neuer Name',          'New Name',           'Neuer Name: Bot Kevin',          'Changed name to Bot Kevin'],
+  ['ChangePlayerModel',  'good',    'Verkleidung',         'Enemy Disguise',     'Du siehst wie deine Gegner aus', 'You look like your enemies'],
+  ['ChangePlayerSize',   'neutral', 'Spielergröße',        'Player Size',        'Spieler-Größe: 0.6x',            'Player Size: 0.6x'],
+  ['ChickenLeader',      'neutral', 'Hühnerflüsterer',     'Chicken Leader',     'Hühnerflüsterer',                'Chicken leader'],
+  ['Cloak',              'good',    'Tarnmantel',          'Cloak',              'Tarnmantel',                     'You got a cloak, stand still'],
+  ['Cutter',             'good',    'Sofort-Messer',       'Cutter',             'Sofortiger Messerangriff',       'Cutter'],
+  ['DamageMultiplier',   'neutral', 'Schadens-Faktor',     'Damage Multiplier',  '1.5x Schaden!',                  '1.5x damage multiplier!'],
+  ['Deaf',               'bad',     'Taub',                'Deaf',               'Taub',                           'Deaf'],
+  ['DecreaseHealth',     'bad',     'Weniger HP',          'Less Health',        'Gesundheit verringert um 30',    'Decreased health by 30!'],
+  ['DecreaseMoney',      'bad',     'Weniger Geld',        'Less Money',         'Geld verringert um 800$',        'Decreased money by $800!'],
+  ['DisguiseAsProp',     'good',    'Gegenstand',          'Prop Disguise',      'Versteckt als Gegenstand',       'Disguise as prop'],
+  ['FastMapAction',      'good',    'Blitz-Aktion',        'Fast Map Action',    'Bombe sofort legen',             'Instant plant'],
+  ['FogOfWar',           'bad',     'Nebel',               'Fog of War',         'Nebel des Krieges',              'Fog of War'],
+  ['GiveHealthShot',     'good',    'Heilspritze',         'Health Shot',        '2x Gesundheitsspritze(n)',       '2x health shot(s)'],
+  ['Glow',               'bad',     'Leuchten',            'Glow',               'Du leuchtest',                   'You are glowing'],
+  ['HeadshotOnly',       'bad',     'Nur Kopfschuss',      'Headshot Only',      'Nur Kopfschüsse erlaubt!',       'Headshot Only!'],
+  ['HighGravity',        'bad',     'Hohe Gravitation',    'High Gravity',       'Hohe Gravitation',               'High gravity'],
+  ['IncreaseHealth',     'good',    'Mehr HP',             'More Health',        'Gesundheit erhöht um 50',        'Increased health by 50!'],
+  ['IncreaseMoney',      'good',    'Mehr Geld',           'More Money',         'Geld erhöht um 1000$',           'Increased money by $1000!'],
+  ['IncreaseSpeed',      'good',    'Tempo',               'Speed Boost',        'Schneller um 75%!',              'Speed increase by 75%!'],
+  ['InfiniteAmmo',       'good',    'Endlos-Munition',     'Infinite Ammo',      'Endlose Munition',               'Infinite Ammo'],
+  ['Invisible',          'good',    'Unsichtbar',          'Invisible',          '(Fast) unsichtbar',              '(Almost) invisible'],
+  ['Jammer',             'bad',     'Störung',             'Jammer',             'Störung',                        'Jammer'],
+  ['LongerFlashes',      'good',    'Lange Flashes',       'Longer Flashes',     'Blendende Aussicht',             'Longer Flashes'],
+  ['LoudSteps',          'bad',     'Laute Schritte',      'Loud Steps',         'Laute Schritte',                 'Loud Steps'],
+  ['LowGravity',         'good',    'Geringe Schwerkraft', 'Low Gravity',        'Geringe Schwerkraft',            'Low gravity'],
+  ['MakeFakeGunSounds',  'neutral', 'Schießstand',         'Shooting Range',     'Schießstand',                    'Shooting range'],
+  ['MakeHostageSounds',  'bad',     'Maulige Geisel',      'Grumpy Hostage',     'Maulige Geisel',                 'Grumpy hostage'],
+  ['Millionaire',        'good',    'Millionär',           'Millionaire',        'Millionär',                      'Millionaire'],
+  ['NoExplosives',       'bad',     'Gemüse-Granaten',     'No Explosives',      'keine Granaten',                 'no explosives'],
+  ['NoHeadshot',         'bad',     'Kein Kopfschuss',     'No Headshots',       'KEINE Kopfschüsse!',             'NO Headshots!'],
+  ['NoRecoil',           'good',    'Kein Rückstoß',       'No Recoil',          'Kein Rückstoß',                  'No recoil'],
+  ['OneHP',              'bad',     '1 HP',                '1 HP',               'Nur noch 1 HP',                  '1 HP left'],
+  ['PlayAsChicken',      'neutral', 'Großes Huhn',         'Big Chicken',        'Großes Huhn',                    'Big chicken'],
+  ['PlayerHealthBar',    'good',    'Gegner-HP',           'Enemy Health Bar',   'Gesundheit des Gegners',         'Enemy health bar'],
+  ['RandomWeapon',       'neutral', 'Zufallswaffe',        'Random Weapon',      'Zufällige Waffen!',              'Random Weapon(s)'],
+  ['ResetOnReload',      'bad',     'Reset beim Nachladen','Reset On Reload',    'Respawn beim Neuladen',          'Reset On Reload'],
+  ['Respawn',            'good',    'Respawn',             'Respawn',            'Respawn nach deinem Tod',        'Respawn after death'],
+  ['ReturnToSender',     'good',    'Zurück zum Absender', 'Return To Sender',   'Zurück zum Absender',            'Return To Sender'],
+  ['StripWeapons',       'bad',     'Entwaffnet',          'Disarmed',           'Alle Waffen verloren',           'Lost all weapons'],
+  ['Suicide',            'bad',     'Selbstmord',          'Suicide',            'Selbstmord',                     'Suicide'],
+  ['ThirdPersonView',    'neutral', 'Third Person',        'Third Person',       'Externe Ansicht',                'Third Person Mode'],
+  ['Vampire',            'good',    'Vampir',              'Vampire',            'Vampir',                         'Vampire'],
+  ['WeirdGrenades',      'neutral', 'Komische Granaten',   'Weird Grenades',     'Komische Granaten!',             'Weird Grenades!'],
+  ['ZoomIn',             'neutral', 'Gezoomt',             'Zoom In',            'Gezoomt',                        'Zoom In'],
+  ['ZoomOut',            'neutral', 'Überblick',           'Zoom Out',           'Überblick',                      'Zoom Out'],
+].map(([key, tone, reelDe, reelEn, fullDe, fullEn]) => ({ key, tone, reel: { de: reelDe, en: reelEn }, full: { de: fullDe, en: fullEn } }));
+
+const T = {
+  de: { rolling: 'Würfel rollt …', rolled: 'Gewürfelt!', rtd: '!rtd', round: 'Auto', admin: 'Admin', prefix: '[WürfelSpiel]', chat: 'Du hast gewürfelt:' },
+  en: { rolling: 'Rolling …', rolled: 'You rolled', rtd: '!rtd', round: 'Auto', admin: 'Admin', prefix: '[RollTheDice]', chat: 'You rolled:' },
+};
+
+const THEMES = {
+  red: '#e05a5a', coral: '#ff7a59', orange: '#ff8a3d', copper: '#e08a5a', gold: '#f0a531', t: '#eabe54',
+  lime: '#c6f04a', green: '#6fdc78', teal: '#2ec9a6', cyan: '#3ee0f0', blue: '#5b8cff', ct: '#96c8fa',
+  purple: '#b07cff', magenta: '#e85dff', pink: '#ff6b9a', silver: '#c9d2dc',
+};
+
+const TONES = ['tone-good', 'tone-bad', 'tone-neutral'];
+const SYM = { good: '▲', bad: '▼', neutral: '◆' };
+
+/* Layout contract (would live in ReelIds.cs). */
+const ROWS = 22;          // pool size
+const WIN = 20;           // winner row index (fixed)
+const ROW_H = 44;
+const OVERSHOOT_PX = 850; // keyframe 86%
+const SEG = 0.86;
+const OPEN_DELAY_MS = 200;  // RULESET §1.3: decouple open from the chat command
+const FADE_OUT_MS = 180;
+const TICK_MIN_GAP = 0.04;  // s between two tick sounds
+const SERVER_TICK = 1 / 64;
+
+const cfg = { enabled: true, spin: 2.0, hold: 1.5, sound: true, lang: 'de' };
+const toneOverride = loadOverrides();
+
+const $ = (id) => document.getElementById(id);
+/** Server "next frame" (Server.NextFrame): the second write lands one tick later. */
+const nextFrame = (fn) => setTimeout(fn, 30);
+const root = $('rr-root');
+const strip = $('rr-strip');
+const stage = document.querySelector('.stage');
+
+/* ---------------------------------------------------------------------
+   Network mirror: SetDialogVariableString / SetHasClass with a diff cache.
+   Every real write is counted - this is what the server would send.
+   --------------------------------------------------------------------- */
+const net = { cache: new Map(), writes: 0, global: 0 };
+
+function setText(el, value, global = false) {
+  const k = 't:' + el.id;
+  if (net.cache.get(k) === value) return;
+  net.cache.set(k, value);
+  global ? net.global++ : net.writes++;
+  el.textContent = value;
+}
+
+function setClass(el, cls, on, global = false) {
+  const k = 'c:' + el.id + ':' + cls;
+  const prev = net.cache.has(k) ? net.cache.get(k) : el.classList.contains(cls);
+  if (prev === on) return;
+  net.cache.set(k, on);
+  global ? net.global++ : net.writes++;
+  el.classList.toggle(cls, on);
+}
+
+function setGroup(el, classes, active, global = false) {
+  for (const c of classes) if (c !== active) setClass(el, c, false, global);
+  if (active) setClass(el, active, true, global);
+}
+
+/* ---------------------------------------------------------------------
+   Build the strip pool (authored XML: 22 rows, row 20 = RrWinRow).
+   --------------------------------------------------------------------- */
+const rowEls = [];
+for (let i = 0; i < ROWS; i++) {
+  const row = document.createElement('div');
+  row.id = `rr-row-${i}`;
+  row.className = 'RrRow tone-neutral' + (i === WIN ? ' RrWinRow' : '');
+  row.innerHTML = `<div class="RrStripe"></div><div class="RrSym"><div class="RrSymBox"><div class="RrSymTip"></div></div></div><span class="RrName" id="rr-name-${i}"></span>`;
+  strip.appendChild(row);
+  rowEls.push({ row, name: row.querySelector('.RrName') });
+}
+
+const toneOf = (d) => toneOverride[d.key] || d.tone;
+const byKey = (key) => DICE.find((d) => d.key === key);
+
+let filler = [];
+
+/** Global, once per round: filler names + tones for every row except the winner row. */
+function writeFiller(reshuffle) {
+  if (reshuffle || filler.length === 0) {
+    const pool = [...DICE];
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+    filler = pool.slice(0, ROWS);
+  }
+  const before = net.global;
+  for (let i = 0; i < ROWS; i++) {
+    if (i === WIN) continue;
+    const d = filler[i];
+    setText(rowEls[i].name, d.reel[cfg.lang], true);
+    setGroup(rowEls[i].row, TONES, 'tone-' + toneOf(d), true);
+  }
+  return net.global - before;
+}
+
+/* ---------------------------------------------------------------------
+   Tick schedule: the server computes when a row boundary passes the win
+   line on the same ease-out curve Panorama uses, and fires one timer each.
+   --------------------------------------------------------------------- */
+function bez(s, p1, p2) { return 3 * (1 - s) * (1 - s) * s * p1 + 3 * (1 - s) * s * s * p2 + s * s * s; }
+function easeOutX(y) { // cubic-bezier(0, 0, 0.58, 1): x for a given progress y
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (bez(m, 0, 1) < y) lo = m; else hi = m; }
+  return bez((lo + hi) / 2, 0, 0.58);
+}
+function tickTimes(spin) {
+  const out = [];
+  let last = -1;
+  for (let k = 1; k < WIN; k++) {
+    const d = k * ROW_H - ROW_H / 2;
+    let t = SEG * spin * easeOutX(d / OVERSHOOT_PX);
+    t = Math.round(t / SERVER_TICK) * SERVER_TICK;
+    if (t - last < TICK_MIN_GAP) continue;
+    out.push(t);
+    last = t;
+  }
+  return out;
+}
+
+/* ---------------------------------------------------------------------
+   Sound (browser stand-ins). In game: tick = CS2 sound event per timer,
+   stop = configured dice_sound.
+   --------------------------------------------------------------------- */
+let audio = null;
+function ac() { if (!audio) { try { audio = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) { audio = null; } } return audio; }
+function playTick() {
+  const a = ac(); if (!a || !cfg.sound) return;
+  const o = a.createOscillator(), g = a.createGain();
+  o.type = 'square'; o.frequency.setValueAtTime(2200, a.currentTime); o.frequency.exponentialRampToValueAtTime(700, a.currentTime + 0.025);
+  g.gain.setValueAtTime(0.05, a.currentTime); g.gain.exponentialRampToValueAtTime(0.0001, a.currentTime + 0.035);
+  o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime + 0.04);
+}
+function playStop() {
+  const a = ac(); if (!a || !cfg.sound) return;
+  [[988, 0], [1319, 0.08]].forEach(([f, dt]) => {
+    const o = a.createOscillator(), g = a.createGain(), t0 = a.currentTime + dt;
+    o.type = 'triangle'; o.frequency.setValueAtTime(f, t0);
+    g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(0.12, t0 + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.35);
+    o.connect(g).connect(a.destination); o.start(t0); o.stop(t0 + 0.4);
+  });
+}
+
+/* ---------------------------------------------------------------------
+   Timers with a cancel token (RULESET §1.3: never Kill() from a callback).
+   --------------------------------------------------------------------- */
+let token = 0;
+let handles = [];
+function later(ms, fn) { const t = token; handles.push(setTimeout(() => { if (t === token) fn(); }, ms)); }
+function cancelAll() { token++; handles.forEach(clearTimeout); handles = []; }
+
+/* ---------------------------------------------------------------------
+   Log
+   --------------------------------------------------------------------- */
+let t0 = performance.now();
+function log(msg, sep = false) {
+  const el = document.createElement('div');
+  if (sep) el.className = 'sep';
+  const s = ((performance.now() - t0) / 1000).toFixed(3).padStart(6, ' ');
+  el.innerHTML = `<span class="t">+${s}s</span> ${msg}`;
+  $('log').appendChild(el);
+  $('log').scrollTop = $('log').scrollHeight;
+}
+function statClasses() { $('stat-classes').textContent = [...root.classList].filter((c) => c !== 'RrCard').join(' ') || '–'; }
+
+/* ---------------------------------------------------------------------
+   Banner / center / chat (existing plugin outputs)
+   --------------------------------------------------------------------- */
+const banner = $('Banner');
+let bannerFade = null;
+function bannerShow(text) {
+  clearTimeout(bannerFade);
+  $('dice').textContent = text;
+  const was = !banner.classList.contains('ph-off');
+  banner.classList.remove('ph-off');
+  if (was) return;
+  banner.classList.add('ph-fading');
+  nextFrame(() => banner.classList.remove('ph-fading'));
+}
+function bannerHide() {
+  if (banner.classList.contains('ph-off')) return;
+  banner.classList.add('ph-fading');
+  clearTimeout(bannerFade);
+  bannerFade = setTimeout(() => { banner.classList.add('ph-off'); banner.classList.remove('ph-fading'); }, 1000);
+}
+let centerTimer = null;
+function centerMsg(text) {
+  const el = $('center-msg'); el.textContent = text; el.classList.add('on');
+  clearTimeout(centerTimer); centerTimer = setTimeout(() => el.classList.remove('on'), 3000);
+}
+function chat(text) {
+  const tr = T[cfg.lang];
+  const line = document.createElement('div');
+  line.className = 'ChatLine';
+  line.innerHTML = `<span class="p">${tr.prefix}</span> ${tr.chat} <span class="g">${text}</span>`;
+  $('chat').appendChild(line);
+  while ($('chat').children.length > 5) $('chat').firstChild.remove();
+}
+
+/* ---------------------------------------------------------------------
+   Reel flow
+   --------------------------------------------------------------------- */
+let replay = 1;
+let visible = false;
+const spinClass = () => 'spin-' + Math.round(cfg.spin * 10);
+const holdClass = () => 'hold-' + String(Math.round(cfg.hold * 10)).padStart(2, '0');
+const SPIN_CLASSES = [10, 15, 20, 25, 30, 35, 40, 45, 50].map((n) => 'spin-' + n);
+const HOLD_CLASSES = ['05', '10', '15', '20', '25', '30', '35', '40', '45', '50'].map((n) => 'hold-' + n);
+
+function roll(dice, source) {
+  cancelAll();
+  t0 = performance.now();
+  net.writes = 0;
+  const tr = T[cfg.lang];
+  const full = dice.full[cfg.lang];
+  log(`<b>${source === 'admin' ? '!givedice' : source === 'round' ? 'EventRoundStart' : '!rtd'}</b> → RollTheDiceForPlayer = <b>${dice.key}</b> (Effekt sofort aktiv)`, true);
+  $('stat-dice').textContent = dice.key;
+  $('stat-ticks').textContent = '–';
+
+  if (!cfg.enabled) {
+    centerMsg(full); bannerShow(full); chat(full); playStop();
+    log('Walze aus: Center-Message, Banner, Chat und dice_sound sofort (wie heute)');
+    $('stat-writes').textContent = 'Walze aus';
+    return;
+  }
+
+  log('Center-Message unterdrückt · Banner/Chat/Sound warten auf den Stopp');
+  hideBanner();
+
+  later(OPEN_DELAY_MS, () => {
+    const w = net.writes;
+    setText(rowEls[WIN].name, dice.reel[cfg.lang]);
+    setGroup(rowEls[WIN].row, TONES, 'tone-' + toneOf(dice));
+    setText($('rr-title'), tr.rolling);
+    setText($('rr-source'), tr[source]);
+    setClass(root, 'is-stopped', false);
+    setClass($('rr-drain'), 'is-running', false);
+    setGroup($('rr-drain'), HOLD_CLASSES, null);
+    setGroup(strip, SPIN_CLASSES, spinClass());
+    replay = 1 - replay;
+    setGroup(strip, ['replay-0', 'replay-1'], 'replay-' + replay);
+    if (!visible) {
+      setClass(root, 'is-fading', true);
+      setClass(root, 'is-off', false);
+      nextFrame(() => { setClass(root, 'is-fading', false); statClasses(); });
+    } else {
+      setClass(root, 'is-fading', false);
+    }
+    visible = true;
+    const openWrites = net.writes - w;
+
+    const ticks = tickTimes(cfg.spin);
+    ticks.forEach((t) => later(t * 1000, playTick));
+    $('stat-ticks').textContent = `${ticks.length} Timer (${ticks.map((t) => t.toFixed(2)).slice(0, 4).join(', ')} … ${ticks[ticks.length - 1].toFixed(2)}s)`;
+    log(`Timer 0.2s → Walze öffnen: ${openWrites} Writes (Gewinner in Zeile ${WIN}, ${spinClass()}, replay-${replay})`);
+    log(`${ticks.length} Tick-Sound-Timer geplant (Abstand ≥ ${TICK_MIN_GAP * 1000}ms, auf 1/64s gerundet)`);
+    statClasses();
+
+    later(cfg.spin * 1000, () => {
+      const ws = net.writes;
+      setClass(root, 'is-stopped', true);
+      setText($('rr-title'), tr.rolled);
+      setGroup($('rr-drain'), HOLD_CLASSES, holdClass());
+      nextFrame(() => setClass($('rr-drain'), 'is-running', true));
+      playStop();
+      bannerShow(full);
+      chat(full);
+      log(`Stopp: is-stopped + Titel + ${holdClass()} (${net.writes - ws + 1} Writes) · dice_sound · Banner · Chat`);
+      statClasses();
+
+      later(cfg.hold * 1000, () => {
+        fadeOut('Haltezeit vorbei');
+        $('stat-writes').textContent = `${net.writes} pro Roll (davon ${openWrites} beim Öffnen)`;
+      });
+    });
+  });
+}
+
+function hideBanner() { bannerHide(); }
+
+function fadeOut(reason) {
+  if (!visible) return;
+  visible = false;
+  setClass(root, 'is-fading', true);
+  log(`${reason} → is-fading, nach ${FADE_OUT_MS}ms is-off`);
+  const t = token;
+  setTimeout(() => {
+    if (t !== token && visible) return;
+    setClass(root, 'is-off', true);
+    setClass(root, 'is-fading', false);
+    statClasses();
+  }, FADE_OUT_MS);
+  statClasses();
+}
+
+function death() {
+  cancelAll();
+  t0 = performance.now();
+  log('<b>Spieler stirbt</b> → Timer per Token abgebrochen', true);
+  if (visible) fadeOut('Abbruch'); else log('Walze war nicht offen');
+  bannerHide();
+}
+
+function roundStart() {
+  cancelAll();
+  t0 = performance.now();
+  if (visible) { visible = false; setClass(root, 'is-off', true); setClass(root, 'is-fading', false); }
+  bannerHide();
+  const g = writeFiller(true);
+  log(`<b>EventRoundStart</b> → Füllnamen neu: ${g} globale Writes (einmal für alle Spieler)`, true);
+  roll(DICE[Math.floor(Math.random() * DICE.length)], 'round');
+}
+
+/* ---------------------------------------------------------------------
+   Classification panel
+   --------------------------------------------------------------------- */
+function loadOverrides() {
+  try { return JSON.parse(localStorage.getItem('rtd-reel-tones') || '{}') || {}; } catch (_) { return {}; }
+}
+function saveOverrides() {
+  try { localStorage.setItem('rtd-reel-tones', JSON.stringify(toneOverride)); } catch (_) { /* ignore */ }
+}
+function renderClassify() {
+  const host = $('class-list');
+  host.innerHTML = '';
+  const counts = { good: 0, bad: 0, neutral: 0 };
+  for (const d of DICE) {
+    const tone = toneOf(d);
+    counts[tone]++;
+    const item = document.createElement('div');
+    item.className = 'ClassItem';
+    item.innerHTML = `<span class="nm">${d.reel[cfg.lang]}<small>${d.key}${toneOverride[d.key] ? ' · geändert' : ''}</small></span>` +
+      ['good', 'bad', 'neutral'].map((t) => `<button type="button" class="ToneBtn tone-${t}${t === tone ? ' on' : ''}" data-key="${d.key}" data-tone="${t}" title="${t}">${SYM[t]}</button>`).join('');
+    host.appendChild(item);
+  }
+  $('tone-count').textContent = `▲${counts.good} ▼${counts.bad} ◆${counts.neutral}`;
+  host.querySelectorAll('.ToneBtn').forEach((b) => b.addEventListener('click', () => {
+    const d = byKey(b.dataset.key);
+    if (b.dataset.tone === d.tone) delete toneOverride[d.key]; else toneOverride[d.key] = b.dataset.tone;
+    saveOverrides();
+    writeFiller(false);
+    renderClassify();
+    renderExport();
+  }));
+}
+function renderExport() {
+  const tones = {};
+  for (const d of DICE) tones[d.key] = toneOf(d);
+  $('export').textContent = JSON.stringify({ reel: { enabled: cfg.enabled, spin_seconds: cfg.spin, hold_seconds: cfg.hold, tones } }, null, 2);
+}
+
+/* ---------------------------------------------------------------------
+   Theme (config panorama_theme)
+   --------------------------------------------------------------------- */
+function lighten(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  const c = [n >> 16, (n >> 8) & 255, n & 255].map((v) => Math.round(v + (255 - v) * amt));
+  return '#' + c.map((v) => v.toString(16).padStart(2, '0')).join('');
+}
+function applyTheme(name) {
+  const theme = THEMES[name] ? name : 'gold';
+  const a = THEMES[theme];
+  for (const el of [banner, root]) {
+    for (const cls of [...el.classList]) if (cls.startsWith('theme-')) el.classList.remove(cls);
+    el.classList.add(`theme-${theme}`);
+  }
+  stage.dataset.theme = theme;
+  const vars = { '--accent': a, '--preview-accent': a, '--accent-light': lighten(a, 0.45), '--accent-14': a + '14', '--accent-33': a + '33', '--accent-55': a + '55', '--accent-66': a + '66', '--accent-aa': a + 'aa' };
+  for (const [k, v] of Object.entries(vars)) stage.style.setProperty(k, v);
+  root.querySelector('.ph-bar').style.background = a;
+  document.querySelectorAll('#preview-themes .preview-theme').forEach((btn) => btn.classList.toggle('active', btn.dataset.theme === theme));
+  try { localStorage.setItem('rtd-preview-theme', theme); } catch (_) { /* ignore */ }
+}
+function mountThemes() {
+  const host = $('preview-themes');
+  host.innerHTML = `<div class="preview-section">Theme (panorama_theme)</div><div class="preview-theme-row">${Object.entries(THEMES).map(([t, a]) =>
+    `<button type="button" class="preview-theme" data-theme="${t}" title="${t}" aria-label="${t}" style="--swatch:${a};background:${a}"></button>`).join('')}</div>`;
+  let initial = 'gold';
+  try { const s = localStorage.getItem('rtd-preview-theme'); if (s && THEMES[s]) initial = s; } catch (_) { /* ignore */ }
+  applyTheme(initial);
+  host.querySelectorAll('.preview-theme').forEach((btn) => btn.addEventListener('click', () => applyTheme(btn.dataset.theme)));
+}
+
+/* ---------------------------------------------------------------------
+   Wiring
+   --------------------------------------------------------------------- */
+function fillGiveSelect() {
+  const sel = $('give-select');
+  const cur = sel.value;
+  sel.innerHTML = DICE.map((d) => `<option value="${d.key}">${d.reel[cfg.lang]}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+document.querySelectorAll('.preview-controls button[data-mode]').forEach((btn) => btn.addEventListener('click', () => {
+  ac();
+  switch (btn.dataset.mode) {
+    case 'rtd': roll(DICE[Math.floor(Math.random() * DICE.length)], 'rtd'); break;
+    case 'round': roundStart(); break;
+    case 'give': roll(byKey($('give-select').value), 'admin'); break;
+    case 'death': death(); break;
+  }
+}));
+
+$('cfg-enabled').addEventListener('change', (e) => { cfg.enabled = e.target.checked; renderExport(); });
+$('cfg-spin').addEventListener('input', (e) => { cfg.spin = +e.target.value; $('out-spin').textContent = cfg.spin.toFixed(1) + 's'; renderExport(); });
+$('cfg-hold').addEventListener('input', (e) => { cfg.hold = +e.target.value; $('out-hold').textContent = cfg.hold.toFixed(1) + 's'; renderExport(); });
+$('cfg-sound').addEventListener('change', (e) => { cfg.sound = e.target.checked; });
+$('cfg-lang').addEventListener('change', (e) => { cfg.lang = e.target.value; writeFiller(false); fillGiveSelect(); renderClassify(); });
+$('log-clear').addEventListener('click', () => { $('log').innerHTML = ''; });
+$('export-toggle').addEventListener('click', () => { renderExport(); $('export').classList.toggle('on'); });
+$('tone-reset').addEventListener('click', () => { for (const k of Object.keys(toneOverride)) delete toneOverride[k]; saveOverrides(); writeFiller(false); renderClassify(); renderExport(); });
+
+function fitScreen() {
+  const fit = $('screen-fit');
+  const scale = fit.clientWidth / 1920;
+  $('screen').style.transform = `scale(${scale})`;
+  fit.style.height = `${1080 * scale}px`;
+}
+window.addEventListener('resize', fitScreen);
+fitScreen();
+
+mountThemes();
+fillGiveSelect();
+renderClassify();
+renderExport();
+const g0 = writeFiller(true);
+log(`<b>OnMapStart</b> → Layout vorgewärmt, Füllnamen: ${g0} globale Writes`, true);
+statClasses();
+</script>
+</body>
+</html>
