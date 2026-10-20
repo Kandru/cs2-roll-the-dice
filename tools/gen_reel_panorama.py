@@ -18,6 +18,7 @@ HUD_VCSS = CONTENT / "styles" / "custom_game" / "rollthedice" / "hud.vcss"
 # Keep in sync with Reel.RowCount / Reel.WinRow (validated by validate_panorama.py).
 ROW_COUNT = 22
 WIN_ROW = 20
+ROW_HEIGHT = 44  # px; .RrRow height, .RrStrip height = ROW_COUNT * ROW_HEIGHT
 ROW_ID_PREFIX = "ReelRow"
 FILLER_VAR_PREFIX = "rr_f"
 WIN_VAR = "rr_win"

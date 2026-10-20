@@ -192,11 +192,15 @@ Label.RrSource
 	background-color: #080b0f;
 }
 
+/* Explicit height (RowCount 22 * 44px): fit-children inside the 132px window
+   is capped to the window, so rows below it would never be laid out.
+   noclip: the strip draws all rows, only RrWindow clips. */
 .RrStrip
 {
 	width: 100%;
-	height: fit-children;
+	height: 968px;
 	flow-children: down;
+	overflow: noclip noclip;
 	transform: translateY( 0px );
 }
 
