@@ -60,6 +60,8 @@ BAD_CSS = re.compile(
     r"|overflow\s*:\s*hidden\b"
     r"|font-size\s*:\s*\d+(?:px|em|rem|%)\b"
     r"|vertical-align\s*:\s*center\b"
+    r"|\bmargin(?:-(?:top|right|bottom|left))?\s*:[^;]*-\d"  # negative margins: unproven, use rotateZ flips
+    r"|transition-property\s*:[^;]*box-shadow"  # unproven transition target
     r")",
     re.M | re.I,
 )
@@ -157,6 +159,17 @@ def reel_contract() -> tuple[set[str], set[str]]:
         fail("Reel.cs RowCount/WinRow/RowIdPrefix/FillerVarPrefix differ from tools/gen_reel_panorama.py")
     if [name for name, _ in gen.THEMES] != THEME_NAMES or [a for _, a in gen.THEMES] != [a for _, a in THEMES]:
         fail("tools/gen_reel_panorama.py THEMES must match the palette")
+    # Panorama caps fit-children to the parent: the strip needs its full height spelled out.
+    css = HUD_VCSS.read_text(encoding="utf-8")
+    strip = re.search(r"\.RrStrip\s*\{([^}]*)\}", css)
+    row = re.search(r"\.RrRow\s*\{([^}]*)\}", css)
+    strip_height = re.search(r"height:\s*(\d+)px", strip.group(1)) if strip else None
+    row_height = re.search(r"height:\s*(\d+)px", row.group(1)) if row else None
+    if not strip_height or not row_height or int(row_height.group(1)) != gen.ROW_HEIGHT:
+        fail(f"hud.vcss: .RrRow needs height: {gen.ROW_HEIGHT}px and .RrStrip an explicit px height")
+    if int(strip_height.group(1)) != rows * gen.ROW_HEIGHT:
+        fail(f"hud.vcss: .RrStrip height must be {rows * gen.ROW_HEIGHT}px (RowCount * {gen.ROW_HEIGHT}px)")
+
     for path, text in gen.render().items():
         if path.read_text(encoding="utf-8") != text:
             fail(f"{path.name}: generated reel block out of date - run tools/gen_reel_panorama.py")

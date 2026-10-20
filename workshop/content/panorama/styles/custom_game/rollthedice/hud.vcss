@@ -105,6 +105,9 @@ Label.ph-title
    win-<tone>, theme-*. Rows ReelRow<n> carry tone-* (filler, global).
    Winner always lands in row 20 -> one fixed keyframe distance:
    19 rows * 44px = 836px, overshoot to 850px, spring back.
+   Defensive choices: explicit sizes for content larger than its clip
+   window, no negative margins (rotateZ flips instead), restart by a new
+   animation-name, resting state = animation end state.
    No rotateX/perspective in Panorama: the drum look comes from overlays.
    --------------------------------------------------------------------------- */
 
@@ -192,15 +195,21 @@ Label.RrSource
 	background-color: #080b0f;
 }
 
+/* Explicit height (RowCount 22 * 44px): fit-children inside the 132px window
+   is capped to the window, so rows below it would never be laid out.
+   noclip: the strip draws all rows, only RrWindow clips. */
 .RrStrip
 {
 	width: 100%;
-	height: fit-children;
+	height: 968px;
 	flow-children: down;
+	overflow: noclip noclip;
 	transform: translateY( 0px );
 }
 
-@keyframes 'rr-spin'
+/* Two identical keyframes: a new animation-name always restarts, even though
+   the replay class sits on the root and not on the animated strip. */
+@keyframes 'rr-spin-a'
 {
 	0%
 	{
@@ -216,15 +225,36 @@ Label.RrSource
 	}
 }
 
+@keyframes 'rr-spin-b'
+{
+	0%
+	{
+		transform: translateY( 0px );
+	}
+	86%
+	{
+		transform: translateY( -850px );
+	}
+	100%
+	{
+		transform: translateY( -836px );
+	}
+}
+
+/* Resting transform = end of the spin, so the winner stays in the window even
+   if animation-fill-mode is not honoured. */
 .Reel.replay-0 .RrStrip,
 .Reel.replay-1 .RrStrip
 {
-	animation-name: rr-spin;
+	transform: translateY( -836px );
 	animation-duration: 2.0s;
 	animation-timing-function: ease-out;
 	animation-iteration-count: 1;
 	animation-fill-mode: forwards;
 }
+
+.Reel.replay-0 .RrStrip { animation-name: rr-spin-a; }
+.Reel.replay-1 .RrStrip { animation-name: rr-spin-b; }
 
 .Reel.spin-10 .RrStrip { animation-duration: 1.0s; }
 .Reel.spin-15 .RrStrip { animation-duration: 1.5s; }
@@ -258,7 +288,8 @@ Label.RrSource
 	height: 44px;
 }
 
-/* Tone shape: a rotated square, clipped to its top half (good), bottom half (bad) or shown small (neutral). */
+/* Tone shape: a rotated square, clipped to its top half (good, ▲), the same box
+   turned by 180deg (bad, ▼) or shown small (neutral, ◆). No negative margins. */
 .RrSymBox
 {
 	width: 17px;
@@ -294,8 +325,8 @@ Label.RrName
 .tone-bad .RrStripe, .Reel.win-bad .RrWinRow .RrStripe { background-color: #e05a5a; }
 .tone-neutral .RrStripe, .Reel.win-neutral .RrWinRow .RrStripe { background-color: #5aa9e6; }
 .tone-good .RrSymTip, .Reel.win-good .RrWinRow .RrSymTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #9ccf4f; }
-.tone-bad .RrSymTip, .Reel.win-bad .RrWinRow .RrSymTip { width: 12px; height: 12px; margin-left: 2px; margin-top: -6px; background-color: #e05a5a; }
-.tone-neutral .RrSymTip, .Reel.win-neutral .RrWinRow .RrSymTip { width: 6px; height: 6px; margin-left: 5px; margin-top: 1px; background-color: #5aa9e6; }
+.tone-bad .RrSymTip, .Reel.win-bad .RrWinRow .RrSymTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #e05a5a; }
+.tone-bad .RrSymBox, .Reel.win-bad .RrWinRow .RrSymBox { transform: rotateZ( 180deg ); }.tone-neutral .RrSymTip, .Reel.win-neutral .RrWinRow .RrSymTip { width: 6px; height: 6px; margin-left: 5px; margin-top: 1px; background-color: #5aa9e6; }
 
 /* Drum illusion: overlays above the strip (later siblings draw on top). */
 .RrWinLine
@@ -306,7 +337,7 @@ Label.RrName
 	border-top: 1px solid #f0a531aa;
 	border-bottom: 1px solid #f0a531aa;
 	background-color: #f0a53114;
-	transition-property: background-color, box-shadow;
+	transition-property: background-color;
 	transition-duration: 0.25s;
 	transition-timing-function: ease-out;
 }
@@ -365,13 +396,15 @@ Label.RrName
 	border-radius: 3px;
 }
 
-/* Arrows: rotated square, half clipped by a 10x18 box. */
+/* Arrows: rotated square, half clipped by a 10x18 box (points left, towards
+   the window on the right side). The left arrow is the same box turned by
+   180deg on RrArrowFlip, so the nudge animation on RrArrow keeps its own
+   transform. No negative margins. */
 .RrArrow
 {
 	width: 10px;
 	height: 18px;
 	vertical-align: middle;
-	overflow: clip clip;
 }
 
 .RrArrowLeft
@@ -386,20 +419,27 @@ Label.RrName
 	margin-right: 2px;
 }
 
+.RrArrowFlip
+{
+	width: 10px;
+	height: 18px;
+	overflow: clip clip;
+}
+
+.RrArrowLeft .RrArrowFlip { transform: rotateZ( 180deg ); }
+
 .RrArrowTip
 {
 	width: 13px;
 	height: 13px;
 	margin-top: 3px;
+	margin-left: 4px;
 	background-color: #f0a531;
 	transform: rotateZ( 45deg );
 }
 
-.RrArrowLeft .RrArrowTip { margin-left: -7px; }
-.RrArrowRight .RrArrowTip { margin-left: 4px; }
-
-/* Stop feedback. Keyed on replay-0/1 so it replays on every roll. */
-@keyframes 'rr-pop'
+/* Stop feedback. a/b names alternate with replay-0/1 so it replays on every roll. */
+@keyframes 'rr-pop-a'
 {
 	0%
 	{
@@ -415,7 +455,23 @@ Label.RrName
 	}
 }
 
-@keyframes 'rr-nudge-left'
+@keyframes 'rr-pop-b'
+{
+	0%
+	{
+		transform: scale3d( 1, 1, 1 );
+	}
+	40%
+	{
+		transform: scale3d( 1.06, 1.06, 1 );
+	}
+	100%
+	{
+		transform: scale3d( 1, 1, 1 );
+	}
+}
+
+@keyframes 'rr-nudge-left-a'
 {
 	0%
 	{
@@ -431,7 +487,23 @@ Label.RrName
 	}
 }
 
-@keyframes 'rr-nudge-right'
+@keyframes 'rr-nudge-left-b'
+{
+	0%
+	{
+		transform: translateX( 0px );
+	}
+	40%
+	{
+		transform: translateX( 4px );
+	}
+	100%
+	{
+		transform: translateX( 0px );
+	}
+}
+
+@keyframes 'rr-nudge-right-a'
 {
 	0%
 	{
@@ -447,29 +519,37 @@ Label.RrName
 	}
 }
 
-.Reel.is-stopped.replay-0 .RrWinRow,
-.Reel.is-stopped.replay-1 .RrWinRow
+@keyframes 'rr-nudge-right-b'
 {
-	animation-name: rr-pop;
-	animation-duration: 0.35s;
-	animation-timing-function: ease-out;
+	0%
+	{
+		transform: translateX( 0px );
+	}
+	40%
+	{
+		transform: translateX( -4px );
+	}
+	100%
+	{
+		transform: translateX( 0px );
+	}
 }
 
-.Reel.is-stopped.replay-0 .RrArrowLeft,
-.Reel.is-stopped.replay-1 .RrArrowLeft
+.Reel.is-stopped .RrWinRow,
+.Reel.is-stopped .RrArrowLeft,
+.Reel.is-stopped .RrArrowRight
 {
-	animation-name: rr-nudge-left;
 	animation-duration: 0.35s;
 	animation-timing-function: ease-out;
+	animation-iteration-count: 1;
 }
 
-.Reel.is-stopped.replay-0 .RrArrowRight,
-.Reel.is-stopped.replay-1 .RrArrowRight
-{
-	animation-name: rr-nudge-right;
-	animation-duration: 0.35s;
-	animation-timing-function: ease-out;
-}
+.Reel.is-stopped.replay-0 .RrWinRow { animation-name: rr-pop-a; }
+.Reel.is-stopped.replay-1 .RrWinRow { animation-name: rr-pop-b; }
+.Reel.is-stopped.replay-0 .RrArrowLeft { animation-name: rr-nudge-left-a; }
+.Reel.is-stopped.replay-1 .RrArrowLeft { animation-name: rr-nudge-left-b; }
+.Reel.is-stopped.replay-0 .RrArrowRight { animation-name: rr-nudge-right-a; }
+.Reel.is-stopped.replay-1 .RrArrowRight { animation-name: rr-nudge-right-b; }
 
 .Reel.is-stopped .RrWinRow Label.RrName
 {

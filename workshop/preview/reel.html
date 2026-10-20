@@ -51,8 +51,8 @@
 .RrWindow { position: relative; height: 132px; overflow: hidden; border-radius: 3px; background: #080b0f; }
 
 /* Strip: 22-row pool, winner always in row 20 -> one fixed keyframe distance. */
-.RrStrip { position: absolute; left: 0; top: 0; width: 100%; transform: translateY( 0px ); }
-.RrStrip.replay-0, .RrStrip.replay-1 { animation-duration: 2s; animation-timing-function: ease-out; animation-fill-mode: forwards; }
+.RrStrip { position: absolute; left: 0; top: 0; width: 100%; height: 968px; transform: translateY( 0px ); }
+.RrStrip.replay-0, .RrStrip.replay-1 { transform: translateY( -836px ); animation-duration: 2s; animation-timing-function: ease-out; animation-fill-mode: forwards; }
 .RrStrip.replay-0 { animation-name: rr-spin-a; }
 .RrStrip.replay-1 { animation-name: rr-spin-b; }
 .RrStrip.spin-10 { animation-duration: 1.0s; }
@@ -84,7 +84,8 @@
 .RrSymBox { position: relative; width: 17px; height: 9px; overflow: hidden; }
 .RrSymTip { position: absolute; left: 5px; top: 1px; width: 6px; height: 6px; background: var(--tone); transform: rotateZ( 45deg ); }
 .tone-good .RrSymTip { left: 2px; top: 3px; width: 12px; height: 12px; }
-.tone-bad .RrSymTip  { left: 2px; top: -6px; width: 12px; height: 12px; }
+.tone-bad .RrSymTip  { left: 2px; top: 3px; width: 12px; height: 12px; }
+.tone-bad .RrSymBox  { transform: rotateZ( 180deg ); }
 .RrName {
   flex: 1; padding-right: 14px;
   font-size: 16px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #e8eef4;
@@ -110,12 +111,12 @@
 .RrRim { position: absolute; inset: 0; border: 1px solid var(--accent-66); border-radius: 3px; }
 
 /* Arrows: rotated square, half clipped (overflow clip + rotateZ). */
-.RrArrow { position: absolute; top: 57px; width: 10px; height: 18px; overflow: hidden; }
+.RrArrow { position: absolute; top: 57px; width: 10px; height: 18px; }
 .RrArrowL { left: 2px; }
 .RrArrowR { right: 2px; }
-.RrArrowTip { position: absolute; top: 2.5px; width: 13px; height: 13px; background: var(--accent); transform: rotateZ( 45deg ); }
-.RrArrowL .RrArrowTip { left: -6.5px; }
-.RrArrowR .RrArrowTip { left: 3.5px; }
+.RrArrowFlip { position: relative; width: 10px; height: 18px; overflow: hidden; }
+.RrArrowL .RrArrowFlip { transform: rotateZ( 180deg ); }
+.RrArrowTip { position: absolute; top: 3px; left: 4px; width: 13px; height: 13px; background: var(--accent); transform: rotateZ( 45deg ); }
 .RrCard.is-stopped .RrArrowL { animation: rr-nudge-l 0.35s ease-out; }
 .RrCard.is-stopped .RrArrowR { animation: rr-nudge-r 0.35s ease-out; }
 @keyframes rr-nudge-l { 0% { transform: translateX( 0px ); } 40% { transform: translateX( 4px ); } 100% { transform: translateX( 0px ); } }
@@ -253,8 +254,8 @@ body { overflow-y: auto; }
             <div class="RrGloss"></div>
             <div class="RrRim"></div>
           </div>
-          <div class="RrArrow RrArrowL"><div class="RrArrowTip"></div></div>
-          <div class="RrArrow RrArrowR"><div class="RrArrowTip"></div></div>
+          <div class="RrArrow RrArrowL"><div class="RrArrowFlip"><div class="RrArrowTip"></div></div></div>
+          <div class="RrArrow RrArrowR"><div class="RrArrowFlip"><div class="RrArrowTip"></div></div></div>
         </div>
         <div class="RrDrainTrack"><div class="RrDrain" id="rr-drain"></div></div>
         <div class="RrFooter"><span class="RrCredit" id="rr-credit">made by: kandru.net</span></div>
