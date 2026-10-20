@@ -561,6 +561,9 @@ namespace RollTheDice.Hud
                 _viewerOwner[v] = -1;
                 if (Utilities.GetPlayerFromSlot(v) is { IsValid: true } viewer)
                 {
+                    // remove both in one write: the 0s default snaps the hold bar back (span pattern reset)
+                    CustomHud.SetHasClass(viewer, Panel, "is-running", false);
+                    Swap(viewer, HoldClasses, ref _holdIdx[v], -1);
                     CustomHud.HidePanel(viewer, Panel, FadeGrace);
                 }
             }

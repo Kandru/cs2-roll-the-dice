@@ -60,6 +60,8 @@ BAD_CSS = re.compile(
     r"|overflow\s*:\s*hidden\b"
     r"|font-size\s*:\s*\d+(?:px|em|rem|%)\b"
     r"|vertical-align\s*:\s*center\b"
+    r"|\bmargin(?:-(?:top|right|bottom|left))?\s*:[^;]*-\d"  # negative margins: unproven, use rotateZ flips
+    r"|transition-property\s*:[^;]*box-shadow"  # unproven transition target
     r")",
     re.M | re.I,
 )

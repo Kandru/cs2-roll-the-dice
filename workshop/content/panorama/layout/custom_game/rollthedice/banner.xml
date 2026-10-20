@@ -235,10 +235,14 @@
 						<Panel class="RrRim" hittest="false" />
 					</Panel>
 					<Panel class="RrArrow RrArrowLeft" hittest="false">
-						<Panel class="RrArrowTip" hittest="false" />
+						<Panel class="RrArrowFlip" hittest="false">
+							<Panel class="RrArrowTip" hittest="false" />
+						</Panel>
 					</Panel>
 					<Panel class="RrArrow RrArrowRight" hittest="false">
-						<Panel class="RrArrowTip" hittest="false" />
+						<Panel class="RrArrowFlip" hittest="false">
+							<Panel class="RrArrowTip" hittest="false" />
+						</Panel>
 					</Panel>
 				</Panel>
 				<Panel class="RrDrainTrack" hittest="false">
