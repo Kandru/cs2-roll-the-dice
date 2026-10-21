@@ -23,8 +23,9 @@ namespace RollTheDice.Hud
     /// Slot-machine roll animation on the <c>Reel</c> panel of banner.xml. Purely visual: the dice is already
     /// rolled and applied when <see cref="Begin"/> runs; the reel only shows it. The strip animation runs on the
     /// client (keyframes <c>rr-spin</c>); the server writes the winner into the fixed row 20, starts the animation
-    /// with one class swap and plays the tick sounds on the same ease-out curve. While a reel spins, the
-    /// player's banner, chat line and dice sound are held back and released when it stops.
+    /// by clearing replay-* and then setting the other replay class than last time (see Arm) and plays the tick
+    /// sounds on the same ease-out curve. While a reel spins, the player's banner, chat line and dice sound are
+    /// held back and released when it stops.
     /// </summary>
     public static class Reel
     {
@@ -40,6 +41,8 @@ namespace RollTheDice.Hud
 
         private const string CreditText = "made by: kandru.net";
         private const float OpenDelaySeconds = 0.2f;
+        // Time between clearing replay-* and setting the next one, so the client sees a network update without it
+        private const float ReplayGapSeconds = 0.05f;
         private const float StaggerSeconds = 0.05f;
         private const float RowHeight = 44f;
         private const float OvershootPx = 850f;
@@ -143,6 +146,7 @@ namespace RollTheDice.Hud
         private static readonly float[] _stopAt = new float[MaxSlots];
         private static readonly float[] _hideAt = new float[MaxSlots];
         private static readonly int[] _tickIndex = new int[MaxSlots];
+        private static readonly bool[] _armed = new bool[MaxSlots];
         private static readonly int[] _dice = new int[MaxSlots];
         private static readonly int[] _source = new int[MaxSlots];
         private static readonly List<int>?[] _viewers = new List<int>?[MaxSlots];
@@ -158,6 +162,9 @@ namespace RollTheDice.Hud
         private static readonly int[] _holdIdx = Filled(-1);
         private static readonly int[] _winIdx = Filled(AuthoredWin);
         private static readonly int[] _replayIdx = Filled(-1);
+        // replay class of the viewer's last spin; survives WriteDefaults, so the first roll after a round restart
+        // does not reuse the animation-name the client strip played last
+        private static readonly int[] _lastReplay = Filled(1);
 
         // global filler strip (same for every viewer, rewritten once per round)
         private static readonly int[] _rowTone = FilledRows((int)ReelTone.Neutral);
@@ -293,6 +300,14 @@ namespace RollTheDice.Hud
                         }
                         break;
                     case Phase.Spinning:
+                        if (!_armed[slot])
+                        {
+                            if (now < _openAt[slot])
+                            {
+                                break;
+                            }
+                            Arm(slot);
+                        }
                         PlayDueTicks(slot, now);
                         if (now >= _stopAt[slot])
                         {
@@ -436,8 +451,44 @@ namespace RollTheDice.Hud
 
             _phase[slot] = Phase.Spinning;
             _tickIndex[slot] = 0;
-            _openAt[slot] = now;
-            _stopAt[slot] = now + _spinSeconds;
+            _armed[slot] = false;
+            // the spin (and its tick sounds) starts when Arm sets the replay class
+            _openAt[slot] = now + ReplayGapSeconds;
+            _stopAt[slot] = _openAt[slot] + _spinSeconds;
+        }
+
+        /// <summary>
+        /// Starts the spin with the replay class the viewer did not use last (rr-spin-a/-b): Panorama does not
+        /// restart keyframes for a re-added class with the same animation-name. The last one is kept across round
+        /// restarts - the client rebuilds the panel from XML, but the strip still remembers its last animation.
+        /// Present cleared replay-* beforehand, so the name also changes from none.
+        /// </summary>
+        private static void Arm(int slot)
+        {
+            _armed[slot] = true;
+            foreach (CCSPlayerController viewer in AttachedViewers(slot))
+            {
+                int v = viewer.Slot;
+                _lastReplay[v] = _lastReplay[v] == 0 ? 1 : 0;
+                Swap(viewer, Replays, ref _replayIdx[v], _lastReplay[v]);
+            }
+        }
+
+        private static IEnumerable<CCSPlayerController> AttachedViewers(int slot)
+        {
+            List<int>? viewers = _viewers[slot];
+            if (viewers == null)
+            {
+                yield break;
+            }
+
+            foreach (int v in viewers)
+            {
+                if (_viewerOwner[v] == slot && Utilities.GetPlayerFromSlot(v) is { IsValid: true } viewer)
+                {
+                    yield return viewer;
+                }
+            }
         }
 
         private static bool Present(CCSPlayerController viewer, int owner)
@@ -466,8 +517,8 @@ namespace RollTheDice.Hud
             Swap(viewer, WinTones, ref _winIdx[v], _poolTone[dice]);
             Swap(viewer, HoldClasses, ref _holdIdx[v], _holdClass);
             Swap(viewer, SpinClasses, ref _spinIdx[v], _spinClass);
-            // alternating replay-0/1 restarts the keyframes on every roll
-            Swap(viewer, Replays, ref _replayIdx[v], _replayIdx[v] == 0 ? 1 : 0);
+            // cleared here, Arm sets the next replay class ReplayGapSeconds later
+            Swap(viewer, Replays, ref _replayIdx[v], -1);
             return CustomHud.ShowPanel(viewer, Panel);
         }
 
@@ -700,6 +751,7 @@ namespace RollTheDice.Hud
             _holdIdx[v] = -1;
             _winIdx[v] = AuthoredWin;
             _replayIdx[v] = -1;
+            _lastReplay[v] = 1;
         }
 
         internal static void PlaySound(CCSPlayerController player, string sound)
