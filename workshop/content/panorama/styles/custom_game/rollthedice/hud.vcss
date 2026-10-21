@@ -207,8 +207,11 @@ Label.RrSource
 	transform: translateY( 0px );
 }
 
-/* Two identical keyframes: a new animation-name always restarts, even though
-   the replay class sits on the root and not on the animated strip. */
+/* Two identical keyframes with different names: a re-added class with the
+   same animation-name does not restart. The server clears replay-* and a few
+   ticks later sets the one the viewer did not use last - also across round
+   restarts, where the client rebuilds the panel but the strip keeps its last
+   animation (Reel.cs, Arm). */
 @keyframes 'rr-spin-a'
 {
 	0%
