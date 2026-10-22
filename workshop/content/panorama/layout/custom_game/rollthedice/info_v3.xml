@@ -96,6 +96,7 @@
 									</Button>
 									<Label class="RiHint stratum-medium-tf" hittest="false" text="{s:ri_auto_hint}" />
 									<Label class="RiGroup stratum-bold-tf" hittest="false" text="{s:ri_lang_h}" />
+									<Label class="RiHint RiHintAbove stratum-medium-tf" hittest="false" text="{s:ri_lang_hint}" />
 									<Panel class="RiLangs" hittest="false">
 										<Button id="ri-lang-0" class="RiLang">
 											<Label class="RiLangLabel stratum-bold-tf" hittest="false" text="{s:ri_l0}" />
@@ -104,7 +105,6 @@
 											<Label class="RiLangLabel stratum-bold-tf" hittest="false" text="{s:ri_l1}" />
 										</Button>
 									</Panel>
-									<Label class="RiHint stratum-medium-tf" hittest="false" text="{s:ri_lang_hint}" />
 								</Panel>
 								<Panel class="RiList" hittest="false">
 									<Panel id="ri-row-0" class="RiRow tone-none team-none is-off" hittest="false">

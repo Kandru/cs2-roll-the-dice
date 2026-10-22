@@ -599,7 +599,7 @@ Label.RiSwitchState
 	transform: translateX( 24px );
 }
 
-/* explicit height: fit-children around the buttons left a large gap in game */
+/* explicit height: fit-children around buttons is not reliable in Panorama */
 .RiLangs
 {
 	width: 100%;
@@ -660,6 +660,13 @@ Label.RiHint
 	margin-top: 8px;
 	font-size: 16;
 	color: #a3acb6;
+}
+
+/* above the language buttons: a hint after them left a large gap in game */
+Label.RiHint.RiHintAbove
+{
+	margin-top: 0px;
+	margin-bottom: 10px;
 }
 
 /* List: one scrollable page over a fixed pool of single-line rows ----------------
