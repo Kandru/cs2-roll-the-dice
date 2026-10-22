@@ -32,12 +32,18 @@ namespace RollTheDice
             RegisterEventHandler<EventCsIntermission>(OnCsIntermission);
             RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
+            RegisterEventHandler<EventPlayerConnectFull>(OnPlayerConnectFull);
             RegisterListener<Listeners.OnMapStart>(OnMapStart);
             RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
             RegisterListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
             RegisterListener<Listeners.OnTick>(Hud.Banner.SyncViewers);
             RegisterListener<Listeners.OnTick>(Hud.Reel.OnTick);
             RegisterListener<Listeners.CheckTransmit>(Hud.CustomHud.OnCheckTransmit);
+            // info menu ("!dice info"): own layout entity, mouse driven
+            Hud.InfoMenu.Bind(this, this);
+            RegisterListener<Listeners.OnTick>(Hud.InfoMenu.OnTick);
+            RegisterListener<Listeners.CheckTransmit>(Hud.InfoMenu.FilterTransmit);
+            RegisterListener<Listeners.OnCustomHudClicked>(Hud.InfoMenu.OnClicked);
             // print message if hot reload
             if (hotReload)
             {
@@ -49,6 +55,12 @@ namespace RollTheDice
                 _isDuringRound = true;
                 // initialize dice modules
                 InitializeModules();
+                // restore menu languages and spawn the info menu entity
+                foreach (CCSPlayerController player in Utilities.GetPlayers())
+                {
+                    ApplySavedLanguage(player);
+                }
+                Hud.InfoMenu.WarmUp();
             }
         }
 
@@ -56,6 +68,7 @@ namespace RollTheDice
         {
             // reset dice rolls on unload
             DestroyModules();
+            Hud.InfoMenu.Shutdown();
             Hud.Reel.Shutdown();
             Hud.Banner.Shutdown();
             Hud.CustomHud.Shutdown();
@@ -68,12 +81,16 @@ namespace RollTheDice
             DeregisterEventHandler<EventCsIntermission>(OnCsIntermission);
             DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             DeregisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
+            DeregisterEventHandler<EventPlayerConnectFull>(OnPlayerConnectFull);
             RemoveListener<Listeners.OnMapStart>(OnMapStart);
             RemoveListener<Listeners.OnMapEnd>(OnMapEnd);
             RemoveListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
             RemoveListener<Listeners.OnTick>(Hud.Banner.SyncViewers);
             RemoveListener<Listeners.OnTick>(Hud.Reel.OnTick);
             RemoveListener<Listeners.CheckTransmit>(Hud.CustomHud.OnCheckTransmit);
+            RemoveListener<Listeners.OnTick>(Hud.InfoMenu.OnTick);
+            RemoveListener<Listeners.CheckTransmit>(Hud.InfoMenu.FilterTransmit);
+            RemoveListener<Listeners.OnCustomHudClicked>(Hud.InfoMenu.OnClicked);
             Console.WriteLine(Localizer["core.unload"]);
         }
 
@@ -81,6 +98,9 @@ namespace RollTheDice
         {
             // reset players that rolled the dice
             _playersThatRolledTheDice.Clear();
+            _roundDice.Clear();
+            // the client rebuilt every layout from XML: close the info menu and write its defaults back
+            Hud.InfoMenu.ResetRound();
             // hide banner before dice reset so Remove/Reset cannot re-show it
             Hud.Banner.Suspend();
             // reset dices (necessary after warmup)
@@ -93,8 +113,14 @@ namespace RollTheDice
             {
                 return HookResult.Continue;
             }
-            // announce round start
-            Server.PrintToChatAll(Localizer["core.announcement"]);
+            // announce round start (in each player's language)
+            foreach (CCSPlayerController player in Utilities.GetPlayers())
+            {
+                if (player.IsValid && !player.IsBot && !player.IsHLTV)
+                {
+                    player.PrintToChat(Text(player, "core.announcement"));
+                }
+            }
             // allow dice rolls
             _isDuringRound = true;
             // roll the dice on round start if enabled
@@ -227,6 +253,9 @@ namespace RollTheDice
             RemoveDiceForPlayer(@event.Userid, DiceRemoveReason.Death);
             // dice Remove overrides often skip Banner.Hide — force the overlay off
             Hud.Banner.Hide(@event.Userid);
+            // menus close on death; the round list of everyone else shows the new state
+            Hud.InfoMenu.Close(@event.Userid);
+            Hud.InfoMenu.MarkAllDirty();
             return HookResult.Continue;
         }
 
@@ -236,6 +265,18 @@ namespace RollTheDice
             Hud.Reel.Forget(@event.Userid);
             Hud.Banner.Release(@event.Userid);
             Hud.CustomHud.ReleasePlayer(@event.Userid);
+            if (@event.Userid is { IsValid: true } player)
+            {
+                _ = _roundDice.Remove(player);
+                Hud.InfoMenu.Forget(player.Slot);
+                Hud.InfoMenu.MarkAllDirty();
+            }
+            return HookResult.Continue;
+        }
+
+        private HookResult OnPlayerConnectFull(EventPlayerConnectFull @event, GameEventInfo info)
+        {
+            ApplySavedLanguage(@event.Userid);
             return HookResult.Continue;
         }
 
@@ -249,6 +290,7 @@ namespace RollTheDice
             InitializeModules();
             // set current map
             _currentMap = mapName;
+            Hud.InfoMenu.OnMapStart();
         }
 
         private void OnMapEnd()
@@ -260,6 +302,7 @@ namespace RollTheDice
             // reset states
             _isDuringRound = false;
             _playersThatRolledTheDice.Clear();
+            _roundDice.Clear();
             _PlayerCooldown.Clear();
             // reset dice usage counter for better distribution
             _diceUsageCount.Clear();
@@ -286,6 +329,7 @@ namespace RollTheDice
             // visual only: the reel shows the dice chosen above and holds back its notifications until it stops
             _ = Hud.Reel.Begin(player, dice.ClassName, source);
             dice.Add(player);
+            RecordRoll(player, dice);
             _diceUsageCount.TryGetValue(dice, out int usage);
             _diceUsageCount[dice] = usage + 1;
             return (dice.ClassName, dice.Description);

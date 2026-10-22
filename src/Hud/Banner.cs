@@ -17,6 +17,10 @@ namespace RollTheDice.Hud
         private static bool _centerEnabled = true;
         private static bool _panoramaEnabled = true;
 
+        /// <summary>Chat colour tokens ({green} …) removed, for text shown outside the chat.</summary>
+        public static string StripColors(string? text) =>
+            ChatColorTokens().Replace(text ?? string.Empty, string.Empty).Trim();
+
         public static void BindConfig(PluginConfig config)
         {
             _centerEnabled = config.NotifyPlayerViaCenterMsg;
@@ -64,7 +68,7 @@ namespace RollTheDice.Hud
                 return;
             }
 
-            string next = ChatColorTokens().Replace(text ?? string.Empty, string.Empty).Trim();
+            string next = StripColors(text);
             int slot = player.Slot;
             if (_ownerText.TryGetValue(slot, out string? prev) && prev == next)
             {

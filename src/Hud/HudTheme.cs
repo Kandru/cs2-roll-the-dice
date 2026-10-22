@@ -16,6 +16,11 @@ namespace RollTheDice.Hud
         private static readonly int GoldIndex = ExactIndex("gold");
         private static int _activeIndex = GoldIndex;
 
+        /// <summary>For layouts with their own entity (info menu): theme-* classes in palette order, authored gold, active.</summary>
+        public static string[] ClassNames => Classes;
+        public static int DefaultIndex => GoldIndex;
+        public static int ActiveIndex => _activeIndex;
+
         public static void BindConfig(PluginConfig config)
         {
             _activeIndex = ResolveIndex(config.PanoramaTheme);

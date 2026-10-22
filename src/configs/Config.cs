@@ -74,6 +74,8 @@ namespace RollTheDice
     {
         // automatically roll the dice on spawn
         [JsonPropertyName("rtd_on_spawn")] public bool RtdOnSpawn { get; set; } = false;
+        // language chosen in the info menu ("de", "en"; empty = server default)
+        [JsonPropertyName("language")] public string Language { get; set; } = "";
     }
 
     public class TriggerConfig

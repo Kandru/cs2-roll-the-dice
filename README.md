@@ -92,6 +92,18 @@ bind "o" rtd
 
 Enables or disables the automatic !rtd mode (will roll the dice automatically on spawn depending on the settings made inside your configuration).
 
+### !dice info
+
+Opens (or closes) the info menu - a mouse-driven Panorama window in the player's language (German or English). The reel footer shows this command on every roll. Every list is a single scrollable page. Tabs:
+
+- **This round** (start page): every dice rolled this round, CT and T side by side, alive players first, with the dice; dead players are framed red and greyed out.
+- **My dice**: the player's last 12 dice (kept while the plugin is loaded).
+- **Perks**: every dice enabled on the current map with its good / bad / neutral marker and a short description. Filter by type, sort by name or type, and search with `!dice info <text>` (for example `!dice info gravity`); the search is shown in the menu and can be cleared there.
+- **Commands**: the chat commands; admins (`@rollthedice/admin`) also see the admin chat commands.
+- **Settings**: auto roll on/off (same as `!dice auto`; locked when the server forces or disables it) and the language (Deutsch / English). The language is saved per player (`player_configs`) and set as the CounterStrikeSharp player language, so chat messages, the reel and the menu follow it.
+
+The menu closes on the close button, the same command, the player's death and round start. Requires the workshop addon (`info_v3` layout).
+
 ### !givedice (@rollthedice/admin)
 This admin command allows administrators to force dice rolls for players (including bots, for debugging). Bots do not roll on their own. Requires the @rollthedice/admin permission. Dice names correspond to the class names in the [dices folder](src/dices/) and are case-insensitive; ambiguous matches list the options instead of guessing.
 

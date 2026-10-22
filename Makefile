@@ -54,8 +54,9 @@ clean: dirs ## Remove build artifacts
 panorama: ## Validate HUD Panorama XML and CSS
 	python3 tools/validate_panorama.py
 
-panorama-gen: ## Regenerate the reel rows (banner.xml) and reel theme rules (hud.vcss)
+panorama-gen: ## Regenerate the reel rows (banner.xml), the info menu (info_v3.xml) and their theme rules
 	python3 tools/gen_reel_panorama.py
+	python3 tools/gen_info_panorama.py
 
 preview: ## Serve HUD browser preview (workshop/preview)
 	@echo "Open http://127.0.0.1:8765/banner.html"

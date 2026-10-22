@@ -14,6 +14,9 @@ LAYOUTS = CONTENT / "layout" / "custom_game" / "rollthedice"
 STYLES = CONTENT / "styles" / "custom_game" / "rollthedice"
 PREVIEW = ROOT / "workshop" / "preview"
 HUD_VCSS = STYLES / "hud.vcss"
+INFO_VCSS = STYLES / "info_v3.vcss"
+BANNER_XML = LAYOUTS / "banner.xml"
+INFO_XML = LAYOUTS / "info_v3.xml"
 KIT_CSS = PREVIEW / "kit.css"
 BANNER_HTML = PREVIEW / "banner.html"
 REEL_HTML = PREVIEW / "reel.html"
@@ -22,6 +25,11 @@ CUSTOM_HUD_CS = ROOT / "src" / "Hud" / "CustomHud.cs"
 REEL_CS = ROOT / "src" / "Hud" / "Reel.cs"
 THEME_CS = ROOT / "src" / "Hud" / "HudTheme.cs"
 GEN_REEL = ROOT / "tools" / "gen_reel_panorama.py"
+GEN_INFO = ROOT / "tools" / "gen_info_panorama.py"
+INFO_IDS_CS = ROOT / "src" / "Hud" / "InfoMenuIds.cs"
+NAME_BUDGET = 1244  # DialogVariableNames per layout
+# Language-neutral glyphs allowed as literal Label text (ruleset 4.2).
+LITERAL_GLYPHS = {"//", "‹", "›"}
 
 # name -> accent hex (rainbow order; keep in sync with HudTheme / hud.vcss).
 THEMES: list[tuple[str, str]] = [
@@ -102,12 +110,17 @@ def check_themes() -> None:
     if not THEME_CS.is_file():
         fail(f"missing {THEME_CS}")
 
+    for sheet in (HUD_VCSS, INFO_VCSS):
+        if not sheet.is_file():
+            fail(f"missing stylesheet {sheet}")
+        sheet_css = sheet.read_text(encoding="utf-8")
+        if HIDDEN_CLASS.search(sheet_css):
+            fail(f"{sheet.name} uses forbidden class name hidden/Hidden")
+        bad = BAD_CSS.search(sheet_css)
+        if bad:
+            fail(f"{sheet.name} has unsupported CSS near: {bad.group(0)!r}")
+
     css = HUD_VCSS.read_text(encoding="utf-8")
-    if HIDDEN_CLASS.search(css):
-        fail("hud.vcss uses forbidden class name hidden/Hidden")
-    bad = BAD_CSS.search(css)
-    if bad:
-        fail(f"hud.vcss has unsupported CSS near: {bad.group(0)!r}")
 
     expect_theme_bars(THEME_BAR_RE.findall(css), "hud.vcss")
     expect_theme_bars(THEME_BAR_RE.findall(KIT_CSS.read_text(encoding="utf-8")), "kit.css")
@@ -136,11 +149,11 @@ def cs_const(source: str, pattern: str, name: str, label: str) -> str:
     return match.group(1)
 
 
-def load_generator():
+def load_generator(path: Path = GEN_REEL):
     sys.dont_write_bytecode = True
-    spec = importlib.util.spec_from_file_location("gen_reel_panorama", GEN_REEL)
+    spec = importlib.util.spec_from_file_location(path.stem, path)
     if spec is None or spec.loader is None:
-        fail(f"cannot load {GEN_REEL}")
+        fail(f"cannot load {path}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -179,39 +192,120 @@ def reel_contract() -> tuple[set[str], set[str]]:
     return ids, variables
 
 
+def info_contract() -> tuple[set[str], set[str]]:
+    """Expand InfoMenuIds.cs into panel ids and dialog vars; check it matches the generator."""
+    source = INFO_IDS_CS.read_text(encoding="utf-8")
+    rows = int(cs_const(source, CS_INT_CONST_RE, "Rows", "InfoMenuIds.cs"))
+    tabs = int(cs_const(source, CS_INT_CONST_RE, "Tabs", "InfoMenuIds.cs"))
+    langs = int(cs_const(source, CS_INT_CONST_RE, "Languages", "InfoMenuIds.cs"))
+    filters = int(cs_const(source, CS_INT_CONST_RE, "Filters", "InfoMenuIds.cs"))
+    team_rows = int(cs_const(source, CS_INT_CONST_RE, "TeamRows", "InfoMenuIds.cs"))
+
+    def const(name: str) -> str:
+        return cs_const(source, CS_STRING_CONST_RE, name, "InfoMenuIds.cs")
+
+    gen = load_generator(GEN_INFO)
+    if (rows, tabs, langs, filters, team_rows) != (gen.ROWS, gen.TABS, gen.LANGUAGES, gen.FILTERS, gen.TEAM_ROWS):
+        fail("InfoMenuIds.cs Rows/Tabs/Languages/Filters/TeamRows differ from tools/gen_info_panorama.py")
+    if [(k, p) for k, p in gen.TEAMS] != [("ct", const("CtRowIdPrefix")), ("t", const("TRowIdPrefix"))]:
+        fail("InfoMenuIds.cs team row prefixes differ from tools/gen_info_panorama.py")
+    if (const("RootId"), const("TabIdPrefix"), const("LangIdPrefix"), const("RowIdPrefix"), const("FilterIdPrefix")) != (
+        gen.ROOT_ID, gen.TAB_ID_PREFIX, gen.LANG_ID_PREFIX, gen.ROW_ID_PREFIX, gen.FILTER_ID_PREFIX
+    ):
+        fail("InfoMenuIds.cs id prefixes differ from tools/gen_info_panorama.py")
+    if [name for name, _ in gen.THEMES] != THEME_NAMES or [a for _, a in gen.THEMES] != [a for _, a in THEMES]:
+        fail("tools/gen_info_panorama.py THEMES must match the palette")
+    for path, text in gen.render().items():
+        if not path.is_file() or path.read_text(encoding="utf-8") != text:
+            fail(f"{path.name}: generated info menu out of date - run tools/gen_info_panorama.py")
+
+    ids = set(re.findall(r'const\s+string\s+\w+Id\s*=\s*"([^"]+)"', source))
+    ids |= {f"{const('TabIdPrefix')}{i}" for i in range(tabs)}
+    ids |= {f"{const('LangIdPrefix')}{i}" for i in range(langs)}
+    ids |= {f"{const('RowIdPrefix')}{i}" for i in range(rows)}
+    ids |= {f"{const('FilterIdPrefix')}{i}" for i in range(filters)}
+    ids |= {f"{const(name)}{i}" for name in ("CtRowIdPrefix", "TRowIdPrefix") for i in range(team_rows)}
+    variables = set(CS_VAR_CONST_RE.findall(source))
+    variables |= {f"{const('TabVarPrefix')}{i}" for i in range(tabs)}
+    variables |= {f"{const('TabCountVarPrefix')}{i}" for i in range(tabs)}
+    variables |= {f"{const('LangVarPrefix')}{i}" for i in range(langs)}
+    variables |= {f"{const('FilterVarPrefix')}{i}" for i in range(filters)}
+    variables |= {
+        f"{const(name)}{i}{suffix}"
+        for name in ("CtRowVarPrefix", "TRowVarPrefix")
+        for i in range(team_rows)
+        for suffix in ("_a", "_c")
+    }
+    variables |= {f"{const('RowVarPrefix')}{i}{suffix}" for i in range(rows) for suffix in ("_i", "_a", "_b", "_c")}
+    return ids, variables
+
+
+def scan_layout(path: Path) -> tuple[set[str], set[str]]:
+    """Panel ids and dialog vars of one layout; enforces text, hittest and button rules."""
+    text = path.read_text(encoding="utf-8")
+    if HIDDEN_CLASS.search(text):
+        fail(f"{path.name}: forbidden class name hidden/Hidden")
+    try:
+        root = ET.fromstring(text)
+    except ET.ParseError as ex:
+        fail(f"{path.name}: XML parse error: {ex}")
+
+    ids: set[str] = set()
+    variables: set[str] = set()
+    for element in root.iter():
+        panel_id = element.attrib.get("id")
+        if panel_id:
+            if panel_id in ids:
+                fail(f"{path.name}: duplicate id {panel_id!r}")
+            ids.add(panel_id)
+        if element.tag in ("Panel", "Label") and element.attrib.get("hittest") != "false":
+            fail(f"{path.name}: <{element.tag} class={element.attrib.get('class')!r}> needs hittest=\"false\"")
+        if element.tag == "Button" and (not panel_id or "hittest" in element.attrib):
+            fail(f"{path.name}: every <Button> needs an id and no hittest attribute")
+        text_attr = element.attrib.get("text")
+        if text_attr is None:
+            continue
+        value = text_attr.strip()
+        if value in LITERAL_GLYPHS:
+            continue
+        if not DIALOG_ONLY_RE.fullmatch(value):
+            fail(
+                f"{path.name}: Label text must be a single dialog var "
+                f"{{s:name}} or one of {sorted(LITERAL_GLYPHS)} (got {value!r})"
+            )
+        variables.update(VAR_RE.findall(value))
+    if len(variables) > NAME_BUDGET:
+        fail(f"{path.name}: {len(variables)} dialog vars exceed the budget of {NAME_BUDGET}")
+    return ids, variables
+
+
+def compare(label: str, xml_ids: set[str], xml_vars: set[str], cs_ids: set[str], cs_vars: set[str], exact_ids: bool) -> None:
+    missing_panels = cs_ids - xml_ids
+    if missing_panels:
+        fail(f"{label}: C# panel ids missing from XML: {sorted(missing_panels)}")
+    if exact_ids and xml_ids - cs_ids:
+        fail(f"{label}: XML ids unknown to C#: {sorted(xml_ids - cs_ids)}")
+    missing_vars = cs_vars - xml_vars
+    if missing_vars:
+        fail(f"{label}: C# dialog vars missing from XML: {sorted(missing_vars)}")
+    unused_vars = xml_vars - cs_vars
+    if unused_vars:
+        fail(f"{label}: XML dialog vars unused in C#: {sorted(unused_vars)}")
+
+
 def main() -> None:
     check_themes()
 
     xml_files = sorted(LAYOUTS.glob("*.xml"))
-    if not xml_files:
-        fail(f"no layouts in {LAYOUTS}")
+    known = {BANNER_XML, INFO_XML}
+    unknown = [p.name for p in xml_files if p not in known]
+    if unknown:
+        fail(f"layouts without a contract check: {unknown}")
+    for path in known:
+        if not path.is_file():
+            fail(f"missing layout {path}")
 
-    xml_ids: set[str] = set()
-    xml_vars: set[str] = set()
-    for path in xml_files:
-        text = path.read_text(encoding="utf-8")
-        if HIDDEN_CLASS.search(text):
-            fail(f"{path.name}: forbidden class name hidden/Hidden")
-        try:
-            root = ET.fromstring(text)
-        except ET.ParseError as ex:
-            fail(f"{path.name}: XML parse error: {ex}")
-
-        for element in root.iter():
-            panel_id = element.attrib.get("id")
-            if panel_id:
-                xml_ids.add(panel_id)
-            text_attr = element.attrib.get("text")
-            if text_attr is None:
-                continue
-            value = text_attr.strip()
-            if not DIALOG_ONLY_RE.fullmatch(value):
-                fail(
-                    f"{path.name}: Label text must be a single dialog var "
-                    f"{{s:name}} (got {value!r})"
-                )
-            xml_vars.update(VAR_RE.findall(value))
-
+    banner_ids, banner_vars = scan_layout(BANNER_XML)
     cs_text = "\n".join(p.read_text(encoding="utf-8") for p in (BANNER_CS, CUSTOM_HUD_CS, REEL_CS))
     reel_ids, reel_vars = reel_contract()
     cs_panels = set(CS_PANEL_RE.findall(cs_text)) | reel_ids
@@ -221,20 +315,15 @@ def main() -> None:
         | set(CS_VAR_CONST_RE.findall(cs_text))
         | reel_vars
     )
+    compare(BANNER_XML.name, banner_ids, banner_vars, cs_panels, cs_vars, exact_ids=False)
 
-    missing_panels = cs_panels - xml_ids
-    if missing_panels:
-        fail(f"C# panel ids missing from XML: {sorted(missing_panels)}")
-    missing_vars = cs_vars - xml_vars
-    if missing_vars:
-        fail(f"C# dialog vars missing from XML: {sorted(missing_vars)}")
-    unused_vars = xml_vars - cs_vars
-    if unused_vars:
-        fail(f"XML dialog vars unused in C#: {sorted(unused_vars)}")
+    info_ids, info_vars = scan_layout(INFO_XML)
+    cs_info_ids, cs_info_vars = info_contract()
+    compare(INFO_XML.name, info_ids, info_vars, cs_info_ids, cs_info_vars, exact_ids=True)
 
     print(
-        f"OK: {len(xml_files)} layout(s), {len(xml_ids)} panel id(s), "
-        f"{len(xml_vars)} dialog var(s), {len(THEMES)} theme(s)"
+        f"OK: {len(xml_files)} layout(s), {len(banner_ids) + len(info_ids)} panel id(s), "
+        f"{len(banner_vars) + len(info_vars)} dialog var(s), {len(THEMES)} theme(s)"
     )
 
 

@@ -1,9 +1,11 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Timers;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
 using RollTheDice.Hud;
+using RollTheDice.Utils;
 using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
@@ -74,7 +76,7 @@ namespace RollTheDice.Dices
 
                 (string weapon, string sound, int total, float length) = Sounds[_random.Next(Sounds.Length)];
                 EmitBurst(player.Handle, sound, length, total);
-                Banner.Show(player, _localizer["dice_MakeFakeGunSoundsWeapon_player"].Value.Replace("{weapon}", weapon));
+                Banner.Show(player, _localizer.ForPlayerSafe(player, "dice_MakeFakeGunSoundsWeapon_player").Replace("{weapon}", weapon));
 
                 if (_globalConfig.NotifyOtherPlayers)
                 {

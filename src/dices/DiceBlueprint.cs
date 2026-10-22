@@ -1,8 +1,10 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
 using RollTheDice.Hud;
+using RollTheDice.Utils;
 
 namespace RollTheDice.Dices
 {
@@ -55,33 +57,33 @@ namespace RollTheDice.Dices
 
         public void NotifyPlayers(CCSPlayerController player, string diceName, Dictionary<string, string> data)
         {
+            // every text in the reader's language (info menu setting / css_lang)
             if (_globalConfig.NotifyOtherPlayers)
             {
-                LocalizedString other = _localizer[$"dice_{diceName}_other"];
-                if (!other.ResourceNotFound)
+                string otherKey = $"dice_{diceName}_other";
+                if (!_localizer[otherKey].ResourceNotFound)
                 {
-                    string message = Format(other.Value, data);
                     foreach (CCSPlayerController entry in Utilities.GetPlayers())
                     {
                         if (entry == player || !entry.IsValid || entry.IsBot || entry.IsHLTV)
                         {
                             continue;
                         }
-                        entry.PrintToChat(message);
+                        entry.PrintToChat(Format(_localizer.ForPlayerSafe(entry, otherKey), data));
                     }
                 }
             }
 
-            LocalizedString self = _localizer[$"dice_{diceName}_player"];
-            if (self.ResourceNotFound)
+            string selfKey = $"dice_{diceName}_player";
+            if (_localizer[selfKey].ResourceNotFound)
             {
                 return;
             }
 
-            string playerMessage = Format(self.Value, data);
+            string playerMessage = Format(_localizer.ForPlayerSafe(player, selfKey), data);
             if (_globalConfig.NotifyPlayerViaChatMsg)
             {
-                SendChat(player, _localizer["command.prefix"].Value + playerMessage);
+                SendChat(player, _localizer.ForPlayerSafe(player, "command.prefix") + playerMessage);
             }
             Description = playerMessage;
             Banner.Notify(player, playerMessage);
@@ -89,14 +91,14 @@ namespace RollTheDice.Dices
 
         public void NotifyStatus(CCSPlayerController player, string diceName, Dictionary<string, string> data)
         {
-            LocalizedString status = _localizer[$"dice_{diceName}_status"];
-            if (status.ResourceNotFound)
+            string statusKey = $"dice_{diceName}_status";
+            if (_localizer[statusKey].ResourceNotFound)
             {
                 return;
             }
 
-            string message = Format(status.Value, data);
-            SendChat(player, _localizer["command.prefix"].Value + message);
+            string message = Format(_localizer.ForPlayerSafe(player, statusKey), data);
+            SendChat(player, _localizer.ForPlayerSafe(player, "command.prefix") + message);
             Description = message;
             Banner.Notify(player, message);
         }
