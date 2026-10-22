@@ -162,6 +162,8 @@ namespace RollTheDice.Hud
         private static readonly bool[] _dirty = new bool[MaxSlots];
         private static readonly bool[] _restoring = new bool[MaxSlots];
         private static readonly int[] _token = new int[MaxSlots];
+        // server tick of the last paint: clicks beyond the first per tick only mark the menu dirty
+        private static readonly int[] _paintedTick = new int[MaxSlots];
         private static readonly InfoTab[] _tab = new InfoTab[MaxSlots];
         private static readonly int[] _filter = new int[MaxSlots];
         private static readonly bool[] _sortByTone = new bool[MaxSlots];
@@ -199,11 +201,7 @@ namespace RollTheDice.Hud
             }
 
             int slot = player.Slot;
-            string text = (search ?? string.Empty).Trim();
-            if (text.Length > MaxSearchLength)
-            {
-                text = text[..MaxSearchLength];
-            }
+            string text = HudText.Clean(search?.Trim(), MaxSearchLength);
 
             if (text.Length > 0)
             {
@@ -453,7 +451,13 @@ namespace RollTheDice.Hud
                     break;
             }
 
-            // feedback within the same tick: paint now, not on the next scheduler pass
+            // feedback within the same tick: paint now, not on the next scheduler pass. A flood of clicks paints
+            // once per tick; the rest only marks the menu dirty for the budgeted scheduler.
+            if (_paintedTick[slot] == Server.TickCount)
+            {
+                _dirty[slot] = true;
+                return;
+            }
             Paint(player);
         }
 
@@ -462,6 +466,7 @@ namespace RollTheDice.Hud
             IInfoMenuSource? source = _source;
             int slot = player.Slot;
             _dirty[slot] = false;
+            _paintedTick[slot] = Server.TickCount;
             if (source == null)
             {
                 return;

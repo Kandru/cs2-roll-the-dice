@@ -13,6 +13,9 @@ namespace RollTheDice
     public partial class RollTheDice : BasePlugin, IPluginConfig<PluginConfig>
     {
         private const int GiveDiceChatLineLimit = 200;
+        // "!rtd" from a console bind is not chat-flood limited: one command per player and interval, the rest is dropped
+        private const long CommandIntervalMs = 500;
+        private readonly long[] _nextCommandAt = new long[HudLayout.MaxSlots];
 
         [ConsoleCommand("givedice", "Give Dice to player")]
         [RequiresPermissions("@rollthedice/admin")]
@@ -152,6 +155,11 @@ namespace RollTheDice
         [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY, minArgs: 0, usage: "!rtd <auto|info>")]
         public void CommandRollTheDice(CCSPlayerController player, CommandInfo command)
         {
+            if (IsCommandThrottled(player))
+            {
+                return;
+            }
+
             // the info menu also works while dicing is disabled (settings, commands, history)
             // "!dice info <text>" searches the perks
             if (string.Equals(command.GetArg(1), "info", StringComparison.OrdinalIgnoreCase))
@@ -213,21 +221,22 @@ namespace RollTheDice
                 }
             }
 
-            if (Config.PriceToDice > 0)
-            {
-                if (player.InGameMoneyServices!.Account < Config.PriceToDice)
-                {
-                    command.ReplyToCommand(Text(player, "command.rollthedice.notenoughmoney").Replace("{money}", Config.PriceToDice.ToString()));
-                    return;
-                }
-                player.InGameMoneyServices.Account -= Config.PriceToDice;
-                Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInGameMoneyServices");
-            }
-
             if (player.PlayerPawn?.Value?.LifeState != (byte)LifeState_t.LIFE_ALIVE)
             {
                 command.ReplyToCommand(Text(player, "command.rollthedice.notalive"));
                 return;
+            }
+
+            // charged last: a dead player must not pay for a roll that never happens
+            if (Config.PriceToDice > 0)
+            {
+                if (player.InGameMoneyServices is not { } money || money.Account < Config.PriceToDice)
+                {
+                    command.ReplyToCommand(Text(player, "command.rollthedice.notenoughmoney").Replace("{money}", Config.PriceToDice.ToString()));
+                    return;
+                }
+                money.Account -= Config.PriceToDice;
+                Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInGameMoneyServices");
             }
 
             (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(player);
@@ -251,6 +260,22 @@ namespace RollTheDice
             PlayDiceSoundForPlayer(player, rolledDice, true);
         }
 
+
+        private bool IsCommandThrottled(CCSPlayerController? player)
+        {
+            if (player is not { IsValid: true } || (uint)player.Slot >= _nextCommandAt.Length)
+            {
+                return false;
+            }
+
+            long now = Environment.TickCount64; // real time: Server.CurrentTime restarts with every map
+            if (now < _nextCommandAt[player.Slot])
+            {
+                return true;
+            }
+            _nextCommandAt[player.Slot] = now + CommandIntervalMs;
+            return false;
+        }
 
         [ConsoleCommand("rollthedice", "RollTheDice admin commands")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY, minArgs: 1, usage: "<command>")]

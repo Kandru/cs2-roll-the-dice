@@ -88,6 +88,8 @@ This command triggers the dice for a player. To activate the dice with a button 
 bind "o" rtd
 ```
 
+Each player can run `!rtd` / `!dice` (with or without `auto` / `info`) once every 0.5 seconds; faster repeats, e.g. from a console bind, are ignored.
+
 ### !dice auto
 
 Enables or disables the automatic !rtd mode (will roll the dice automatically on spawn depending on the settings made inside your configuration).
@@ -427,7 +429,7 @@ Number of seconds a player must wait before using !rtd again. Use this OR cooldo
 
 ### price_to_dice
 
-Money it costs to roll the dice.
+Money it costs to roll the dice. It is charged only when the roll actually happens (alive, no cooldown, not already rolled).
 
 ### allow_dice_after_respawn
 
@@ -440,7 +442,7 @@ Slot-machine reel shown in the screen centre (below the crosshair) whenever a di
 - **enabled**: Shows the reel (`false` = notifications as before).
 - **spin_seconds**: Spin duration, 1.0 - 5.0 in steps of 0.5.
 - **hold_seconds**: How long the result stays before the reel fades out, 0.5 - 5.0 in steps of 0.5.
-- **tick_sound**: Played for each row passing the win line (sound event or `sounds/...` path, empty = off).
+- **tick_sound**: Played for each row passing the win line (sound event or `sounds/...` path, empty = off). A `sounds/...` path may only contain letters, digits and `_ - . /` (it is played with the client command `play`); other paths are ignored with a console message.
 - **tones**: Marker per dice class shown on the reel: `good` (▲), `bad` (▼) or `neutral` (◆). Dices missing here use the built-in default.
 
 ### dices
@@ -451,7 +453,7 @@ Configuration for all available dice effects. Each dice can be enabled/disabled 
 
 Sound played when using `!rtd`. Use sound file paths (e.g. `sounds/test.vsnd`) or sound events (e.g. `RollTheDice.Command`). Use `RollTheDice.{dice}` to play a sound event for each individual dice. Example audio files are provided via the AI from elevenlabs.io (Unreal Tonemanagement 2003).
 
-- **dice_sound**: Sound path or event name to play. `{dice}`gets replaced by the case-sensitive dice name. Disabled if empty.
+- **dice_sound**: Sound path or event name to play. `{dice}`gets replaced by the case-sensitive dice name. Disabled if empty. A `sounds/...` path may only contain letters, digits and `_ - . /` (it is played with the client command `play`); other paths are ignored with a console message.
 - **play_on_command_only**: Plays the sound only when a player types in `!rtd` - otherwise plays it on events as well.
 
 ### maps

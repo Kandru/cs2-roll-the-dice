@@ -16,6 +16,8 @@ namespace RollTheDice
     public partial class RollTheDice : IInfoMenuSource
     {
         private const int MaxHistory = 12;
+        // histories kept for players that left (the oldest go first on map start)
+        private const int MaxHistoryPlayers = 256;
         private const string AdminPermission = "@rollthedice/admin";
 
         /// <summary>Order of the language buttons in the menu.</summary>
@@ -44,6 +46,8 @@ namespace RollTheDice
         private readonly Dictionary<ulong, List<HistoryEntry>> _history = [];
         // dice class rolled this round per player (bots included: they show up in the round list)
         private readonly Dictionary<CCSPlayerController, string> _roundDice = [];
+        // perk rows per culture, localized and sorted once: every menu paint needs them for the tab count
+        private readonly Dictionary<string, InfoRow[]> _perkRows = new(StringComparer.Ordinal);
 
         public string Text(CCSPlayerController? player, string key) =>
             player is { IsValid: true } ? Localizer.ForPlayerSafe(player, key) : Localizer[key].Value;
@@ -127,19 +131,25 @@ namespace RollTheDice
 
         private void FillPerks(CCSPlayerController player, List<InfoRow> rows)
         {
-            foreach (DiceBlueprint dice in _dices)
-            {
-                ReelTone tone = Reel.ToneOf(dice.ClassName);
-                string info = Text(player, $"dice_{dice.ClassName}_info");
-                rows.Add(new InfoRow(
-                    Reel.LabelFor(player, dice.ClassName),
-                    Text(player, ToneKey(tone)),
-                    info == $"dice_{dice.ClassName}_info" ? string.Empty : info,
-                    ToInfoTone(tone)));
-            }
-
             CultureInfo culture = Localization.LanguageOf(player);
-            rows.Sort((a, b) => string.Compare(a.Title, b.Title, culture, CompareOptions.IgnoreCase));
+            if (!_perkRows.TryGetValue(culture.Name, out InfoRow[]? perks))
+            {
+                List<InfoRow> built = [];
+                foreach (DiceBlueprint dice in _dices)
+                {
+                    ReelTone tone = Reel.ToneOf(dice.ClassName);
+                    string info = Text(player, $"dice_{dice.ClassName}_info");
+                    built.Add(new InfoRow(
+                        Reel.LabelFor(player, dice.ClassName),
+                        Text(player, ToneKey(tone)),
+                        info == $"dice_{dice.ClassName}_info" ? string.Empty : info,
+                        ToInfoTone(tone)));
+                }
+
+                built.Sort((a, b) => string.Compare(a.Title, b.Title, culture, CompareOptions.IgnoreCase));
+                _perkRows[culture.Name] = perks = [.. built];
+            }
+            rows.AddRange(perks);
         }
 
         private void FillHistory(CCSPlayerController player, List<InfoRow> rows)
@@ -179,7 +189,7 @@ namespace RollTheDice
                     _ => (InfoTeam.None, "-"),
                 };
                 rows.Add(new InfoRow(
-                    owner.PlayerName,
+                    HudText.Clean(owner.PlayerName, HudText.MaxNameLength),
                     string.Empty, // alive/dead is the row style (red frame, greyed text), not a label
                     Reel.LabelFor(player, className),
                     ToInfoTone(Reel.ToneOf(className)),
@@ -230,6 +240,26 @@ namespace RollTheDice
                 }
             }
             InfoMenu.MarkAllDirty();
+        }
+
+        /// <summary>Map start: drop the histories of players that left long ago, so the table stays bounded.</summary>
+        private void PruneHistory()
+        {
+            if (_history.Count <= MaxHistoryPlayers)
+            {
+                return;
+            }
+
+            HashSet<ulong> online = [.. Utilities.GetPlayers().Select(static p => p.SteamID)];
+            foreach (ulong steamId in _history
+                .Where(kv => !online.Contains(kv.Key))
+                .OrderBy(static kv => kv.Value[^1].At)
+                .Take(_history.Count - MaxHistoryPlayers)
+                .Select(static kv => kv.Key)
+                .ToList())
+            {
+                _ = _history.Remove(steamId);
+            }
         }
 
         private bool ToggleRtdOnSpawn(CCSPlayerController player)

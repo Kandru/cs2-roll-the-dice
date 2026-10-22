@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using RollTheDice.Dices;
 using RollTheDice.Enums;
@@ -19,6 +20,8 @@ namespace RollTheDice
         private readonly List<DiceBlueprint> _dices = [];
         private readonly Dictionary<DiceBlueprint, int> _diceUsageCount = [];
         private bool _isDuringRound;
+        // bumped per round: stops the "roll every x seconds" chain of an earlier round
+        private int _rollEveryGeneration;
         private readonly Random _random = new(Guid.NewGuid().GetHashCode());
 
         public override void Load(bool hotReload)
@@ -36,7 +39,7 @@ namespace RollTheDice
             RegisterListener<Listeners.OnMapStart>(OnMapStart);
             RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
             RegisterListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
-            RegisterListener<Listeners.OnTick>(Hud.Banner.SyncViewers);
+            RegisterListener<Listeners.OnTick>(Hud.Banner.OnTick);
             RegisterListener<Listeners.OnTick>(Hud.Reel.OnTick);
             RegisterListener<Listeners.CheckTransmit>(Hud.CustomHud.OnCheckTransmit);
             // info menu ("!dice info"): own layout entity, mouse driven
@@ -85,7 +88,7 @@ namespace RollTheDice
             RemoveListener<Listeners.OnMapStart>(OnMapStart);
             RemoveListener<Listeners.OnMapEnd>(OnMapEnd);
             RemoveListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
-            RemoveListener<Listeners.OnTick>(Hud.Banner.SyncViewers);
+            RemoveListener<Listeners.OnTick>(Hud.Banner.OnTick);
             RemoveListener<Listeners.OnTick>(Hud.Reel.OnTick);
             RemoveListener<Listeners.CheckTransmit>(Hud.CustomHud.OnCheckTransmit);
             RemoveListener<Listeners.OnTick>(Hud.InfoMenu.OnTick);
@@ -190,16 +193,22 @@ namespace RollTheDice
                         _playersThatRolledTheDice[entry] = diceDescription ?? rolledDice;
                         // play sound
                         PlayDiceSoundForPlayer(entry, rolledDice);
-                    });
+                    }, TimerFlags.STOP_ON_MAPCHANGE);
                 }
             }
         }
 
         private void RollTheDiceEveryXSeconds(int seconds)
         {
+            // one chain per round: a chain from an earlier round (or map) sees a newer generation and stops
+            ScheduleRollEveryXSeconds(seconds, ++_rollEveryGeneration);
+        }
+
+        private void ScheduleRollEveryXSeconds(int seconds, int generation)
+        {
             _ = AddTimer(seconds, () =>
             {
-                if (!_isDuringRound)
+                if (!_isDuringRound || generation != _rollEveryGeneration)
                 {
                     return;
                 }
@@ -212,8 +221,8 @@ namespace RollTheDice
                     RemoveDiceForPlayer(entry, reason: DiceRemoveReason.NewDice);
                     _ = RollTheDiceForPlayer(entry, source: Hud.ReelSource.Auto);
                 }
-                RollTheDiceEveryXSeconds(seconds);
-            });
+                ScheduleRollEveryXSeconds(seconds, generation);
+            }, TimerFlags.STOP_ON_MAPCHANGE);
         }
 
         private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
@@ -245,6 +254,7 @@ namespace RollTheDice
             Hud.Banner.Suspend();
             RemoveDicesForPlayers();
             _isDuringRound = false;
+            _rollEveryGeneration++;
         }
 
         private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
@@ -290,6 +300,7 @@ namespace RollTheDice
             InitializeModules();
             // set current map
             _currentMap = mapName;
+            PruneHistory();
             Hud.InfoMenu.OnMapStart();
         }
 
@@ -428,6 +439,7 @@ namespace RollTheDice
 
             BindModuleHandlers(register: true);
             Hud.Reel.SetPool([.. _dices.Select(static d => d.ClassName)], Localizer);
+            _perkRows.Clear();
         }
 
         private void DestroyModules()
@@ -440,6 +452,7 @@ namespace RollTheDice
             _dices.Clear();
             _diceUsageCount.Clear();
             Hud.Reel.SetPool([], Localizer);
+            _perkRows.Clear();
         }
 
         private void BindModuleHandlers(bool register)
@@ -481,7 +494,11 @@ namespace RollTheDice
             if (Config.Sounds.DiceRollSound.StartsWith("sounds/"))
             {
                 // simply play sound (will be played at 100% volume regardless of the player's volume settings)
-                player.ExecuteClientCommand($"play {Config.Sounds.DiceRollSound}");
+                // "play <path>" is a client command: only plain paths, never a chained command from the config
+                if (SoundPath.IsSafe(Config.Sounds.DiceRollSound))
+                {
+                    player.ExecuteClientCommand($"play {Config.Sounds.DiceRollSound}");
+                }
             }
             else
             {

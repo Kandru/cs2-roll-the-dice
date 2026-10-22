@@ -14,6 +14,10 @@ namespace RollTheDice.Hud
 
         private static readonly Dictionary<int, string> _ownerText = [];
         private static readonly Dictionary<int, string> _shownText = [];
+        // pawn handle -> player, rebuilt per sync: spectator lookups need it for every dead viewer
+        private static readonly Dictionary<nint, CCSPlayerController> _pawnOwners = [];
+        // the tick only follows spectator switches; Show / Hide sync at once
+        private const int TickSyncInterval = 4;
         private static bool _centerEnabled = true;
         private static bool _panoramaEnabled = true;
 
@@ -113,6 +117,15 @@ namespace RollTheDice.Hud
             _shownText.Clear();
         }
 
+        /// <summary>Listener OnTick: follows spectator target changes every few ticks.</summary>
+        public static void OnTick()
+        {
+            if (Server.TickCount % TickSyncInterval == 0)
+            {
+                SyncViewers();
+            }
+        }
+
         public static void SyncViewers()
         {
             if (_ownerText.Count == 0 && !CustomHud.HasTransmitInterest())
@@ -120,14 +133,16 @@ namespace RollTheDice.Hud
                 return;
             }
 
-            foreach (CCSPlayerController viewer in Utilities.GetPlayers())
+            List<CCSPlayerController> players = Utilities.GetPlayers();
+            Dictionary<nint, CCSPlayerController> pawnOwners = IndexPawns(players, _pawnOwners);
+            foreach (CCSPlayerController viewer in players)
             {
                 if (!CustomHud.IsHumanViewer(viewer))
                 {
                     continue;
                 }
 
-                string? text = ResolveText(viewer);
+                string? text = ResolveText(viewer, pawnOwners);
                 if (text is { Length: > 0 })
                 {
                     Present(viewer, text);
@@ -147,9 +162,9 @@ namespace RollTheDice.Hud
             HudTheme.Apply(player);
         }
 
-        private static string? ResolveText(CCSPlayerController viewer)
+        private static string? ResolveText(CCSPlayerController viewer, Dictionary<nint, CCSPlayerController> pawnOwners)
         {
-            CCSPlayerController? owner = GetSpectatedOwner(viewer);
+            CCSPlayerController? owner = GetSpectatedOwner(viewer, pawnOwners);
             if (owner is null && viewer.PawnIsAlive)
             {
                 owner = viewer;
@@ -194,29 +209,30 @@ namespace RollTheDice.Hud
             CustomHud.SetText(viewer, Panel, TextVar, string.Empty);
         }
 
-        internal static CCSPlayerController? GetSpectatedOwner(CCSPlayerController viewer)
+        /// <summary>Pawn handle -> player of every live pawn, filled into <paramref name="index"/> once per pass.</summary>
+        internal static Dictionary<nint, CCSPlayerController> IndexPawns(List<CCSPlayerController> players, Dictionary<nint, CCSPlayerController> index)
+        {
+            index.Clear();
+            foreach (CCSPlayerController player in players)
+            {
+                if (player.IsValid && player.PlayerPawn?.Value is { IsValid: true } pawn)
+                {
+                    index[pawn.Handle] = player;
+                }
+            }
+            return index;
+        }
+
+        internal static CCSPlayerController? GetSpectatedOwner(CCSPlayerController viewer, Dictionary<nint, CCSPlayerController> pawnOwners)
         {
             CCSPlayerController? From(CBasePlayerPawn? pawn)
             {
                 CBaseEntity? target = pawn?.ObserverServices?.ObserverTarget.Value;
-                if (target is not { IsValid: true })
-                {
-                    return null;
-                }
-
-                nint handle = target.Handle;
-                foreach (CCSPlayerController candidate in Utilities.GetPlayers())
-                {
-                    if (candidate.IsValid
-                        && candidate != viewer
-                        && candidate.PlayerPawn?.Value is { IsValid: true } candidatePawn
-                        && candidatePawn.Handle == handle)
-                    {
-                        return candidate;
-                    }
-                }
-
-                return null;
+                return target is { IsValid: true }
+                    && pawnOwners.TryGetValue(target.Handle, out CCSPlayerController? owner)
+                    && owner != viewer
+                    ? owner
+                    : null;
             }
 
             return From(viewer.ObserverPawn?.Value) ?? From(viewer.PlayerPawn?.Value);

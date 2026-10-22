@@ -145,6 +145,8 @@ namespace RollTheDice.Hud
         private static IStringLocalizer? _localizer;
         // per viewer language: title, source and winner row (built on first use per culture)
         private static readonly Dictionary<string, ReelTexts> _textsByCulture = new(StringComparer.Ordinal);
+        // own index: Present below may sync the banner, which rebuilds the banner's index
+        private static readonly Dictionary<nint, CCSPlayerController> _pawnOwners = [];
 
         private sealed record ReelTexts(string TitleRolling, string TitleRolled, string[] Sources, string[] Labels);
 
@@ -487,10 +489,12 @@ namespace RollTheDice.Hud
 
             List<int> viewers = _viewers[slot] ??= [];
             viewers.Clear();
-            foreach (CCSPlayerController viewer in Utilities.GetPlayers())
+            List<CCSPlayerController> players = Utilities.GetPlayers();
+            Dictionary<nint, CCSPlayerController> pawnOwners = Banner.IndexPawns(players, _pawnOwners);
+            foreach (CCSPlayerController viewer in players)
             {
                 if (!CustomHud.IsHumanViewer(viewer)
-                    || (viewer.Slot != slot && Banner.GetSpectatedOwner(viewer)?.Slot != slot))
+                    || (viewer.Slot != slot && Banner.GetSpectatedOwner(viewer, pawnOwners)?.Slot != slot))
                 {
                     continue;
                 }
@@ -812,7 +816,10 @@ namespace RollTheDice.Hud
         {
             if (sound.StartsWith("sounds/", StringComparison.Ordinal))
             {
-                player.ExecuteClientCommand($"play {sound}");
+                if (SoundPath.IsSafe(sound))
+                {
+                    player.ExecuteClientCommand($"play {sound}");
+                }
                 return;
             }
 
