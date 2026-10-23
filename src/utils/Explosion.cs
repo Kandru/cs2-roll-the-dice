@@ -15,6 +15,8 @@ namespace RollTheDice.Utils
     {
         /// <summary>The fireball of a real HE grenade (precached in Precache.cs).</summary>
         public const string ParticleEffect = "particles/explosions_fx/explosion_hegrenade.vpcf";
+        /// <summary>A smaller blast for frequent explosions (explosive rounds; precached in Precache.cs).</summary>
+        public const string SmallParticleEffect = "particles/explosions_fx/explosion_basic.vpcf";
         // the particle system lingers this long after the blast for the smoke
         private const float ParticleSeconds = 5f;
         private const float FloorSearch = 256f;
@@ -107,7 +109,7 @@ namespace RollTheDice.Utils
         /// Explodes at <paramref name="position"/> after <paramref name="delay"/> seconds. The attacker gets the kills
         /// (kill feed, score); friendly fire follows the server rules because the attacker is a player.
         /// </summary>
-        public static void Detonate(Vector position, CCSPlayerPawn? attacker, float delay, float damage, float radius, bool showGrenade = true)
+        public static void Detonate(Vector position, CCSPlayerPawn? attacker, float delay, float damage, float radius, bool showGrenade = true, bool hurtsOwner = true, string particle = ParticleEffect)
         {
             CEnvExplosion? explosion = Utilities.CreateEntityByName<CEnvExplosion>("env_explosion");
             if (explosion == null)
@@ -132,17 +134,9 @@ namespace RollTheDice.Utils
             explosion.AddEntityIOEvent("Explode", owner, owner, "", wait);
             explosion.AddEntityIOEvent("Kill", null, null, "", wait + 1f);
 
-            if (Utilities.CreateEntityByName<CParticleSystem>("info_particle_system") is { } fx)
-            {
-                fx.EffectName = ParticleEffect;
-                fx.StartActive = false;
-                fx.Teleport(position, new QAngle(0, 0, 0), new Vector(0, 0, 0));
-                fx.DispatchSpawn();
-                fx.AddEntityIOEvent("Start", null, null, "", wait);
-                fx.AddEntityIOEvent("Kill", null, null, "", wait + ParticleSeconds);
-            }
+            Particle.Start(particle, position, ParticleSeconds, wait);
 
-            if (owner != null)
+            if (owner != null && hurtsOwner)
             {
                 _ownerHits.Add(new OwnerHit(new Vector(position.X, position.Y, position.Z), owner, Server.CurrentTime + wait, damage, radius));
             }

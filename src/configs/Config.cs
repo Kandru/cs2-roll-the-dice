@@ -88,6 +88,25 @@ namespace RollTheDice
         [JsonPropertyName("marking_rounds")] public MarkingRoundsConfig MarkingRounds { get; set; } = new MarkingRoundsConfig();
         [JsonPropertyName("overshield")] public OvershieldConfig Overshield { get; set; } = new OvershieldConfig();
         [JsonPropertyName("throwing_knives")] public ThrowingKnivesConfig ThrowingKnives { get; set; } = new ThrowingKnivesConfig();
+        [JsonPropertyName("black_hole")] public BlackHoleConfig BlackHole { get; set; } = new BlackHoleConfig();
+        [JsonPropertyName("chain_lightning")] public ChainLightningConfig ChainLightning { get; set; } = new ChainLightningConfig();
+        [JsonPropertyName("confetti_kills")] public ConfettiKillsConfig ConfettiKills { get; set; } = new ConfettiKillsConfig();
+        [JsonPropertyName("explosive_rounds")] public ExplosiveRoundsConfig ExplosiveRounds { get; set; } = new ExplosiveRoundsConfig();
+        [JsonPropertyName("frost_rounds")] public FrostRoundsConfig FrostRounds { get; set; } = new FrostRoundsConfig();
+        [JsonPropertyName("gun_game")] public GunGameConfig GunGame { get; set; } = new GunGameConfig();
+        [JsonPropertyName("homing_grenades")] public HomingGrenadesConfig HomingGrenades { get; set; } = new HomingGrenadesConfig();
+        [JsonPropertyName("ice_skating")] public IceSkatingConfig IceSkating { get; set; } = new IceSkatingConfig();
+        [JsonPropertyName("incendiary_rounds")] public IncendiaryRoundsConfig IncendiaryRounds { get; set; } = new IncendiaryRoundsConfig();
+        [JsonPropertyName("joker")] public JokerConfig Joker { get; set; } = new JokerConfig();
+        [JsonPropertyName("knockback_rounds")] public KnockbackRoundsConfig KnockbackRounds { get; set; } = new KnockbackRoundsConfig();
+        [JsonPropertyName("laser_pointer")] public LaserPointerConfig LaserPointer { get; set; } = new LaserPointerConfig();
+        [JsonPropertyName("ninja_smoke")] public NinjaSmokeConfig NinjaSmoke { get; set; } = new NinjaSmokeConfig();
+        [JsonPropertyName("play_dead")] public PlayDeadConfig PlayDead { get; set; } = new PlayDeadConfig();
+        [JsonPropertyName("proximity_mine")] public ProximityMineConfig ProximityMine { get; set; } = new ProximityMineConfig();
+        [JsonPropertyName("quick_reload")] public QuickReloadConfig QuickReload { get; set; } = new QuickReloadConfig();
+        [JsonPropertyName("radar_scan")] public RadarScanConfig RadarScan { get; set; } = new RadarScanConfig();
+        [JsonPropertyName("recoil_propulsion")] public RecoilPropulsionConfig RecoilPropulsion { get; set; } = new RecoilPropulsionConfig();
+        [JsonPropertyName("thorns")] public ThornsConfig Thorns { get; set; } = new ThornsConfig();
     }
 
     public class MapConfig

@@ -45,6 +45,7 @@ namespace RollTheDice.Dices
             CCSPlayerController? attacker = @event.Attacker;
             CCSPlayerController? victim = @event.Userid;
             if (_players.Count == 0
+                || Damage.IsDealing
                 || attacker is not { IsValid: true }
                 || !_players.Contains(attacker)
                 || victim is not { IsValid: true }

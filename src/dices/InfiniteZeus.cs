@@ -4,7 +4,6 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Configs;
 using RollTheDice.Utils;
-using System.Drawing;
 using System.Text.Json.Serialization;
 
 namespace RollTheDice.Dices
@@ -51,7 +50,7 @@ namespace RollTheDice.Dices
             Vector end = new(eyes.X + (forward.X * MaxRange), eyes.Y + (forward.Y * MaxRange), eyes.Z + (forward.Z * MaxRange));
             TraceResult trace = Trace.TraceEndShape(eyes, end, pawn, ShotOptions);
             Vector hit = trace.DidHit() ? trace.EndPos : end;
-            Bolt(eyes, hit, _config.Dices.InfiniteZeus.BoltSeconds);
+            Beam.Flash(eyes, hit, _config.Dices.InfiniteZeus.BoltSeconds, Beam.Lightning);
 
             float distance = Vectors.GetDistance(eyes, hit);
             if (distance <= TaserRange
@@ -66,23 +65,6 @@ namespace RollTheDice.Dices
             Debug($"{player.PlayerName} railgun hit {victim.PlayerName} at {distance:0}");
             Damage.Deal(victimPawn, pawn, _config.Dices.InfiniteZeus.Damage, DamageTypes_t.DMG_SHOCK);
             return HookResult.Continue;
-        }
-
-        /// <summary>A short-lived beam from the muzzle to the hit (entity I/O removes it, no timer).</summary>
-        private static void Bolt(Vector from, Vector to, float seconds)
-        {
-            if (Utilities.CreateEntityByName<CBeam>("beam") is not { } beam)
-            {
-                return;
-            }
-            beam.Render = Color.FromArgb(255, 120, 200, 255);
-            beam.Width = 3f;
-            beam.Teleport(from, new QAngle(0, 0, 0), new Vector(0, 0, 0));
-            beam.EndPos.X = to.X;
-            beam.EndPos.Y = to.Y;
-            beam.EndPos.Z = to.Z;
-            beam.DispatchSpawn();
-            beam.AddEntityIOEvent("Kill", null, null, "", seconds);
         }
     }
 }

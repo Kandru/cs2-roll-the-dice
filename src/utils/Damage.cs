@@ -17,6 +17,15 @@ namespace RollTheDice.Utils
 
         public static bool IsFromDice(CTakeDamageInfo info) => info.NumObjectsPenetrated == Marker;
 
+        // TakeDamage fires player_hurt at once, inside Deal; the event names the attacker's gun as the weapon
+        private static int _dealing;
+
+        /// <summary>
+        /// True while <see cref="Deal"/> runs: a player_hurt handler that reacts to gun hits (burning, chains) skips
+        /// dice damage, or a burn tick would light the fire again.
+        /// </summary>
+        public static bool IsDealing => _dealing > 0;
+
         public static void Deal(CCSPlayerPawn victim, CCSPlayerPawn? attacker, float amount, DamageTypes_t type = DamageTypes_t.DMG_GENERIC)
         {
             if (!victim.IsValid || victim.LifeState != (byte)LifeState_t.LIFE_ALIVE || amount <= 0f)
@@ -66,7 +75,15 @@ namespace RollTheDice.Utils
                 result.TotalledDamageDealt = lost;
                 result.WasDamageSuppressed = false;
 
-                VirtualFunctions.CBaseEntity_TakeDamageOld.Invoke(victim, info, result);
+                _dealing++;
+                try
+                {
+                    VirtualFunctions.CBaseEntity_TakeDamageOld.Invoke(victim, info, result);
+                }
+                finally
+                {
+                    _dealing--;
+                }
             }
             finally
             {

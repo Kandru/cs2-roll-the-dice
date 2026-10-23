@@ -197,6 +197,17 @@ namespace RollTheDice
                 return;
             }
 
+            // a joker (Joker dice, kept until the match ends) buys one more roll this round: no cooldown, no price
+            bool joker = false;
+            if (_playersThatRolledTheDice.ContainsKey(player)
+                && player.PlayerPawn?.Value?.LifeState == (byte)LifeState_t.LIFE_ALIVE
+                && Dices.Joker.TryUse(player))
+            {
+                joker = true;
+                _ = _playersThatRolledTheDice.Remove(player);
+                command.ReplyToCommand(Text(player, "command.rollthedice.joker").Replace("{jokers}", Dices.Joker.Count(player).ToString()));
+            }
+
             if (_playersThatRolledTheDice.TryGetValue(player, out string? diceVal))
             {
                 string message = Text(player, "command.rollthedice.alreadyrolled").Replace("{dice}", diceVal);
@@ -205,7 +216,7 @@ namespace RollTheDice
                 return;
             }
 
-            if (_PlayerCooldown.TryGetValue(player, out int cooldown))
+            if (!joker && _PlayerCooldown.TryGetValue(player, out int cooldown))
             {
                 if (Config.CooldownRounds > 0 && cooldown > 0)
                 {
@@ -228,7 +239,7 @@ namespace RollTheDice
             }
 
             // charged last: a dead player must not pay for a roll that never happens
-            if (Config.PriceToDice > 0)
+            if (!joker && Config.PriceToDice > 0)
             {
                 if (player.InGameMoneyServices is not { } money || money.Account < Config.PriceToDice)
                 {

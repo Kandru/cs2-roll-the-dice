@@ -33,6 +33,7 @@ namespace RollTheDice
             RegisterEventHandler<EventRoundFreezeEnd>(OnRoundFreezeEnd);
             RegisterEventHandler<EventRoundEnd>(OnRoundEnd);
             RegisterEventHandler<EventCsIntermission>(OnCsIntermission);
+            RegisterEventHandler<EventBeginNewMatch>(OnBeginNewMatch);
             RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
             RegisterEventHandler<EventPlayerConnectFull>(OnPlayerConnectFull);
@@ -84,6 +85,7 @@ namespace RollTheDice
             DeregisterEventHandler<EventRoundFreezeEnd>(OnRoundFreezeEnd);
             DeregisterEventHandler<EventRoundEnd>(OnRoundEnd);
             DeregisterEventHandler<EventCsIntermission>(OnCsIntermission);
+            DeregisterEventHandler<EventBeginNewMatch>(OnBeginNewMatch);
             DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             DeregisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
             DeregisterEventHandler<EventPlayerConnectFull>(OnPlayerConnectFull);
@@ -249,8 +251,17 @@ namespace RollTheDice
             return HookResult.Continue;
         }
 
+        /// <summary>A new match (warmup over, mp_restartgame): jokers of the last match are gone.</summary>
+        private HookResult OnBeginNewMatch(EventBeginNewMatch @event, GameEventInfo info)
+        {
+            Dices.Joker.ClearAll();
+            return HookResult.Continue;
+        }
+
         private HookResult OnCsIntermission(EventCsIntermission @event, GameEventInfo info)
         {
+            // the match is over: jokers only last one match
+            Dices.Joker.ClearAll();
             EndRoundHud();
             return HookResult.Continue;
         }
@@ -298,6 +309,7 @@ namespace RollTheDice
 
         private void OnMapStart(string mapName)
         {
+            Dices.Joker.ClearAll();
             // update configuration
             ReloadConfigFromDisk();
             // load map config
