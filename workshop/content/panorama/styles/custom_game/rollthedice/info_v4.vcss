@@ -1,5 +1,5 @@
 /* ============================================================================
-   Roll The Dice info menu v3 (info_v3.xml, contract: src/Hud/InfoMenuIds.cs).
+   Roll The Dice info menu v4 (info_v4.xml, contract: src/Hud/InfoMenuIds.cs).
    Modal, centred, mouse driven ("!dice info"). Look follows the Challenges
    "tactical" menu: square panel, accent corner brackets, "//" kicker, index
    boxes, nav rail with active bar.

@@ -67,7 +67,7 @@ namespace RollTheDice.Hud
     }
 
     /// <summary>
-    /// Info menu opened with "!dice info" (info_v3.xml, own layout entity): this round's dice (start page), own
+    /// Info menu opened with "!dice info" (info_v4.xml, own layout entity): this round's dice (start page), own
     /// history, perks (tone filter, sort, search via "!dice info &lt;text&gt;"), chat commands and settings (auto roll,
     /// language). Mouse driven: input capture while open, clicks arrive through <see cref="OnClicked"/>. Every list is
     /// one client-scrolled page over a fixed row pool; paints run only on change and are spread over ticks by a write
@@ -119,7 +119,7 @@ namespace RollTheDice.Hud
         private static readonly TextSlot[] _rowMeta = Texts(InfoMenuIds.RowMetaVars);
         private static readonly TextSlot[] _rowDesc = Texts(InfoMenuIds.RowDescVars);
 
-        // authored state of info_v3.xml: view-list, theme-gold, tab 0 and filter 0 active, search box/rows/empty off
+        // authored state of info_v4.xml: view-list, theme-gold, tab 0 and filter 0 active, search box/rows/empty off
         private static readonly ClassSlot _view = _hud.Group(InfoMenuIds.RootId, InfoMenuIds.Views, authored: 0);
         private static readonly ClassSlot _theme = _hud.Group(InfoMenuIds.RootId, HudTheme.ClassNames, authored: HudTheme.DefaultIndex);
         private static readonly ClassSlot _autoOn = _hud.Flag(InfoMenuIds.AutoId, InfoMenuIds.OnClass);

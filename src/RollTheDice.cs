@@ -41,6 +41,8 @@ namespace RollTheDice
             RegisterListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
             RegisterListener<Listeners.OnTick>(Hud.Banner.OnTick);
             RegisterListener<Listeners.OnTick>(Hud.Reel.OnTick);
+            // dice explosions hurt their thrower like a real HE (env_explosion spares its owner)
+            RegisterListener<Listeners.OnTick>(Utils.Explosion.OnTick);
             RegisterListener<Listeners.CheckTransmit>(Hud.CustomHud.OnCheckTransmit);
             // info menu ("!dice info"): own layout entity, mouse driven
             Hud.InfoMenu.Bind(this, this);
@@ -90,6 +92,8 @@ namespace RollTheDice
             RemoveListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
             RemoveListener<Listeners.OnTick>(Hud.Banner.OnTick);
             RemoveListener<Listeners.OnTick>(Hud.Reel.OnTick);
+            RemoveListener<Listeners.OnTick>(Utils.Explosion.OnTick);
+            Utils.Explosion.Clear();
             RemoveListener<Listeners.CheckTransmit>(Hud.CustomHud.OnCheckTransmit);
             RemoveListener<Listeners.OnTick>(Hud.InfoMenu.OnTick);
             RemoveListener<Listeners.CheckTransmit>(Hud.InfoMenu.FilterTransmit);
@@ -104,6 +108,8 @@ namespace RollTheDice
             _roundDice.Clear();
             // the client rebuilt every layout from XML: close the info menu and write its defaults back
             Hud.InfoMenu.ResetRound();
+            // blasts queued last round never reach their thrower in the new one
+            Utils.Explosion.Clear();
             // hide banner before dice reset so Remove/Reset cannot re-show it
             Hud.Banner.Suspend();
             // reset dices (necessary after warmup)

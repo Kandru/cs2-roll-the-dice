@@ -9,6 +9,8 @@ namespace RollTheDice
         [
             "models/chicken/chicken.vmdl",
             "particles/burning_fx/env_fire_tiny.vpcf",
+            // dice explosions (Martyrdom, ClusterGrenade, Airstrike): env_explosion draws no fireball in CS2
+            Utils.Explosion.ParticleEffect,
             "models/props/cs_office/plant01.vmdl",
             "models/props/de_vertigo/trafficcone_clean.vmdl",
             "models/generic/barstool_01/barstool_01.vmdl",
