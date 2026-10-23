@@ -1,7 +1,9 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
+using RollTheDice.Utils;
 
 namespace RollTheDice.Hud
 {
@@ -34,12 +36,15 @@ namespace RollTheDice.Hud
         public const string SourceVar = "rr_source";
         public const string WinVar = "rr_win";
         public const string CreditVar = "rr_credit";
+        public const string HintVar = "rr_hint";
         public const string FillerVarPrefix = "rr_f";
         public const string RowIdPrefix = "ReelRow";
         public const int RowCount = 22;
         public const int WinRow = 20;
 
         private const string CreditText = "made by: kandru.net";
+        // chat command of the info menu; a command, so the same in every language
+        private const string HintText = "!dice info";
         private const float OpenDelaySeconds = 0.2f;
         // Time between clearing replay-* and setting the next one, so the client sees a network update without it
         private const float ReplayGapSeconds = 0.05f;
@@ -134,11 +139,16 @@ namespace RollTheDice.Hud
 
         // dice pool of the current map
         private static string[] _poolClass = [];
+        // server language: the filler strip is global, so it cannot follow each viewer's language
         private static string[] _poolLabel = [];
         private static int[] _poolTone = [];
-        private static string _titleRolling = string.Empty;
-        private static string _titleRolled = string.Empty;
-        private static string[] _sourceLabels = [string.Empty, string.Empty, string.Empty];
+        private static IStringLocalizer? _localizer;
+        // per viewer language: title, source and winner row (built on first use per culture)
+        private static readonly Dictionary<string, ReelTexts> _textsByCulture = new(StringComparer.Ordinal);
+        // own index: Present below may sync the banner, which rebuilds the banner's index
+        private static readonly Dictionary<nint, CCSPlayerController> _pawnOwners = [];
+
+        private sealed record ReelTexts(string TitleRolling, string TitleRolled, string[] Sources, string[] Labels);
 
         // per owner (the player who rolled)
         private static readonly Phase[] _phase = new Phase[MaxSlots];
@@ -200,14 +210,57 @@ namespace RollTheDice.Hud
                 _poolTone[i] = (int)ResolveTone(name);
             }
 
-            _titleRolling = localizer["reel.title.rolling"].Value;
-            _titleRolled = localizer["reel.title.rolled"].Value;
-            _sourceLabels =
-            [
-                localizer["reel.source.rtd"].Value,
-                localizer["reel.source.auto"].Value,
-                localizer["reel.source.admin"].Value,
-            ];
+            _localizer = localizer;
+            _textsByCulture.Clear();
+        }
+
+        /// <summary>Localized reel name of a dice class in the viewer's language (class name when missing).</summary>
+        public static string LabelFor(CCSPlayerController viewer, string className)
+        {
+            ReelTexts texts = TextsFor(viewer);
+            for (int i = 0; i < _poolClass.Length; i++)
+            {
+                if (string.Equals(_poolClass[i], className, StringComparison.Ordinal))
+                {
+                    return texts.Labels[i];
+                }
+            }
+            return className;
+        }
+
+        public static ReelTone ToneOf(string className) => ResolveTone(className);
+
+        private static ReelTexts TextsFor(CCSPlayerController viewer)
+        {
+            string culture = Localization.LanguageOf(viewer).Name;
+            if (_textsByCulture.TryGetValue(culture, out ReelTexts? cached))
+            {
+                return cached;
+            }
+
+            string Text(string key, string fallback)
+            {
+                if (_localizer == null)
+                {
+                    return fallback;
+                }
+                string value = _localizer.ForPlayerSafe(viewer, key);
+                return value == key ? fallback : value;
+            }
+
+            string[] labels = new string[_poolClass.Length];
+            for (int i = 0; i < labels.Length; i++)
+            {
+                labels[i] = Text($"dice_{_poolClass[i]}_reel", _poolClass[i]);
+            }
+
+            ReelTexts texts = new(
+                Text("reel.title.rolling", string.Empty),
+                Text("reel.title.rolled", string.Empty),
+                [Text("reel.source.rtd", string.Empty), Text("reel.source.auto", string.Empty), Text("reel.source.admin", string.Empty)],
+                labels);
+            _textsByCulture[culture] = texts;
+            return texts;
         }
 
         /// <summary>
@@ -422,6 +475,7 @@ namespace RollTheDice.Hud
                 SwapGlobal(i, (int)ReelTone.Neutral);
             }
             CustomHud.SetGlobalText(Panel, CreditVar, string.Empty);
+            CustomHud.SetGlobalText(Panel, HintVar, string.Empty);
             _fillerWritten = false;
         }
 
@@ -435,10 +489,12 @@ namespace RollTheDice.Hud
 
             List<int> viewers = _viewers[slot] ??= [];
             viewers.Clear();
-            foreach (CCSPlayerController viewer in Utilities.GetPlayers())
+            List<CCSPlayerController> players = Utilities.GetPlayers();
+            Dictionary<nint, CCSPlayerController> pawnOwners = Banner.IndexPawns(players, _pawnOwners);
+            foreach (CCSPlayerController viewer in players)
             {
                 if (!CustomHud.IsHumanViewer(viewer)
-                    || (viewer.Slot != slot && Banner.GetSpectatedOwner(viewer)?.Slot != slot))
+                    || (viewer.Slot != slot && Banner.GetSpectatedOwner(viewer, pawnOwners)?.Slot != slot))
                 {
                     continue;
                 }
@@ -508,10 +564,11 @@ namespace RollTheDice.Hud
             _touched[v] = true;
 
             int dice = _dice[owner];
+            ReelTexts texts = TextsFor(viewer);
             HudTheme.ApplyTo(viewer, Panel);
-            CustomHud.SetText(viewer, Panel, TitleVar, _titleRolling);
-            CustomHud.SetText(viewer, Panel, SourceVar, _sourceLabels[_source[owner]]);
-            CustomHud.SetText(viewer, Panel, WinVar, _poolLabel[dice]);
+            CustomHud.SetText(viewer, Panel, TitleVar, texts.TitleRolling);
+            CustomHud.SetText(viewer, Panel, SourceVar, texts.Sources[_source[owner]]);
+            CustomHud.SetText(viewer, Panel, WinVar, texts.Labels[dice]);
             CustomHud.SetHasClass(viewer, Panel, "is-stopped", false);
             CustomHud.SetHasClass(viewer, Panel, "is-running", false);
             Swap(viewer, WinTones, ref _winIdx[v], _poolTone[dice]);
@@ -559,7 +616,7 @@ namespace RollTheDice.Hud
                         continue;
                     }
                     CustomHud.SetHasClass(viewer, Panel, "is-stopped", true);
-                    CustomHud.SetText(viewer, Panel, TitleVar, _titleRolled);
+                    CustomHud.SetText(viewer, Panel, TitleVar, TextsFor(viewer).TitleRolled);
                     // hold-N was set on open, so this starts the drain transition
                     CustomHud.SetHasClass(viewer, Panel, "is-running", true);
                 }
@@ -711,6 +768,7 @@ namespace RollTheDice.Hud
                 SwapGlobal(row, _poolTone[dice]);
             }
             CustomHud.SetGlobalText(Panel, CreditVar, CreditText);
+            CustomHud.SetGlobalText(Panel, HintVar, HintText);
             _fillerWritten = true;
         }
 
@@ -758,7 +816,10 @@ namespace RollTheDice.Hud
         {
             if (sound.StartsWith("sounds/", StringComparison.Ordinal))
             {
-                player.ExecuteClientCommand($"play {sound}");
+                if (SoundPath.IsSafe(sound))
+                {
+                    player.ExecuteClientCommand($"play {sound}");
+                }
                 return;
             }
 

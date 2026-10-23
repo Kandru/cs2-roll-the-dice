@@ -1,5 +1,6 @@
 ﻿using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Extensions;
 using RollTheDice.Configs;
 using RollTheDice.Enums;
@@ -74,6 +75,8 @@ namespace RollTheDice
     {
         // automatically roll the dice on spawn
         [JsonPropertyName("rtd_on_spawn")] public bool RtdOnSpawn { get; set; } = false;
+        // language chosen in the info menu ("de", "en"; empty = server default)
+        [JsonPropertyName("language")] public string Language { get; set; } = "";
     }
 
     public class TriggerConfig
@@ -195,8 +198,15 @@ namespace RollTheDice
                 string message = Localizer["core.error"].Value.Replace("{error}", e.Message);
                 // log error
                 Console.WriteLine(message);
-                // show error to users for transparency (admin needs to notice somehow)
-                Server.PrintToChatAll(message);
+                // show the error to admins (they need to notice somehow); the text can contain server paths
+                foreach (CCSPlayerController player in Utilities.GetPlayers())
+                {
+                    if (player is { IsValid: true, IsBot: false, IsHLTV: false }
+                        && AdminManager.PlayerHasPermissions(player, AdminPermission))
+                    {
+                        player.PrintToChat(message);
+                    }
+                }
             }
         }
 

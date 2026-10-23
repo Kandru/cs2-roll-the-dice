@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.Utils;
 using RollTheDice.Dices;
 using RollTheDice.Enums;
@@ -19,6 +20,8 @@ namespace RollTheDice
         private readonly List<DiceBlueprint> _dices = [];
         private readonly Dictionary<DiceBlueprint, int> _diceUsageCount = [];
         private bool _isDuringRound;
+        // bumped per round: stops the "roll every x seconds" chain of an earlier round
+        private int _rollEveryGeneration;
         private readonly Random _random = new(Guid.NewGuid().GetHashCode());
 
         public override void Load(bool hotReload)
@@ -32,12 +35,18 @@ namespace RollTheDice
             RegisterEventHandler<EventCsIntermission>(OnCsIntermission);
             RegisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             RegisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
+            RegisterEventHandler<EventPlayerConnectFull>(OnPlayerConnectFull);
             RegisterListener<Listeners.OnMapStart>(OnMapStart);
             RegisterListener<Listeners.OnMapEnd>(OnMapEnd);
             RegisterListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
-            RegisterListener<Listeners.OnTick>(Hud.Banner.SyncViewers);
+            RegisterListener<Listeners.OnTick>(Hud.Banner.OnTick);
             RegisterListener<Listeners.OnTick>(Hud.Reel.OnTick);
             RegisterListener<Listeners.CheckTransmit>(Hud.CustomHud.OnCheckTransmit);
+            // info menu ("!dice info"): own layout entity, mouse driven
+            Hud.InfoMenu.Bind(this, this);
+            RegisterListener<Listeners.OnTick>(Hud.InfoMenu.OnTick);
+            RegisterListener<Listeners.CheckTransmit>(Hud.InfoMenu.FilterTransmit);
+            RegisterListener<Listeners.OnCustomHudClicked>(Hud.InfoMenu.OnClicked);
             // print message if hot reload
             if (hotReload)
             {
@@ -49,6 +58,12 @@ namespace RollTheDice
                 _isDuringRound = true;
                 // initialize dice modules
                 InitializeModules();
+                // restore menu languages and spawn the info menu entity
+                foreach (CCSPlayerController player in Utilities.GetPlayers())
+                {
+                    ApplySavedLanguage(player);
+                }
+                Hud.InfoMenu.WarmUp();
             }
         }
 
@@ -56,6 +71,7 @@ namespace RollTheDice
         {
             // reset dice rolls on unload
             DestroyModules();
+            Hud.InfoMenu.Shutdown();
             Hud.Reel.Shutdown();
             Hud.Banner.Shutdown();
             Hud.CustomHud.Shutdown();
@@ -68,12 +84,16 @@ namespace RollTheDice
             DeregisterEventHandler<EventCsIntermission>(OnCsIntermission);
             DeregisterEventHandler<EventPlayerDeath>(OnPlayerDeath);
             DeregisterEventHandler<EventPlayerDisconnect>(OnPlayerDisconnect);
+            DeregisterEventHandler<EventPlayerConnectFull>(OnPlayerConnectFull);
             RemoveListener<Listeners.OnMapStart>(OnMapStart);
             RemoveListener<Listeners.OnMapEnd>(OnMapEnd);
             RemoveListener<Listeners.OnServerPrecacheResources>(OnServerPrecacheResources);
-            RemoveListener<Listeners.OnTick>(Hud.Banner.SyncViewers);
+            RemoveListener<Listeners.OnTick>(Hud.Banner.OnTick);
             RemoveListener<Listeners.OnTick>(Hud.Reel.OnTick);
             RemoveListener<Listeners.CheckTransmit>(Hud.CustomHud.OnCheckTransmit);
+            RemoveListener<Listeners.OnTick>(Hud.InfoMenu.OnTick);
+            RemoveListener<Listeners.CheckTransmit>(Hud.InfoMenu.FilterTransmit);
+            RemoveListener<Listeners.OnCustomHudClicked>(Hud.InfoMenu.OnClicked);
             Console.WriteLine(Localizer["core.unload"]);
         }
 
@@ -81,6 +101,9 @@ namespace RollTheDice
         {
             // reset players that rolled the dice
             _playersThatRolledTheDice.Clear();
+            _roundDice.Clear();
+            // the client rebuilt every layout from XML: close the info menu and write its defaults back
+            Hud.InfoMenu.ResetRound();
             // hide banner before dice reset so Remove/Reset cannot re-show it
             Hud.Banner.Suspend();
             // reset dices (necessary after warmup)
@@ -93,8 +116,14 @@ namespace RollTheDice
             {
                 return HookResult.Continue;
             }
-            // announce round start
-            Server.PrintToChatAll(Localizer["core.announcement"]);
+            // announce round start (in each player's language)
+            foreach (CCSPlayerController player in Utilities.GetPlayers())
+            {
+                if (player.IsValid && !player.IsBot && !player.IsHLTV)
+                {
+                    player.PrintToChat(Text(player, "core.announcement"));
+                }
+            }
             // allow dice rolls
             _isDuringRound = true;
             // roll the dice on round start if enabled
@@ -164,16 +193,22 @@ namespace RollTheDice
                         _playersThatRolledTheDice[entry] = diceDescription ?? rolledDice;
                         // play sound
                         PlayDiceSoundForPlayer(entry, rolledDice);
-                    });
+                    }, TimerFlags.STOP_ON_MAPCHANGE);
                 }
             }
         }
 
         private void RollTheDiceEveryXSeconds(int seconds)
         {
+            // one chain per round: a chain from an earlier round (or map) sees a newer generation and stops
+            ScheduleRollEveryXSeconds(seconds, ++_rollEveryGeneration);
+        }
+
+        private void ScheduleRollEveryXSeconds(int seconds, int generation)
+        {
             _ = AddTimer(seconds, () =>
             {
-                if (!_isDuringRound)
+                if (!_isDuringRound || generation != _rollEveryGeneration)
                 {
                     return;
                 }
@@ -186,8 +221,8 @@ namespace RollTheDice
                     RemoveDiceForPlayer(entry, reason: DiceRemoveReason.NewDice);
                     _ = RollTheDiceForPlayer(entry, source: Hud.ReelSource.Auto);
                 }
-                RollTheDiceEveryXSeconds(seconds);
-            });
+                ScheduleRollEveryXSeconds(seconds, generation);
+            }, TimerFlags.STOP_ON_MAPCHANGE);
         }
 
         private HookResult OnRoundEnd(EventRoundEnd @event, GameEventInfo info)
@@ -219,6 +254,7 @@ namespace RollTheDice
             Hud.Banner.Suspend();
             RemoveDicesForPlayers();
             _isDuringRound = false;
+            _rollEveryGeneration++;
         }
 
         private HookResult OnPlayerDeath(EventPlayerDeath @event, GameEventInfo info)
@@ -227,6 +263,9 @@ namespace RollTheDice
             RemoveDiceForPlayer(@event.Userid, DiceRemoveReason.Death);
             // dice Remove overrides often skip Banner.Hide — force the overlay off
             Hud.Banner.Hide(@event.Userid);
+            // menus close on death; the round list of everyone else shows the new state
+            Hud.InfoMenu.Close(@event.Userid);
+            Hud.InfoMenu.MarkAllDirty();
             return HookResult.Continue;
         }
 
@@ -236,6 +275,18 @@ namespace RollTheDice
             Hud.Reel.Forget(@event.Userid);
             Hud.Banner.Release(@event.Userid);
             Hud.CustomHud.ReleasePlayer(@event.Userid);
+            if (@event.Userid is { IsValid: true } player)
+            {
+                _ = _roundDice.Remove(player);
+                Hud.InfoMenu.Forget(player.Slot);
+                Hud.InfoMenu.MarkAllDirty();
+            }
+            return HookResult.Continue;
+        }
+
+        private HookResult OnPlayerConnectFull(EventPlayerConnectFull @event, GameEventInfo info)
+        {
+            ApplySavedLanguage(@event.Userid);
             return HookResult.Continue;
         }
 
@@ -249,6 +300,8 @@ namespace RollTheDice
             InitializeModules();
             // set current map
             _currentMap = mapName;
+            PruneHistory();
+            Hud.InfoMenu.OnMapStart();
         }
 
         private void OnMapEnd()
@@ -260,6 +313,7 @@ namespace RollTheDice
             // reset states
             _isDuringRound = false;
             _playersThatRolledTheDice.Clear();
+            _roundDice.Clear();
             _PlayerCooldown.Clear();
             // reset dice usage counter for better distribution
             _diceUsageCount.Clear();
@@ -286,6 +340,7 @@ namespace RollTheDice
             // visual only: the reel shows the dice chosen above and holds back its notifications until it stops
             _ = Hud.Reel.Begin(player, dice.ClassName, source);
             dice.Add(player);
+            RecordRoll(player, dice);
             _diceUsageCount.TryGetValue(dice, out int usage);
             _diceUsageCount[dice] = usage + 1;
             return (dice.ClassName, dice.Description);
@@ -384,6 +439,7 @@ namespace RollTheDice
 
             BindModuleHandlers(register: true);
             Hud.Reel.SetPool([.. _dices.Select(static d => d.ClassName)], Localizer);
+            _perkRows.Clear();
         }
 
         private void DestroyModules()
@@ -396,6 +452,7 @@ namespace RollTheDice
             _dices.Clear();
             _diceUsageCount.Clear();
             Hud.Reel.SetPool([], Localizer);
+            _perkRows.Clear();
         }
 
         private void BindModuleHandlers(bool register)
@@ -437,7 +494,11 @@ namespace RollTheDice
             if (Config.Sounds.DiceRollSound.StartsWith("sounds/"))
             {
                 // simply play sound (will be played at 100% volume regardless of the player's volume settings)
-                player.ExecuteClientCommand($"play {Config.Sounds.DiceRollSound}");
+                // "play <path>" is a client command: only plain paths, never a chained command from the config
+                if (SoundPath.IsSafe(Config.Sounds.DiceRollSound))
+                {
+                    player.ExecuteClientCommand($"play {Config.Sounds.DiceRollSound}");
+                }
             }
             else
             {

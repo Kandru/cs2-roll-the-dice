@@ -1,8 +1,10 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
 using RollTheDice.Hud;
+using RollTheDice.Utils;
 using System.Drawing;
 using System.Text.Json.Serialization;
 
@@ -69,7 +71,7 @@ namespace RollTheDice.Dices
                     // Update banner every ~4% to avoid SetText spam every tick.
                     if (next % 10 == 0 || next == 0)
                     {
-                        string status = _localizer["dice_Cloak_gui_status"].Value
+                        string status = _localizer.ForPlayerSafe(player, "dice_Cloak_gui_status")
                             .Replace("{percentage}", ((next / 255.0) * 100).ToString("0.#") + "%");
                         Banner.Show(player, status);
                     }
@@ -80,7 +82,7 @@ namespace RollTheDice.Dices
                 {
                     _visibility[player] = 255;
                     SetVisibility(player, 255);
-                    Banner.Show(player, _localizer["dice_Cloak_player"].Value);
+                    Banner.Show(player, _localizer.ForPlayerSafe(player, "dice_Cloak_player"));
                 }
             }
         }

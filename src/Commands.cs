@@ -13,6 +13,9 @@ namespace RollTheDice
     public partial class RollTheDice : BasePlugin, IPluginConfig<PluginConfig>
     {
         private const int GiveDiceChatLineLimit = 200;
+        // "!rtd" from a console bind is not chat-flood limited: one command per player and interval, the rest is dropped
+        private const long CommandIntervalMs = 500;
+        private readonly long[] _nextCommandAt = new long[HudLayout.MaxSlots];
 
         [ConsoleCommand("givedice", "Give Dice to player")]
         [RequiresPermissions("@rollthedice/admin")]
@@ -31,12 +34,12 @@ namespace RollTheDice
             List<CCSPlayerController>? targets = FindGiveDiceTargets(playerName);
             if (targets == null)
             {
-                command.ReplyToCommand(Localizer["command.givedice.toomanyplayers"]);
+                command.ReplyToCommand(Text(player, "command.givedice.toomanyplayers"));
                 return;
             }
             if (targets.Count == 0)
             {
-                command.ReplyToCommand(Localizer["command.givedice.noplayers"]);
+                command.ReplyToCommand(Text(player, "command.givedice.noplayers"));
                 return;
             }
 
@@ -55,7 +58,7 @@ namespace RollTheDice
 
                 _playersThatRolledTheDice[target] = diceDescription ?? rolledDice;
                 PlayDiceSoundForPlayer(target, rolledDice, false);
-                command.ReplyToCommand(Localizer["command.givedice.success"].Value
+                command.ReplyToCommand(Text(player, "command.givedice.success")
                     .Replace("{dice}", rolledDice)
                     .Replace("{player}", target.PlayerName));
             }
@@ -107,11 +110,11 @@ namespace RollTheDice
             }
             if (matches.Count == 0)
             {
-                command.ReplyToCommand(Localizer["command.givedice.nodicefound"]);
+                command.ReplyToCommand(Text(command.CallingPlayer, "command.givedice.nodicefound"));
             }
             else
             {
-                command.ReplyToCommand(Localizer["command.givedice.ambiguousdice"].Value
+                command.ReplyToCommand(Text(command.CallingPlayer, "command.givedice.ambiguousdice")
                     .Replace("{dices}", string.Join(", ", matches.Select(static d => d.ClassName))));
             }
             return false;
@@ -121,12 +124,12 @@ namespace RollTheDice
         {
             if (_dices.Count == 0)
             {
-                command.ReplyToCommand(Localizer["core.nodicesenabled"]);
+                command.ReplyToCommand(Text(command.CallingPlayer, "core.nodicesenabled"));
                 return;
             }
 
-            command.ReplyToCommand(Localizer["command.givedice.availabledices"]);
-            string prefix = Localizer["command.prefix"].Value;
+            command.ReplyToCommand(Text(command.CallingPlayer, "command.givedice.availabledices"));
+            string prefix = Text(command.CallingPlayer, "command.prefix");
             System.Text.StringBuilder line = new(prefix);
             foreach (string name in _dices.Select(static d => d.ClassName))
             {
@@ -149,44 +152,54 @@ namespace RollTheDice
 
         [ConsoleCommand("rtd", "Roll the Dice")]
         [ConsoleCommand("dice", "Roll the Dice")]
-        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY, minArgs: 0, usage: "!rtd <auto>")]
+        [CommandHelper(whoCanExecute: CommandUsage.CLIENT_ONLY, minArgs: 0, usage: "!rtd <auto|info>")]
         public void CommandRollTheDice(CCSPlayerController player, CommandInfo command)
         {
+            if (IsCommandThrottled(player))
+            {
+                return;
+            }
+
+            // the info menu also works while dicing is disabled (settings, commands, history)
+            // "!dice info <text>" searches the perks
+            if (string.Equals(command.GetArg(1), "info", StringComparison.OrdinalIgnoreCase))
+            {
+                string args = command.ArgString.Trim();
+                int space = args.IndexOf(' ');
+                InfoMenu.Toggle(player, space < 0 ? null : args[(space + 1)..].Trim().Trim('"'));
+                return;
+            }
+
             if (!Config.Enabled || !_currentMapConfig.Enabled || _dices.Count == 0)
             {
-                command.ReplyToCommand(Localizer["core.disabled"]);
+                command.ReplyToCommand(Text(player, "core.disabled"));
                 return;
             }
 
             if (command.GetArg(1) == "auto")
             {
-                if (!_playerConfigs.TryGetValue(player.SteamID, out PlayerConfig? playerConfig))
-                {
-                    playerConfig = new PlayerConfig();
-                    _playerConfigs.Add(player.SteamID, playerConfig);
-                }
-
-                playerConfig.RtdOnSpawn = !playerConfig.RtdOnSpawn;
-                command.ReplyToCommand(Localizer[playerConfig.RtdOnSpawn ? "command.rollthedice.rtdonspawn.enabled" : "command.rollthedice.rtdonspawn.disabled"]);
+                bool enabled = ToggleRtdOnSpawn(player);
+                command.ReplyToCommand(Text(player, enabled ? "command.rollthedice.rtdonspawn.enabled" : "command.rollthedice.rtdonspawn.disabled"));
+                InfoMenu.MarkAllDirty();
                 return;
             }
 
             // check if warmup period
             if (!Config.AllowRtdDuringWarmup && GameRules.Get("WarmupPeriod") is true)
             {
-                command.ReplyToCommand(Localizer["command.rollthedice.iswarmup"]);
+                command.ReplyToCommand(Text(player, "command.rollthedice.iswarmup"));
                 return;
             }
 
             if (!_isDuringRound)
             {
-                command.ReplyToCommand(Localizer["command.rollthedice.noactiveround"]);
+                command.ReplyToCommand(Text(player, "command.rollthedice.noactiveround"));
                 return;
             }
 
             if (_playersThatRolledTheDice.TryGetValue(player, out string? diceVal))
             {
-                string message = Localizer["command.rollthedice.alreadyrolled"].Value.Replace("{dice}", diceVal);
+                string message = Text(player, "command.rollthedice.alreadyrolled").Replace("{dice}", diceVal);
                 Banner.Notify(player, diceVal);
                 command.ReplyToCommand(message);
                 return;
@@ -196,39 +209,40 @@ namespace RollTheDice
             {
                 if (Config.CooldownRounds > 0 && cooldown > 0)
                 {
-                    command.ReplyToCommand(Localizer["command.rollthedice.cooldown.rounds"].Value.Replace("{rounds}", cooldown.ToString()));
+                    command.ReplyToCommand(Text(player, "command.rollthedice.cooldown.rounds").Replace("{rounds}", cooldown.ToString()));
                     return;
                 }
 
                 int secondsLeft = cooldown - (int)Server.CurrentTime;
                 if (Config.CooldownSeconds > 0 && secondsLeft > 0)
                 {
-                    command.ReplyToCommand(Localizer["command.rollthedice.cooldown.seconds"].Value.Replace("{seconds}", secondsLeft.ToString()));
+                    command.ReplyToCommand(Text(player, "command.rollthedice.cooldown.seconds").Replace("{seconds}", secondsLeft.ToString()));
                     return;
                 }
-            }
-
-            if (Config.PriceToDice > 0)
-            {
-                if (player.InGameMoneyServices!.Account < Config.PriceToDice)
-                {
-                    command.ReplyToCommand(Localizer["command.rollthedice.notenoughmoney"].Value.Replace("{money}", Config.PriceToDice.ToString()));
-                    return;
-                }
-                player.InGameMoneyServices.Account -= Config.PriceToDice;
-                Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInGameMoneyServices");
             }
 
             if (player.PlayerPawn?.Value?.LifeState != (byte)LifeState_t.LIFE_ALIVE)
             {
-                command.ReplyToCommand(Localizer["command.rollthedice.notalive"]);
+                command.ReplyToCommand(Text(player, "command.rollthedice.notalive"));
                 return;
+            }
+
+            // charged last: a dead player must not pay for a roll that never happens
+            if (Config.PriceToDice > 0)
+            {
+                if (player.InGameMoneyServices is not { } money || money.Account < Config.PriceToDice)
+                {
+                    command.ReplyToCommand(Text(player, "command.rollthedice.notenoughmoney").Replace("{money}", Config.PriceToDice.ToString()));
+                    return;
+                }
+                money.Account -= Config.PriceToDice;
+                Utilities.SetStateChanged(player, "CCSPlayerController", "m_pInGameMoneyServices");
             }
 
             (string? rolledDice, string? diceDescription) = RollTheDiceForPlayer(player);
             if (string.IsNullOrEmpty(rolledDice))
             {
-                command.ReplyToCommand(Localizer["command.rollthedice.unlucky"]);
+                command.ReplyToCommand(Text(player, "command.rollthedice.unlucky"));
                 return;
             }
 
@@ -246,6 +260,22 @@ namespace RollTheDice
             PlayDiceSoundForPlayer(player, rolledDice, true);
         }
 
+
+        private bool IsCommandThrottled(CCSPlayerController? player)
+        {
+            if (player is not { IsValid: true } || (uint)player.Slot >= _nextCommandAt.Length)
+            {
+                return false;
+            }
+
+            long now = Environment.TickCount64; // real time: Server.CurrentTime restarts with every map
+            if (now < _nextCommandAt[player.Slot])
+            {
+                return true;
+            }
+            _nextCommandAt[player.Slot] = now + CommandIntervalMs;
+            return false;
+        }
 
         [ConsoleCommand("rollthedice", "RollTheDice admin commands")]
         [CommandHelper(whoCanExecute: CommandUsage.SERVER_ONLY, minArgs: 1, usage: "<command>")]

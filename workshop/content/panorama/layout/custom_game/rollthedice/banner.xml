@@ -249,6 +249,7 @@
 					<Panel class="RrDrain" hittest="false" />
 				</Panel>
 				<Panel class="RrFooter" hittest="false">
+					<Label class="RrHint stratum-bold-tf" hittest="false" text="{s:rr_hint}" />
 					<Label class="RrCredit stratum-bold-tf" hittest="false" text="{s:rr_credit}" />
 				</Panel>
 			</Panel>

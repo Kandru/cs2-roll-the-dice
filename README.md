@@ -88,9 +88,23 @@ This command triggers the dice for a player. To activate the dice with a button 
 bind "o" rtd
 ```
 
+Each player can run `!rtd` / `!dice` (with or without `auto` / `info`) once every 0.5 seconds; faster repeats, e.g. from a console bind, are ignored.
+
 ### !dice auto
 
 Enables or disables the automatic !rtd mode (will roll the dice automatically on spawn depending on the settings made inside your configuration).
+
+### !dice info
+
+Opens (or closes) the info menu - a mouse-driven Panorama window in the player's language (German or English). The reel footer shows this command on every roll. Every list is a single scrollable page. Tabs:
+
+- **This round** (start page): every dice rolled this round, CT and T side by side, alive players first, with the dice; dead players are framed red and greyed out.
+- **My dice**: the player's last 12 dice (kept while the plugin is loaded).
+- **Perks**: every dice enabled on the current map with its good / bad / neutral marker and a short description. Filter by type, sort by name or type, and search with `!dice info <text>` (for example `!dice info gravity`); the search is shown in the menu and can be cleared there.
+- **Commands**: the chat commands; admins (`@rollthedice/admin`) also see the admin chat commands.
+- **Settings**: auto roll on/off (same as `!dice auto`; locked when the server forces or disables it) and the language (Deutsch / English). The language is saved per player (`player_configs`) and set as the CounterStrikeSharp player language, so chat messages, the reel and the menu follow it.
+
+The menu closes on the close button, the same command, the player's death and round start. Requires the workshop addon (`info_v3` layout).
 
 ### !givedice (@rollthedice/admin)
 This admin command allows administrators to force dice rolls for players (including bots, for debugging). Bots do not roll on their own. Requires the @rollthedice/admin permission. Dice names correspond to the class names in the [dices folder](src/dices/) and are case-insensitive; ambiguous matches list the options instead of guessing.
@@ -415,7 +429,7 @@ Number of seconds a player must wait before using !rtd again. Use this OR cooldo
 
 ### price_to_dice
 
-Money it costs to roll the dice.
+Money it costs to roll the dice. It is charged only when the roll actually happens (alive, no cooldown, not already rolled).
 
 ### allow_dice_after_respawn
 
@@ -428,7 +442,7 @@ Slot-machine reel shown in the screen centre (below the crosshair) whenever a di
 - **enabled**: Shows the reel (`false` = notifications as before).
 - **spin_seconds**: Spin duration, 1.0 - 5.0 in steps of 0.5.
 - **hold_seconds**: How long the result stays before the reel fades out, 0.5 - 5.0 in steps of 0.5.
-- **tick_sound**: Played for each row passing the win line (sound event or `sounds/...` path, empty = off).
+- **tick_sound**: Played for each row passing the win line (sound event or `sounds/...` path, empty = off). A `sounds/...` path may only contain letters, digits and `_ - . /` (it is played with the client command `play`); other paths are ignored with a console message.
 - **tones**: Marker per dice class shown on the reel: `good` (▲), `bad` (▼) or `neutral` (◆). Dices missing here use the built-in default.
 
 ### dices
@@ -439,7 +453,7 @@ Configuration for all available dice effects. Each dice can be enabled/disabled 
 
 Sound played when using `!rtd`. Use sound file paths (e.g. `sounds/test.vsnd`) or sound events (e.g. `RollTheDice.Command`). Use `RollTheDice.{dice}` to play a sound event for each individual dice. Example audio files are provided via the AI from elevenlabs.io (Unreal Tonemanagement 2003).
 
-- **dice_sound**: Sound path or event name to play. `{dice}`gets replaced by the case-sensitive dice name. Disabled if empty.
+- **dice_sound**: Sound path or event name to play. `{dice}`gets replaced by the case-sensitive dice name. Disabled if empty. A `sounds/...` path may only contain letters, digits and `_ - . /` (it is played with the client command `play`); other paths are ignored with a console message.
 - **play_on_command_only**: Plays the sound only when a player types in `!rtd` - otherwise plays it on events as well.
 
 ### maps

@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Enums;
@@ -155,7 +156,7 @@ namespace RollTheDice.Dices
                     state.Status = "player";
                     SetPlayerVisible(player, true);
                     HideProp(state.Prop);
-                    Banner.Show(player, _localizer["dice_DisguiseAsProp_disabled"].Value);
+                    Banner.Show(player, _localizer.ForPlayerSafe(player, "dice_DisguiseAsProp_disabled"));
                 }
             }
         }
@@ -175,7 +176,7 @@ namespace RollTheDice.Dices
                 { "playerName", player.PlayerName },
                 { "model", label }
             });
-            Banner.Show(player, _localizer["dice_DisguiseAsProp_status"].Value.Replace("{model}", label));
+            Banner.Show(player, _localizer.ForPlayerSafe(player, "dice_DisguiseAsProp_status").Replace("{model}", label));
         }
 
         private void ShowProp(CCSPlayerController player, PropState state)
