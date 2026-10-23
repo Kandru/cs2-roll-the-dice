@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Modules.Memory;
 using Microsoft.Extensions.Localization;
 using RollTheDice.Configs;
 using RollTheDice.Utils;
@@ -87,10 +88,26 @@ namespace RollTheDice.Dices
                     spotted.Spotted = true;
                     spotted.SpottedByMask[0] |= low;
                     spotted.SpottedByMask[1] |= high;
-                    Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_entitySpottedState");
+                    MarkSpottedChanged(pawn);
                 }
             }
         }
+
+        /// <summary>
+        /// The engine resolves state changes per networked leaf field: a change on the embedded struct itself is
+        /// "not resolved" and logged every tick, so each field of EntitySpottedState_t is marked on its own.
+        /// The mask array is one field: only its start offset resolves.
+        /// </summary>
+        private static void MarkSpottedChanged(CCSPlayerPawn pawn)
+        {
+            _spottedOffset ??= Schema.GetSchemaOffset("EntitySpottedState_t", "m_bSpotted");
+            _maskOffset ??= Schema.GetSchemaOffset("EntitySpottedState_t", "m_bSpottedByMask");
+            Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_entitySpottedState", _spottedOffset.Value);
+            Utilities.SetStateChanged(pawn, "CCSPlayerPawn", "m_entitySpottedState", _maskOffset.Value);
+        }
+
+        private static int? _spottedOffset;
+        private static int? _maskOffset;
     }
 }
 
