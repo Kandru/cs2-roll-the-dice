@@ -653,8 +653,7 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "enabled": true,
       "trigger_radius": 120,
       "max_mines": 2,
-      "lifetime_seconds": 60,
-      "beep_sound": "UIPanorama.container_weapon_ticker"
+      "lifetime_seconds": 60
     },
     "quick_reload": {
       "enabled": true,

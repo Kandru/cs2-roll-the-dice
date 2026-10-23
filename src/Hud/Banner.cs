@@ -223,8 +223,17 @@ namespace RollTheDice.Hud
             return index;
         }
 
+        /// <summary>
+        /// Player the dead <paramref name="viewer"/> spectates. Always null while the viewer is alive: the observer
+        /// pawn can keep its last target after a respawn, so a living player would otherwise follow someone else's HUD.
+        /// </summary>
         internal static CCSPlayerController? GetSpectatedOwner(CCSPlayerController viewer, Dictionary<nint, CCSPlayerController> pawnOwners)
         {
+            if (viewer.PawnIsAlive)
+            {
+                return null;
+            }
+
             CCSPlayerController? From(CBasePlayerPawn? pawn)
             {
                 CBaseEntity? target = pawn?.ObserverServices?.ObserverTarget.Value;

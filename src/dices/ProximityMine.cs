@@ -14,14 +14,12 @@ namespace RollTheDice.Dices
         public override List<string> Listeners { get; } = ["OnEntitySpawned", "OnTick"];
         // the fuse is pushed this far out; the mine goes off by itself after its lifetime anyway
         private const float FuseSeconds = 3600f;
-        private const float BeepSeconds = 2f;
 
         private sealed class Mine(CHEGrenadeProjectile grenade, CCSPlayerController owner, float until)
         {
             public readonly CHEGrenadeProjectile Grenade = grenade;
             public readonly CCSPlayerController Owner = owner;
             public readonly float Until = until;
-            public float NextBeepAt;
         }
 
         private readonly List<Mine> _mines = [];
@@ -63,7 +61,7 @@ namespace RollTheDice.Dices
                 ProximityMineConfig config = _config.Dices.ProximityMine;
                 float now = Server.CurrentTime;
                 grenade.DetonateTime = now + FuseSeconds;
-                _mines.Add(new Mine(grenade, owner, now + config.LifetimeSeconds) { NextBeepAt = now + BeepSeconds });
+                _mines.Add(new Mine(grenade, owner, now + config.LifetimeSeconds));
 
                 List<Mine> own = [.. _mines.Where(m => m.Owner == owner && m.Grenade.IsValid)];
                 if (own.Count > config.MaxMines)
@@ -74,7 +72,7 @@ namespace RollTheDice.Dices
             });
         }
 
-        /// <summary>8 times per second: a resting mine blows when an enemy comes close; it beeps now and then.</summary>
+        /// <summary>8 times per second: a resting mine blows when an enemy comes close.</summary>
         public void OnTick()
         {
             if (_mines.Count == 0 || Server.TickCount % 8 != 0)
@@ -102,11 +100,6 @@ namespace RollTheDice.Dices
                 {
                     // still flying or rolling: not armed yet
                     continue;
-                }
-                if (now >= mine.NextBeepAt && !string.IsNullOrEmpty(config.BeepSound))
-                {
-                    mine.NextBeepAt = now + BeepSeconds;
-                    _ = mine.Grenade.EmitSound(config.BeepSound);
                 }
                 if (mine.Owner.IsValid && EnemyNear(mine.Owner, position, config.TriggerRadius))
                 {
@@ -148,7 +141,5 @@ namespace RollTheDice.Configs
         // mines per player at once; a further one sets off the oldest
         [JsonPropertyName("max_mines")] public int MaxMines { get; set; } = 2;
         [JsonPropertyName("lifetime_seconds")] public float LifetimeSeconds { get; set; } = 60f;
-        // quiet beep of a resting mine (sound event, empty = off)
-        [JsonPropertyName("beep_sound")] public string BeepSound { get; set; } = "UIPanorama.container_weapon_ticker";
     }
 }

@@ -53,6 +53,8 @@ namespace RollTheDice.Hud
         private const float OvershootPx = 850f;
         private const float OvershootAt = 0.86f;
         private const float TickMinGap = 0.04f;
+        // spectators that respawned or switched target lose the reel within this many ticks
+        private const int ViewerCheckInterval = 4;
         private const int MaxSlots = 65;
         private const int AuthoredSpin = 2;               // spin-20
         private const int AuthoredWin = (int)ReelTone.Neutral;
@@ -388,8 +390,15 @@ namespace RollTheDice.Hud
             }
 
             float now = Server.CurrentTime;
+            bool checkViewers = Server.TickCount % ViewerCheckInterval == 0;
+            Dictionary<nint, CCSPlayerController>? pawnOwners = null;
             for (int slot = 0; slot < MaxSlots; slot++)
             {
+                if (checkViewers && _phase[slot] is Phase.Spinning or Phase.Holding)
+                {
+                    DropLostViewers(slot, ref pawnOwners);
+                }
+
                 switch (_phase[slot])
                 {
                     case Phase.Waiting:
@@ -708,20 +717,55 @@ namespace RollTheDice.Hud
 
             foreach (int v in viewers)
             {
-                if (_viewerOwner[v] != slot)
+                if (_viewerOwner[v] == slot)
                 {
-                    continue;
-                }
-                _viewerOwner[v] = -1;
-                if (Utilities.GetPlayerFromSlot(v) is { IsValid: true } viewer)
-                {
-                    // remove both in one write: the 0s default snaps the hold bar back (span pattern reset)
-                    CustomHud.SetHasClass(viewer, Panel, "is-running", false);
-                    Swap(viewer, HoldClasses, ref _holdIdx[v], -1);
-                    CustomHud.HidePanel(viewer, Panel, FadeGrace);
+                    HideViewer(v);
                 }
             }
             viewers.Clear();
+        }
+
+        /// <summary>Hides the owner's reel for spectators that respawned, left or now watch someone else.</summary>
+        private static void DropLostViewers(int slot, ref Dictionary<nint, CCSPlayerController>? pawnOwners)
+        {
+            List<int>? viewers = _viewers[slot];
+            if (viewers == null)
+            {
+                return;
+            }
+
+            for (int i = viewers.Count - 1; i >= 0; i--)
+            {
+                int v = viewers[i];
+                if (v == slot || _viewerOwner[v] != slot)
+                {
+                    continue;
+                }
+
+                if (Utilities.GetPlayerFromSlot(v) is { IsValid: true } viewer)
+                {
+                    pawnOwners ??= Banner.IndexPawns(Utilities.GetPlayers(), _pawnOwners);
+                    if (Banner.GetSpectatedOwner(viewer, pawnOwners)?.Slot == slot)
+                    {
+                        continue;
+                    }
+                }
+
+                viewers.RemoveAt(i);
+                HideViewer(v);
+            }
+        }
+
+        private static void HideViewer(int v)
+        {
+            _viewerOwner[v] = -1;
+            if (Utilities.GetPlayerFromSlot(v) is { IsValid: true } viewer)
+            {
+                // remove both in one write: the 0s default snaps the hold bar back (span pattern reset)
+                CustomHud.SetHasClass(viewer, Panel, "is-running", false);
+                Swap(viewer, HoldClasses, ref _holdIdx[v], -1);
+                CustomHud.HidePanel(viewer, Panel, FadeGrace);
+            }
         }
 
         private static void DetachViewers(int slot)
