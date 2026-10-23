@@ -1,14 +1,14 @@
 namespace RollTheDice.Hud
 {
     /// <summary>
-    /// Contract of info_v3.xml: the only place its ids, dialog variables and classes are spelled.
+    /// Contract of info_v4.xml: the only place its ids, dialog variables and classes are spelled.
     /// Pool sizes and prefixes must match tools/gen_info_panorama.py (validated by make panorama).
     /// </summary>
     public static class InfoMenuIds
     {
-        public const string Resource = "panorama/layout/custom_game/rollthedice/info_v3.vxml_c";
+        public const string Resource = "panorama/layout/custom_game/rollthedice/info_v4.vxml_c";
 
-        public const int Rows = 64;
+        public const int Rows = 112;
         public const int Tabs = 5;
         public const int Languages = 2;
         public const int Filters = 4;

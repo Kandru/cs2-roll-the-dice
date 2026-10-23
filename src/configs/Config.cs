@@ -61,6 +61,33 @@ namespace RollTheDice
         [JsonPropertyName("make_fake_gun_sounds")] public MakeFakeGunSoundsConfig MakeFakeGunSounds { get; set; } = new MakeFakeGunSoundsConfig();
         [JsonPropertyName("make_hostage_sounds")] public MakeHostageSoundsConfig MakeHostageSounds { get; set; } = new MakeHostageSoundsConfig();
         [JsonPropertyName("third_person_view")] public ThirdPersonViewConfig ThirdPersonView { get; set; } = new ThirdPersonViewConfig();
+        [JsonPropertyName("blood_magic")] public BloodMagicConfig BloodMagic { get; set; } = new BloodMagicConfig();
+        [JsonPropertyName("bouncy")] public BouncyConfig Bouncy { get; set; } = new BouncyConfig();
+        [JsonPropertyName("brittle_bones")] public BrittleBonesConfig BrittleBones { get; set; } = new BrittleBonesConfig();
+        [JsonPropertyName("butterfingers")] public ButterfingersConfig Butterfingers { get; set; } = new ButterfingersConfig();
+        [JsonPropertyName("disarm")] public DisarmConfig Disarm { get; set; } = new DisarmConfig();
+        [JsonPropertyName("double_jump")] public DoubleJumpConfig DoubleJump { get; set; } = new DoubleJumpConfig();
+        [JsonPropertyName("drunk")] public DrunkConfig Drunk { get; set; } = new DrunkConfig();
+        [JsonPropertyName("ender_pearl")] public EnderPearlConfig EnderPearl { get; set; } = new EnderPearlConfig();
+        [JsonPropertyName("flash_rounds")] public FlashRoundsConfig FlashRounds { get; set; } = new FlashRoundsConfig();
+        [JsonPropertyName("glider")] public GliderConfig Glider { get; set; } = new GliderConfig();
+        [JsonPropertyName("healing_smoke")] public HealingSmokeConfig HealingSmoke { get; set; } = new HealingSmokeConfig();
+        [JsonPropertyName("health_regen")] public HealthRegenConfig HealthRegen { get; set; } = new HealthRegenConfig();
+        [JsonPropertyName("heartbeat_sensor")] public HeartbeatSensorConfig HeartbeatSensor { get; set; } = new HeartbeatSensorConfig();
+        [JsonPropertyName("martyrdom")] public MartyrdomConfig Martyrdom { get; set; } = new MartyrdomConfig();
+        [JsonPropertyName("slide")] public SlideConfig Slide { get; set; } = new SlideConfig();
+        [JsonPropertyName("solar_flare")] public SolarFlareConfig SolarFlare { get; set; } = new SolarFlareConfig();
+        [JsonPropertyName("toxic_smoke")] public ToxicSmokeConfig ToxicSmoke { get; set; } = new ToxicSmokeConfig();
+        [JsonPropertyName("voodoo_doll")] public VoodooDollConfig VoodooDoll { get; set; } = new VoodooDollConfig();
+        [JsonPropertyName("weapon_jam")] public WeaponJamConfig WeaponJam { get; set; } = new WeaponJamConfig();
+        [JsonPropertyName("airstrike")] public AirstrikeConfig Airstrike { get; set; } = new AirstrikeConfig();
+        [JsonPropertyName("blink")] public BlinkConfig Blink { get; set; } = new BlinkConfig();
+        [JsonPropertyName("cluster_grenade")] public ClusterGrenadeConfig ClusterGrenade { get; set; } = new ClusterGrenadeConfig();
+        [JsonPropertyName("infinite_zeus")] public InfiniteZeusConfig InfiniteZeus { get; set; } = new InfiniteZeusConfig();
+        [JsonPropertyName("jetpack")] public JetpackConfig Jetpack { get; set; } = new JetpackConfig();
+        [JsonPropertyName("marking_rounds")] public MarkingRoundsConfig MarkingRounds { get; set; } = new MarkingRoundsConfig();
+        [JsonPropertyName("overshield")] public OvershieldConfig Overshield { get; set; } = new OvershieldConfig();
+        [JsonPropertyName("throwing_knives")] public ThrowingKnivesConfig ThrowingKnives { get; set; } = new ThrowingKnivesConfig();
     }
 
     public class MapConfig

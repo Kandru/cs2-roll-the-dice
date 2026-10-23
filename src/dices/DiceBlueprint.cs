@@ -28,6 +28,63 @@ namespace RollTheDice.Dices
             && player.Pawn?.Value is { IsValid: true } pawn
             && pawn.LifeState == (byte)LifeState_t.LIFE_ALIVE;
 
+        /// <summary>The holder whose pawn this is: damage hooks get pawns, not controllers. Null for everyone else.</summary>
+        protected CCSPlayerController? HolderOf(CEntityInstance? pawn)
+        {
+            if (pawn is not { IsValid: true } || _players.Count == 0)
+            {
+                return null;
+            }
+
+            uint index = pawn.Index;
+            foreach (CCSPlayerController player in _players)
+            {
+                if (player.IsValid && player.PlayerPawn.Index == index)
+                {
+                    return player;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>Banner line in the player's language, without a chat message (live states: fuel, distance).</summary>
+        protected void ShowStatus(CCSPlayerController player, string key, Dictionary<string, string>? data = null)
+        {
+            string text = _localizer.ForPlayerSafe(player, key);
+            Banner.Show(player, data == null ? text : Format(text, data));
+        }
+
+        /// <summary>Console line when the config enables "debug".</summary>
+        protected void Debug(string message)
+        {
+            if (_globalConfig.Debug)
+            {
+                Console.WriteLine($"[RollTheDice][{ClassName}] {message}");
+            }
+        }
+
+        /// <summary>Short center alert in the player's language for a one-off event (a jam, a dropped gun).</summary>
+        protected void Alert(CCSPlayerController player, string key, Dictionary<string, string>? data = null)
+        {
+            if (!player.IsValid || player.IsBot)
+            {
+                return;
+            }
+            string text = Banner.StripColors(_localizer.ForPlayerSafe(player, key));
+            player.PrintToCenterAlert(data == null ? text : Format(text, data));
+        }
+
+        /// <summary>Chat line with the plugin prefix in the player's language (not held back by the reel).</summary>
+        protected void Tell(CCSPlayerController player, string key, Dictionary<string, string>? data = null)
+        {
+            if (!player.IsValid || player.IsBot)
+            {
+                return;
+            }
+            string text = _localizer.ForPlayerSafe(player, key);
+            player.PrintToChat(_localizer.ForPlayerSafe(player, "command.prefix") + (data == null ? text : Format(text, data)));
+        }
+
         public virtual void Add(CCSPlayerController player)
         {
             if (!IsAlivePlayer(player))
@@ -112,7 +169,7 @@ namespace RollTheDice.Dices
             }
         }
 
-        private static string Format(string message, Dictionary<string, string> data)
+        protected static string Format(string message, Dictionary<string, string> data)
         {
             foreach ((string key, string value) in data)
             {

@@ -31,7 +31,7 @@ Jede Idee wurde darauf geprüft, ob sie serverseitig mit CounterStrikeSharp umse
 8. [Aufklärung (54–56)](#e-aufklärung)
 9. [Chaos und Party (57–65)](#f-chaos-und-party)
 10. [Meta-Würfel (66–68)](#g-meta-würfel)
-11. [Empfohlene Reihenfolge](#empfohlene-reihenfolge)
+11. [Entscheidung: Phasen](#entscheidung-phasen)
 12. [Bewusst verworfen](#bewusst-verworfen)
 
 ---
@@ -68,76 +68,76 @@ Diese Regeln gelten für jeden neuen Perk:
 
 ## Übersicht aller Perks
 
-| # | Name (Klassenname) | Typ | Kategorie | Inspiration | Aufwand |
-|---|---|---|---|---|---|
-| 1 | Jetpack (`Jetpack`) | 🟢 | Bewegung | Halo, Fortnite | M |
-| 2 | Doppelsprung (`DoubleJump`) | 🟢 | Bewegung | Platformer, Hollow Knight | S |
-| 3 | Blink (`Blink`) | 🟢 | Bewegung | Overwatch (Tracer), Dishonored | M |
-| 4 | Enterhaken (`GrapplingHook`) | 🟢 | Bewegung | Just Cause, Apex (Pathfinder) | M |
-| 5 | Gleiter (`Glider`) | 🟢 | Bewegung | Fortnite, Zelda BotW | S |
-| 6 | Auto-Bhop (`AutoBhop`) | 🟢 | Bewegung | Surf/Bhop-Server, CS 1.6 | S |
-| 7 | Slide (`Slide`) | 🟢 | Bewegung | Apex Legends, Titanfall | S |
-| 8 | Rückstoß-Antrieb (`RecoilPropulsion`) | 🟡 | Bewegung | Quake, TF2 (Scout) | S |
-| 9 | Stampfer (`GroundPound`) | 🟢 | Bewegung | Super Mario, Overwatch (Doomfist) | M |
-| 10 | Flummi (`Bouncy`) | 🟡 | Bewegung | Party-Spiele | S |
-| 11 | Rückspulen (`Recall`) | 🟢 | Bewegung | Overwatch (Tracer), Prince of Persia | M |
-| 12 | Glatteis (`Slippery`) | 🔴 | Bewegung | Eis-Level, Mario Kart | M |
-| 13 | Zeus-Railgun (`InfiniteZeus`) | 🟢 | Waffen | Quake (Railgun) | M |
-| 14 | Kettenblitz (`ChainLightning`) | 🟢 | Waffen | Diablo, Warcraft III | M |
-| 15 | Wurfmesser (`ThrowingKnives`) | 🟢 | Waffen | CoD (Throwing Knife), Hotline Miami | L |
-| 16 | Entwaffnen (`Disarm`) | 🟢 | Waffen | Diverse Fighting-Games | S |
-| 17 | Butterfinger (`Butterfingers`) | 🔴 | Waffen | Harry Potter, Party-Spiele | S |
-| 18 | Explosivmunition (`ExplosiveRounds`) | 🟢 | Waffen | Borderlands, GTA (Cheat) | M |
-| 19 | Brandmunition (`IncendiaryRounds`) | 🟢 | Waffen | CoD (Dragon's Breath), Borderlands | M |
-| 20 | Frostmunition (`FrostRounds`) | 🟢 | Waffen | Diablo, Borderlands (Cryo) | M |
-| 21 | Blendmunition (`FlashRounds`) | 🟢 | Waffen | Rainbow Six (Blitz), Stun-Effekte | S |
-| 22 | Rückstoßmunition (`KnockbackRounds`) | 🟢 | Waffen | Smash Bros., TF2 (Force-A-Nature) | S |
-| 23 | Harpune (`Harpoon`) | 🟢 | Waffen | Mortal Kombat (Scorpion), Dota (Pudge) | S |
-| 24 | Markierungsmunition (`MarkingRounds`) | 🟢 | Waffen | Valorant (Sova), Far Cry | M |
-| 25 | Schnellfeuer (`RapidFire`) | 🟢 | Waffen | CoD (Double Tap) | M |
-| 26 | Blitz-Nachladen (`QuickReload`) | 🟢 | Waffen | CoD (Sleight of Hand) | M |
-| 27 | Ladehemmung (`WeaponJam`) | 🔴 | Waffen | Far Cry 2 | S |
-| 28 | Blutmagie (`BloodMagic`) | 🟡 | Waffen | Diablo (Blood Magic), Isaac | S |
-| 29 | Goomba-Stomp (`GoombaStomp`) | 🟢 | Waffen | Super Mario | S |
-| 30 | Taschendieb (`Pickpocket`) | 🟢 | Waffen | Thief, Skyrim | S |
-| 31 | One in the Chamber (`OneInTheChamber`) | 🟡 | Waffen | CoD-Spielmodus | S |
-| 32 | Gun Game (`GunGame`) | 🟡 | Waffen | CS-Spielmodus Arms Race | M |
-| 33 | HP-Regeneration (`HealthRegen`) | 🟢 | Überleben | CoD, Halo, Overwatch | S |
-| 34 | Schild (`Overshield`) | 🟢 | Überleben | Halo, Apex (Evo-Shield) | M |
-| 35 | Dornen (`Thorns`) | 🟢 | Überleben | Diablo, Minecraft | S |
-| 36 | Schildkrötenpanzer (`TurtleShell`) | 🟢 | Überleben | Mario Kart, Dark Souls | S |
-| 37 | Totstellen (`FeignDeath`) | 🟢 | Überleben | TF2 (Dead Ringer), WoW (Jäger) | M |
-| 38 | Superstern (`SuperStar`) | 🟢 | Überleben | Super Mario | M |
-| 39 | Leibwächter (`Bodyguard`) | 🟡 | Überleben | Overwatch (Reinhardt), MMO-Tanks | M |
-| 40 | Glasknochen (`BrittleBones`) | 🔴 | Überleben | Isaac, Roguelikes | S |
-| 41 | Splittergranate (`ClusterGrenade`) | 🟢 | Granaten | Worms, Battlefield | M |
-| 42 | Zielsuchende Granaten (`HomingGrenades`) | 🟢 | Granaten | Worms (Homing Missile) | M |
-| 43 | Lenkrakete (`GuidedDecoy`) | 🟢 | Granaten | Unreal Tournament (Redeemer), Half-Life (RPG) | L |
-| 44 | Ender-Perle (`EnderPearl`) | 🟢 | Granaten | Minecraft | S |
-| 45 | Näherungsmine (`ProximityMine`) | 🟢 | Granaten | GoldenEye, CoD (Claymore) | M |
-| 46 | Schwarzes Loch (`BlackHole`) | 🟢 | Granaten | Halo (Gravity Hammer), Overwatch (Zarya) | M |
-| 47 | Heilrauch (`HealingSmoke`) | 🟢 | Granaten | Overwatch (Moira), Apex (Lifeline) | S |
-| 48 | Giftrauch (`ToxicSmoke`) | 🟢 | Granaten | Apex (Caustic), Valorant (Viper) | S |
-| 49 | Luftschlag (`Airstrike`) | 🟢 | Granaten | CoD, Worms | M |
-| 50 | Hologramm-Köder (`HoloDecoy`) | 🟢 | Granaten | Apex (Mirage) | M |
-| 51 | Raketensprung (`RocketJump`) | 🟡 | Granaten | TF2 (Soldier), Quake | S |
-| 52 | Ninja-Rauchbombe (`NinjaSmoke`) | 🟢 | Granaten | Ninja-Games, Overwatch (Reaper) | S |
-| 53 | Sonnenfackel (`SolarFlare`) | 🟢 | Granaten | Dragon Ball (Taiyoken) | S |
-| 54 | Radar-Scan (`UavScan`) | 🟢 | Aufklärung | CoD (UAV) | M |
-| 55 | Herzschlagsensor (`HeartbeatSensor`) | 🟢 | Aufklärung | CoD (Heartbeat Sensor), Alien | S |
-| 56 | Spurenleser (`Tracker`) | 🟢 | Aufklärung | The Witcher, Batman (Detective Mode) | L |
-| 57 | Betrunken (`Drunk`) | 🔴 | Chaos | GTA, Party-Spiele | S |
-| 58 | Laserpointer (`LaserSight`) | 🔴 | Chaos | Taktik-Shooter | M |
-| 59 | Heiße Kartoffel (`HotPotato`) | 🟡 | Chaos | Kinderspiel, Party-Modi | M |
-| 60 | Martyrium (`Martyrdom`) | 🟡 | Chaos | CoD (Martyrdom) | S |
-| 61 | Voodoo-Puppe (`VoodooDoll`) | 🟢 | Chaos | Voodoo-Mythos, Isaac | S |
-| 62 | Schicksalsband (`FateBond`) | 🟡 | Chaos | Diverse RPGs (Soul Link) | S |
-| 63 | Kopfgeld (`Bounty`) | 🟡 | Chaos | Red Dead, Fortnite | S |
-| 64 | Auftragskiller (`Hitman`) | 🟡 | Chaos | Hitman, Assassin's Creed | S |
-| 65 | Konfetti-Kills (`ConfettiKills`) | 🟡 | Chaos | TF2 (Birthday Mode) | M |
-| 66 | Doppelwurf (`DoubleRoll`) | 🟡 | Meta | Brettspiele, Isaac (D6) | M |
-| 67 | Joker (`RerollJoker`) | 🟢 | Meta | Balatro, Brettspiele | S |
-| 68 | Würfeltausch (`DiceSwap`) | 🟡 | Meta | Mario Party | M |
+| # | Name (Klassenname) | Typ | Kategorie | Inspiration | Aufwand | Phase |
+|---|---|---|---|---|---|---|
+| 1 | Jetpack (`Jetpack`) | 🟢 | Bewegung | Halo, Fortnite | M | 1b |
+| 2 | Doppelsprung (`DoubleJump`) | 🟢 | Bewegung | Platformer, Hollow Knight | S | 1a |
+| 3 | Blink (`Blink`) | 🟢 | Bewegung | Overwatch (Tracer), Dishonored | M | 1b |
+| 4 | Enterhaken (`GrapplingHook`) | 🟢 | Bewegung | Just Cause, Apex (Pathfinder) | M | 3 |
+| 5 | Gleiter (`Glider`) | 🟢 | Bewegung | Fortnite, Zelda BotW | S | 1a |
+| 6 | Auto-Bhop (`AutoBhop`) | 🟢 | Bewegung | Surf/Bhop-Server, CS 1.6 | S | verworfen |
+| 7 | Slide (`Slide`) | 🟢 | Bewegung | Apex Legends, Titanfall | S | 1a |
+| 8 | Rückstoß-Antrieb (`RecoilPropulsion`) | 🟡 | Bewegung | Quake, TF2 (Scout) | S | 2 |
+| 9 | Stampfer (`GroundPound`) | 🟢 | Bewegung | Super Mario, Overwatch (Doomfist) | M | verworfen |
+| 10 | Flummi (`Bouncy`) | 🟡 | Bewegung | Party-Spiele | S | 1a |
+| 11 | Rückspulen (`Recall`) | 🟢 | Bewegung | Overwatch (Tracer), Prince of Persia | M | 3 |
+| 12 | Glatteis (`Slippery`) | 🔴 | Bewegung | Eis-Level, Mario Kart | M | 2 |
+| 13 | Zeus-Railgun (`InfiniteZeus`) | 🟢 | Waffen | Quake (Railgun) | M | 1b |
+| 14 | Kettenblitz (`ChainLightning`) | 🟢 | Waffen | Diablo, Warcraft III | M | 2 |
+| 15 | Wurfmesser (`ThrowingKnives`) | 🟢 | Waffen | CoD (Throwing Knife), Hotline Miami | L | 1b |
+| 16 | Entwaffnen (`Disarm`) | 🟢 | Waffen | Diverse Fighting-Games | S | 1a |
+| 17 | Butterfinger (`Butterfingers`) | 🔴 | Waffen | Harry Potter, Party-Spiele | S | 1a |
+| 18 | Explosivmunition (`ExplosiveRounds`) | 🟢 | Waffen | Borderlands, GTA (Cheat) | M | 2 |
+| 19 | Brandmunition (`IncendiaryRounds`) | 🟢 | Waffen | CoD (Dragon's Breath), Borderlands | M | 2 |
+| 20 | Frostmunition (`FrostRounds`) | 🟢 | Waffen | Diablo, Borderlands (Cryo) | M | 2 |
+| 21 | Blendmunition (`FlashRounds`) | 🟢 | Waffen | Rainbow Six (Blitz), Stun-Effekte | S | 1a |
+| 22 | Rückstoßmunition (`KnockbackRounds`) | 🟢 | Waffen | Smash Bros., TF2 (Force-A-Nature) | S | 2 |
+| 23 | Harpune (`Harpoon`) | 🟢 | Waffen | Mortal Kombat (Scorpion), Dota (Pudge) | S | 3 |
+| 24 | Markierungsmunition (`MarkingRounds`) | 🟢 | Waffen | Valorant (Sova), Far Cry | M | 1b |
+| 25 | Schnellfeuer (`RapidFire`) | 🟢 | Waffen | CoD (Double Tap) | M | verworfen |
+| 26 | Blitz-Nachladen (`QuickReload`) | 🟢 | Waffen | CoD (Sleight of Hand) | M | 2 |
+| 27 | Ladehemmung (`WeaponJam`) | 🔴 | Waffen | Far Cry 2 | S | 1a |
+| 28 | Blutmagie (`BloodMagic`) | 🟡 | Waffen | Diablo (Blood Magic), Isaac | S | 1a |
+| 29 | Goomba-Stomp (`GoombaStomp`) | 🟢 | Waffen | Super Mario | S | verworfen |
+| 30 | Taschendieb (`Pickpocket`) | 🟢 | Waffen | Thief, Skyrim | S | verworfen |
+| 31 | One in the Chamber (`OneInTheChamber`) | 🟡 | Waffen | CoD-Spielmodus | S | verworfen |
+| 32 | Gun Game (`GunGame`) | 🟡 | Waffen | CS-Spielmodus Arms Race | M | 2 |
+| 33 | HP-Regeneration (`HealthRegen`) | 🟢 | Überleben | CoD, Halo, Overwatch | S | 1a |
+| 34 | Schild (`Overshield`) | 🟢 | Überleben | Halo, Apex (Evo-Shield) | M | 1b |
+| 35 | Dornen (`Thorns`) | 🟢 | Überleben | Diablo, Minecraft | S | 2 |
+| 36 | Schildkrötenpanzer (`TurtleShell`) | 🟢 | Überleben | Mario Kart, Dark Souls | S | verworfen |
+| 37 | Totstellen (`FeignDeath`) | 🟢 | Überleben | TF2 (Dead Ringer), WoW (Jäger) | M | 2 |
+| 38 | Superstern (`SuperStar`) | 🟢 | Überleben | Super Mario | M | 3 |
+| 39 | Leibwächter (`Bodyguard`) | 🟡 | Überleben | Overwatch (Reinhardt), MMO-Tanks | M | verworfen |
+| 40 | Glasknochen (`BrittleBones`) | 🔴 | Überleben | Isaac, Roguelikes | S | 1a |
+| 41 | Splittergranate (`ClusterGrenade`) | 🟢 | Granaten | Worms, Battlefield | M | 1b |
+| 42 | Zielsuchende Granaten (`HomingGrenades`) | 🟢 | Granaten | Worms (Homing Missile) | M | 2 |
+| 43 | Lenkrakete (`GuidedDecoy`) | 🟢 | Granaten | Unreal Tournament (Redeemer), Half-Life (RPG) | L | verworfen |
+| 44 | Ender-Perle (`EnderPearl`) | 🟢 | Granaten | Minecraft | S | 1a |
+| 45 | Näherungsmine (`ProximityMine`) | 🟢 | Granaten | GoldenEye, CoD (Claymore) | M | 2 |
+| 46 | Schwarzes Loch (`BlackHole`) | 🟢 | Granaten | Halo (Gravity Hammer), Overwatch (Zarya) | M | 2 |
+| 47 | Heilrauch (`HealingSmoke`) | 🟢 | Granaten | Overwatch (Moira), Apex (Lifeline) | S | 1a |
+| 48 | Giftrauch (`ToxicSmoke`) | 🟢 | Granaten | Apex (Caustic), Valorant (Viper) | S | 1a |
+| 49 | Luftschlag (`Airstrike`) | 🟢 | Granaten | CoD, Worms | M | 1b |
+| 50 | Hologramm-Köder (`HoloDecoy`) | 🟢 | Granaten | Apex (Mirage) | M | verworfen |
+| 51 | Raketensprung (`RocketJump`) | 🟡 | Granaten | TF2 (Soldier), Quake | S | 3 |
+| 52 | Ninja-Rauchbombe (`NinjaSmoke`) | 🟢 | Granaten | Ninja-Games, Overwatch (Reaper) | S | 2 |
+| 53 | Sonnenfackel (`SolarFlare`) | 🟢 | Granaten | Dragon Ball (Taiyoken) | S | 1a |
+| 54 | Radar-Scan (`UavScan`) | 🟢 | Aufklärung | CoD (UAV) | M | 2 |
+| 55 | Herzschlagsensor (`HeartbeatSensor`) | 🟢 | Aufklärung | CoD (Heartbeat Sensor), Alien | S | 1a |
+| 56 | Spurenleser (`Tracker`) | 🟢 | Aufklärung | The Witcher, Batman (Detective Mode) | L | 3 |
+| 57 | Betrunken (`Drunk`) | 🔴 | Chaos | GTA, Party-Spiele | S | 1a |
+| 58 | Laserpointer (`LaserSight`) | 🔴 | Chaos | Taktik-Shooter | M | 2 |
+| 59 | Heiße Kartoffel (`HotPotato`) | 🟡 | Chaos | Kinderspiel, Party-Modi | M | verworfen |
+| 60 | Martyrium (`Martyrdom`) | 🟡 | Chaos | CoD (Martyrdom) | S | 1a |
+| 61 | Voodoo-Puppe (`VoodooDoll`) | 🟢 | Chaos | Voodoo-Mythos, Isaac | S | 1a |
+| 62 | Schicksalsband (`FateBond`) | 🟡 | Chaos | Diverse RPGs (Soul Link) | S | verworfen |
+| 63 | Kopfgeld (`Bounty`) | 🟡 | Chaos | Red Dead, Fortnite | S | verworfen |
+| 64 | Auftragskiller (`Hitman`) | 🟡 | Chaos | Hitman, Assassin's Creed | S | verworfen |
+| 65 | Konfetti-Kills (`ConfettiKills`) | 🟡 | Chaos | TF2 (Birthday Mode) | M | 2 |
+| 66 | Doppelwurf (`DoubleRoll`) | 🟡 | Meta | Brettspiele, Isaac (D6) | M | verworfen |
+| 67 | Joker (`RerollJoker`) | 🟢 | Meta | Balatro, Brettspiele | S | 2 |
+| 68 | Würfeltausch (`DiceSwap`) | 🟡 | Meta | Mario Party | M | verworfen |
 
 ---
 
@@ -537,8 +537,8 @@ Diese Perks greifen in das Würfelsystem selbst ein. Heute verwaltet `RollTheDic
 - **Umsetzung:** Zweimal `RollTheDiceForPlayer` ohne Meta-Würfel aufrufen. Dafür ein Spieler→Liste-Mapping und Kompatibilitätsregeln einführen.
 
 ### 67. Joker 🟢 · S
-- **Effekt:** Der Spieler darf in dieser Runde einmal `!rtd` erneut nutzen, um neu zu würfeln, auch wenn ihm der erste Wurf gefällt.
-- **Umsetzung:** Flag pro Spieler. Beim nächsten `!rtd` erst `RemoveDiceForPlayer(…, DiceRemoveReason.NewDice)`, dann neu würfeln.
+- **Effekt:** Der Spieler erhält einen Joker, der bis zum Ende des Matches gilt (über die Runde hinaus): Einmal darf er damit `!rtd` erneut nutzen und neu würfeln, auch wenn er in dieser Runde schon gewürfelt hat.
+- **Umsetzung:** Joker pro SteamID merken, der Rundenwechsel übersteht und beim Match-Ende (`cs_win_panel_match`, Mapwechsel, `mp_restartgame`) verfällt. Beim nächsten `!rtd` trotz Wurf: Joker verbrauchen, `RemoveDiceForPlayer(…, DiceRemoveReason.NewDice)`, dann neu würfeln. Offen: ob sich mehrere Joker sammeln lassen.
 
 ### 68. Würfeltausch 🟡 · M
 - **Effekt:** Der Spieler tauscht seinen Würfel mit dem eines zufälligen Gegners, der schon gewürfelt hat. Beide erfahren, was sie bekommen haben.
@@ -546,16 +546,32 @@ Diese Perks greifen in das Würfelsystem selbst ein. Heute verwaltet `RollTheDic
 
 ---
 
-## Empfohlene Reihenfolge
+## Entscheidung: Phasen
 
-**Welle 1: Quick Wins** (Aufwand S, hoher Spaßfaktor, keine neuen Bausteine nötig):
-HP-Regeneration (33), Doppelsprung (2), Entwaffnen (16), Butterfinger (17), Rückstoßmunition (22), Harpune (23), Taschendieb (30), Ladehemmung (27), Goomba-Stomp (29), Martyrium (60), Kopfgeld (63), Joker (67).
+Vom Team am 22.10.2026 festgelegt. Phase 1 ist in zwei Pakete geteilt, damit jeder PR überschaubar bleibt.
 
-**Welle 2: Bausteine einführen** (DealDamage, SpawnExplosion, SafeTeleport, ButtonTracker auslagern):
-Jetpack (1), Zeus-Railgun (13), Splittergranate (41), Ender-Perle (44), Dornen (35), Schild (34), Heil-/Giftrauch (47/48), Raketensprung (51), Heiße Kartoffel (59).
+**Phase 1a: Bausteine und kleine Perks** (19). Zuerst die gemeinsamen Helfer (DealDamage, SpawnExplosion, SafeTeleport, ButtonTracker), dann alle Phase-1-Perks mit Aufwand S:
+Doppelsprung (2), Gleiter (5), Slide (7), Flummi (10), Entwaffnen (16), Butterfinger (17), Blendmunition (21), Ladehemmung (27), Blutmagie (28), HP-Regeneration (33), Glasknochen (40), Ender-Perle (44), Heilrauch (47), Giftrauch (48), Sonnenfackel (53), Herzschlagsensor (55), Betrunken (57), Martyrium (60), Voodoo-Puppe (61).
 
-**Welle 3: Aufwendig, aber spektakulär:**
-Wurfmesser (15), Lenkrakete (43), Enterhaken (4), Luftschlag (49), Hologramm-Köder (50), Spurenleser (56), Meta-Würfel (66/68).
+**Phase 1b: größere Phase-1-Perks** (8), bauen auf den Helfern aus 1a auf:
+Jetpack (1), Blink (3), Zeus-Railgun (13), Wurfmesser (15), Markierungsmunition (24), Schild (34), Splittergranate (41), Luftschlag (49).
+
+**Stand:** Phase 1a und 1b sind umgesetzt und im Spiel getestet (23.10.2026). Abweichungen von den Beschreibungen oben:
+- **Explosionen:** Selbst erzeugte HE-Granaten zünden nicht. Martyrium, Splittergranate und Luftschlag nutzen deshalb `env_explosion` plus den Partikeleffekt der echten HE. Die Bomben fliegen nicht, sondern liegen bis zur Explosion sichtbar am Einschlagort. Wie eine echte HE treffen sie auch den Werfer.
+- **Wurfmesser:** Das Messer fliegt als selbst berechnete Flugbahn mit dem Modell des eigenen Messers, nicht als Decoy. In Wand oder Boden bleibt es 5 s stecken.
+- **Luftschlag:** Die Smoke geht normal auf, die Bomben schlagen zusätzlich ein. Die Warnung ist der Bomben-Piepser, weil das Spiel keinen Sirenen-Sound mitbringt.
+- **Ladehemmung:** Sperrt den Abzug der geklemmten Waffe (`m_bWaitForNoAttack`, nächster Angriffs-Tick), statt das Magazin zu leeren. Andere Waffen schießen normal.
+- **Giftrauch:** Trifft Gegner und den Werfer, Teamkollegen nicht.
+- **Ender-Perle und Blink:** Ziele in Playerclips oder ohne Navmesh in der Nähe werden abgelehnt (Dächer, außerhalb der Map).
+
+**Phase 2** (19):
+Rückstoß-Antrieb (8), Glatteis (12), Kettenblitz (14), Explosivmunition (18), Brandmunition (19), Frostmunition (20), Rückstoßmunition (22), Blitz-Nachladen (26), Gun Game (32), Dornen (35), Totstellen (37), Zielsuchende Granaten (42), Näherungsmine (45), Schwarzes Loch (46), Ninja-Rauchbombe (52), Radar-Scan (54), Laserpointer (58), Konfetti-Kills (65), Joker (67).
+
+**Phase 3** (6):
+Enterhaken (4), Rückspulen (11), Harpune (23), Superstern (38), Raketensprung (51), Spurenleser (56).
+
+**Vom Team verworfen** (16), wird nicht umgesetzt:
+Auto-Bhop (6), Stampfer (9), Schnellfeuer (25), Goomba-Stomp (29), Taschendieb (30), One in the Chamber (31), Schildkrötenpanzer (36), Leibwächter (39), Lenkrakete (43), Hologramm-Köder (50), Heiße Kartoffel (59), Schicksalsband (62), Kopfgeld (63), Auftragskiller (64), Doppelwurf (66), Würfeltausch (68).
 
 ---
 

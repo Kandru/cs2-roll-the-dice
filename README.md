@@ -18,51 +18,78 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 
 ## Currently Available Dices
 
+- **Air Strike** - Your smoke marks a target: 3 seconds later 5 bombs hit around it
 - **Bankrupt** - Removes all the money from the player
 - **Big Taser Battery** - Gives you extra taser shots to zap enemies multiple times
+- **Blink** - Press USE to teleport a short way along your view (3 charges)
+- **Blood Magic** - Every shot costs 1 HP, your bullets deal 50% more damage
+- **Bouncy** - Hard landings bounce you back up (hold crouch to land normally), no fall damage
+- **Brittle Bones** - Fall damage x4, even small drops hurt
+- **Butterfingers** - Hitting an enemy can make you drop your own gun
 - **Change Name** - Randomly changes your player name to confuse opponents
 - **Change Player Model** - Disguises you as an enemy team player model
 - **Change Player Size** - Scales your player model size randomly (smaller or larger)
 - **Chicken Leader** - Spawns a flock of chickens that follow you around the map
 - **Cloak** - Fade out while standing still
+- **Cluster Grenade** - Your HE bursts into 4 bomblets that go off a second later
 - **Cutter** - kills everyone instant with a knife
 - **Damage Multiplier** - Multiplies the damage positively and/or negatively
 - **Deaf** - Silence player sounds (e.g. steps)
-- **Disguise as Prop** - Become a map prop when standing still; USE cycles models
-- **Fast Map Action** - Instant plant, defuse, or hostage pickup depending on the map
 - **Decrease Health** - Reduces your health to make you more vulnerable
 - **Decrease Money** - Takes away some of your hard-earned cash
+- **Disarm** - Your hits can knock the gun out of the enemy's hand (knife hits always do)
+- **Disguise as Prop** - Become a map prop when standing still; USE cycles models
+- **Double Jump** - Press jump in the air for an extra jump
+- **Drunk** - Your view sways and you stumble sideways now and then
+- **Ender Pearl** - Your decoy teleports you to where it first hits (2 per round, only to spots you could walk to)
+- **Fast Map Action** - Instant plant, defuse, or hostage pickup depending on the map
+- **Flash Rounds** - Hits can blind the enemy for a moment
 - **Fog Of War** - Creates a foggy environment obscuring visibility
 - **Give Health Shot** - Provides you with health shots for healing
-- **Headshot Only** - you MUST make a headshot to actually deal damage
+- **Glider** - Hold USE in the air to glide down slowly, no fall damage
 - **Glow** - Makes you glow with a colored outline visible through walls
+- **Headshot Only** - you MUST make a headshot to actually deal damage
+- **Healing Smoke** - Teammates standing in your smoke heal
+- **Health Regeneration** - After a few seconds without damage you regenerate health
+- **Heartbeat Sensor** - Shows the distance to the nearest enemy (no direction) with a beep that speeds up
 - **High Gravity** - Increases gravity making you fall faster and jump lower
 - **Increase Health** - Boosts your health above the normal maximum
 - **Increase Money** - Adds extra money to your account for better equipment
 - **Increase Speed** - Makes you run significantly faster than normal
 - **Infinite Ammo** - Gives you infinite ammo
+- **Infinite Zeus** - Your Zeus reaches across the whole map and leaves a visible bolt
 - **Invisible** - Makes you partially or fully invisible to enemies
 - **Jammer** - Disables your HUD
+- **Jetpack** - Hold jump in the air for thrust; fuel refills on the ground
 - **Longer Flashes** - Gives the ability to flash longer
 - **Loud Steps** - Don't even try to crouch or walk
 - **Low Gravity** - Reduces gravity allowing you to jump higher and fall slower
 - **Make Fake Gun Sounds** - Plays random weapon bursts while standing still
 - **Make Hostage Sounds** - Emits hostage pain sounds while idle
+- **Marking Rounds** - Enemies you hit glow through walls for your team for 5 seconds
+- **Martyrdom** - You drop a live HE grenade when you die
 - **Millionaire** - Gives you a lot of money to buy anything you can dream of
 - **No Explosives** - Replaces all your grenades with harmless vegetables and fruits
 - **No Headshot** - Headshots do not deal any damage
 - **No Recoil** - Removes weapon recoil for perfect accuracy
 - **One HP** - Sets your health to just 1 hit point - survive if you can!
+- **Overshield** - A 50-point shield takes damage before your health and recharges
 - **Play as Chicken** - Become a big chicken with a real chicken hitbox. Bok-Bok
-- **Show Player Health Bar** - Displays health bars when aiming at players
 - **Random Weapon** - Gives a random weapon, either primary, secondary or both. Strips all other weapons.
 - **Reset On Reload** - Respawns a player everytime he's reloading
 - **Respawn** - Brings you back to life after death with default weapons
 - **ReturnToSender** - Sends a player back to spawn when hit
+- **Show Player Health Bar** - Displays health bars when aiming at players
+- **Slide** - Crouch while running for a long, fast slide
+- **Solar Flare** - Press USE once to blind every enemy looking at you
 - **Strip Weapons** - Removes all your weapons leaving you defenseless
 - **Suicide** - Instantly eliminates you from the round
 - **Third Person View** - Switches the camera to third person
+- **Throwing Knives** - Press USE with the knife drawn to throw a deadly knife (3, they come back)
+- **Toxic Smoke** - Enemies standing in your smoke take damage, and so do you
 - **Vampire** - Converts damage you deal to enemies into health for yourself
+- **Voodoo Doll** - Half the damage you take also hits a random enemy
+- **Weapon Jam** - Shots can jam your gun for 2 seconds (the magazine stays, other weapons still fire)
 - **Weird Grenades** - Bought from somewhere cheap over the internet, they don't work as expected. Or do they?
 - **Zoom In** - Player's view is zoomed in
 - **Zoom Out** - Player's view is zoomed out
@@ -104,7 +131,7 @@ Opens (or closes) the info menu - a mouse-driven Panorama window in the player's
 - **Commands**: the chat commands; admins (`@rollthedice/admin`) also see the admin chat commands.
 - **Settings**: auto roll on/off (same as `!dice auto`; locked when the server forces or disables it) and the language (Deutsch / English). The language is saved per player (`player_configs`) and set as the CounterStrikeSharp player language, so chat messages, the reel and the menu follow it.
 
-The menu closes on the close button, the same command, the player's death and round start. Requires the workshop addon (`info_v3` layout).
+The menu closes on the close button, the same command, the player's death and round start. Requires the workshop addon (`info_v4` layout).
 
 ### !givedice (@rollthedice/admin)
 This admin command allows administrators to force dice rolls for players (including bots, for debugging). Bots do not roll on their own. Requires the @rollthedice/admin permission. Dice names correspond to the class names in the [dices folder](src/dices/) and are case-insensitive; ambiguous matches list the options instead of guessing.
@@ -384,6 +411,171 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "max_smokeduration": 19,
       "min_blindduration": 0.1,
       "max_blindduration": 5
+    },
+    "airstrike": {
+      "enabled": true,
+      "strikes": 1,
+      "delay_seconds": 3,
+      "bombs": 5,
+      "spread": 250,
+      "damage": 80,
+      "radius": 250,
+      "warning_sound": "sounds/weapons/c4/c4_beep2.vsnd",
+      "warning_range": 1500
+    },
+    "blink": {
+      "enabled": true,
+      "distance": 400,
+      "charges": 3,
+      "recharge_seconds": 6
+    },
+    "blood_magic": {
+      "enabled": true,
+      "health_per_shot": 1,
+      "damage_multiplier": 1.5
+    },
+    "bouncy": {
+      "enabled": true,
+      "min_impact_speed": 320,
+      "bounce_factor": 0.92,
+      "max_bounce_speed": 1100,
+      "duck_stops_bounce": true
+    },
+    "brittle_bones": {
+      "enabled": true,
+      "fall_damage_multiplier": 4,
+      "min_impact_speed": 380,
+      "small_fall_damage_per_speed": 0.1
+    },
+    "butterfingers": {
+      "enabled": true,
+      "chance": 0.15
+    },
+    "cluster_grenade": {
+      "enabled": true,
+      "bomblets": 4,
+      "spread": 250,
+      "delay_seconds": 1,
+      "damage": 50,
+      "radius": 220
+    },
+    "disarm": {
+      "enabled": true,
+      "chance": 0.2,
+      "knife_chance": 1.0
+    },
+    "double_jump": {
+      "enabled": true,
+      "extra_jumps": 1,
+      "jump_velocity": 320
+    },
+    "drunk": {
+      "enabled": true,
+      "sway_degrees": 2.5,
+      "min_interval_seconds": 0.3,
+      "max_interval_seconds": 0.6,
+      "stumble_chance": 0.15,
+      "stumble_speed": 180
+    },
+    "ender_pearl": {
+      "enabled": true,
+      "throws": 2,
+      "health_cost": 5
+    },
+    "flash_rounds": {
+      "enabled": true,
+      "chance": 0.25,
+      "blind_seconds": 0.7
+    },
+    "glider": {
+      "enabled": true,
+      "glide_fall_speed": 80,
+      "min_forward_speed": 150
+    },
+    "healing_smoke": {
+      "enabled": true,
+      "heal_per_second": 5,
+      "radius": 160
+    },
+    "health_regen": {
+      "enabled": true,
+      "delay_seconds": 4,
+      "health_per_second": 5
+    },
+    "heartbeat_sensor": {
+      "enabled": true,
+      "range": 2000,
+      "sound": "UIPanorama.container_weapon_ticker"
+    },
+    "infinite_zeus": {
+      "enabled": true,
+      "damage": 500,
+      "bolt_seconds": 0.3
+    },
+    "jetpack": {
+      "enabled": true,
+      "fuel_seconds": 3,
+      "thrust": 2000,
+      "max_up_speed": 320,
+      "recharge_per_second": 1,
+      "max_height": 300
+    },
+    "marking_rounds": {
+      "enabled": true,
+      "seconds": 5
+    },
+    "martyrdom": {
+      "enabled": true,
+      "delay_seconds": 1.5,
+      "damage": 99,
+      "radius": 350
+    },
+    "overshield": {
+      "enabled": true,
+      "points": 50,
+      "regen_delay_seconds": 4,
+      "regen_per_second": 10,
+      "break_sound": "sounds/weapons/clipempty_rifle.vsnd"
+    },
+    "slide": {
+      "enabled": true,
+      "min_speed": 200,
+      "speed_factor": 2.4,
+      "max_speed": 750,
+      "slide_seconds": 1,
+      "cooldown_seconds": 2
+    },
+    "solar_flare": {
+      "enabled": true,
+      "uses": 1,
+      "range": 600,
+      "view_cone": 0.7,
+      "blind_seconds": 3
+    },
+    "throwing_knives": {
+      "enabled": true,
+      "knives": 3,
+      "recharge_seconds": 10,
+      "speed": 1500,
+      "gravity": 400,
+      "damage": 500,
+      "stick_seconds": 5
+    },
+    "toxic_smoke": {
+      "enabled": true,
+      "damage_per_second": 15,
+      "hurts_thrower": true,
+      "radius": 160
+    },
+    "voodoo_doll": {
+      "enabled": true,
+      "damage_share": 0.5
+    },
+    "weapon_jam": {
+      "enabled": true,
+      "chance": 0.08,
+      "jam_seconds": 2,
+      "sound": "sounds/weapons/clipempty_rifle.vsnd"
     }
   },
   "sounds": {
