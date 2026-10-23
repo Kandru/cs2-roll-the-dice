@@ -20,7 +20,6 @@ namespace RollTheDice.Hud
         private static readonly Dictionary<int, Dictionary<string, string>> _textBySlot = [];
         private static readonly Dictionary<string, bool> _globalClasses = new(StringComparer.Ordinal);
         private static readonly Dictionary<string, string> _globalTexts = new(StringComparer.Ordinal);
-        private static readonly HashSet<(int Layout, int Index, int Owner)> _reportedMismatch = [];
 
         public static bool IsHumanViewer(CCSPlayerController? player) =>
             player is { IsValid: true, IsBot: false, IsHLTV: false };
@@ -418,35 +417,9 @@ namespace RollTheDice.Hud
             }
 
             hud = layout;
-            return OwnsLayoutState(hud, player);
-        }
-
-        /// <summary>
-        /// True when the per-player state that CounterStrikeSharp writes for <paramref name="player"/>
-        /// (<c>PlayerLayoutStates[entity index - 1]</c>, unchecked) carries that player's slot. Otherwise the write
-        /// would reach another client, so it is skipped and logged once.
-        /// </summary>
-        internal static bool OwnsLayoutState(CCSCustomHudLayout hud, CCSPlayerController player)
-        {
-            int index = (int)player.Index - 1;
             try
             {
-                if (index < 0 || index >= hud.PlayerLayoutStates.Count)
-                {
-                    return false;
-                }
-
-                int owner = hud.PlayerLayoutStates[index].PlayerSlot;
-                if (owner == player.Slot)
-                {
-                    return true;
-                }
-
-                if (_reportedMismatch.Add(((int)hud.Index, index, owner)))
-                {
-                    Console.WriteLine($"[RollTheDice][CustomHud] Skipped HUD write: layout state {index} belongs to slot {owner}, not to {player.PlayerName} (slot {player.Slot}).");
-                }
-                return false;
+                return player.Slot >= 0 && player.Slot < hud.PlayerLayoutStates.Count;
             }
             catch
             {

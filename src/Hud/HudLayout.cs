@@ -338,11 +338,6 @@ namespace RollTheDice.Hud
                 }
             }
 
-            if (!CustomHud.OwnsLayoutState(_entity!, player))
-            {
-                return false;
-            }
-
             hud = _entity!;
             text = _text[slot] ??= AuthoredTexts();
             state = _class[slot] ??= AuthoredClasses();
