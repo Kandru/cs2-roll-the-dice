@@ -7,6 +7,8 @@ namespace RollTheDice.Utils
         [
             "knife", "bayonet", "taser", "c4", "grenade", "flashbang", "molotov", "decoy", "healthshot", "fists", "melee",
             "axe", "hammer", "spanner", "tablet", "shield", "breachcharge", "bumpmine",
+            // damage that is no bullet: explosions, fire, the world and dice damage (weapon "player")
+            "env_", "inferno", "world", "player", "point_hurt", "prop_",
         ];
 
         /// <summary>True for firearms: per-shot effects (jams, blood magic) leave knives, grenades and the Zeus out.</summary>
@@ -77,6 +79,32 @@ namespace RollTheDice.Utils
                 }
             });
             return true;
+        }
+
+        /// <summary>
+        /// Removes the player's guns (primary and secondary), like RandomWeapon: each one is made active, dropped and
+        /// killed, so the client never keeps a ghost weapon. Knife, grenades and the Zeus stay.
+        /// </summary>
+        public static void RemoveGuns(CounterStrikeSharp.API.Core.CCSPlayerController player)
+        {
+            if (player.PlayerPawn.Value is not { IsValid: true, WeaponServices: { } services })
+            {
+                return;
+            }
+            List<CounterStrikeSharp.API.Core.CBasePlayerWeapon> guns = [];
+            foreach (var handle in services.MyWeapons)
+            {
+                if (handle.Value is { IsValid: true } weapon && IsGun(weapon.DesignerName))
+                {
+                    guns.Add(weapon);
+                }
+            }
+            foreach (CounterStrikeSharp.API.Core.CBasePlayerWeapon gun in guns)
+            {
+                services.ActiveWeapon.Raw = gun.EntityHandle.Raw;
+                player.DropActiveWeapon();
+                gun.AcceptInput("Kill");
+            }
         }
 
         public static bool IsKnife(string? weapon) =>

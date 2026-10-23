@@ -11,14 +11,14 @@ namespace RollTheDice.Utils
 
         public static bool IsOnGround(CBasePlayerPawn pawn) => (pawn.Flags & (uint)PlayerFlags.FL_ONGROUND) != 0;
 
-        public static Vector Velocity(CBasePlayerPawn pawn) =>
+        public static Vector Velocity(CBaseEntity pawn) =>
             pawn.AbsVelocity is { } v ? new Vector(v.X, v.Y, v.Z) : new Vector(0, 0, 0);
 
         public static float HorizontalSpeed(CBasePlayerPawn pawn) =>
             pawn.AbsVelocity is { } v ? MathF.Sqrt((v.X * v.X) + (v.Y * v.Y)) : 0f;
 
         /// <summary>Sets the velocity through Teleport, so the movement code takes it over.</summary>
-        public static void SetVelocity(CBasePlayerPawn pawn, Vector velocity) => pawn.Teleport(null, null, velocity);
+        public static void SetVelocity(CBaseEntity pawn, Vector velocity) => pawn.Teleport(null, null, velocity);
 
         public static void SetVerticalVelocity(CBasePlayerPawn pawn, float z)
         {

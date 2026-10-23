@@ -21,17 +21,20 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Air Strike** - Your smoke marks a target: 3 seconds later 5 bombs hit around it
 - **Bankrupt** - Removes all the money from the player
 - **Big Taser Battery** - Gives you extra taser shots to zap enemies multiple times
+- **Black Hole** - Your decoy pulls enemies to its middle for 3 seconds, then implodes
 - **Blink** - Press USE to teleport a short way along your view (3 charges)
 - **Blood Magic** - Every shot costs 1 HP, your bullets deal 50% more damage
 - **Bouncy** - Hard landings bounce you back up (hold crouch to land normally), no fall damage
 - **Brittle Bones** - Fall damage x4, even small drops hurt
 - **Butterfingers** - Hitting an enemy can make you drop your own gun
+- **Chain Lightning** - A Zeus hit jumps on to 2 more enemies in sight
 - **Change Name** - Randomly changes your player name to confuse opponents
 - **Change Player Model** - Disguises you as an enemy team player model
 - **Change Player Size** - Scales your player model size randomly (smaller or larger)
 - **Chicken Leader** - Spawns a flock of chickens that follow you around the map
 - **Cloak** - Fade out while standing still
 - **Cluster Grenade** - Your HE bursts into 4 bomblets that go off a second later
+- **Confetti Kills** - Your victims burst into confetti with a pop (cosmetic)
 - **Cutter** - kills everyone instant with a knife
 - **Damage Multiplier** - Multiplies the damage positively and/or negatively
 - **Deaf** - Silence player sounds (e.g. steps)
@@ -42,17 +45,23 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Double Jump** - Press jump in the air for an extra jump
 - **Drunk** - Your view sways and you stumble sideways now and then
 - **Ender Pearl** - Your decoy teleports you to where it first hits (2 per round, only to spots you could walk to)
+- **Explosive Rounds** - Bullets cause a small blast where they hit
 - **Fast Map Action** - Instant plant, defuse, or hostage pickup depending on the map
 - **Flash Rounds** - Hits can blind the enemy for a moment
 - **Fog Of War** - Creates a foggy environment obscuring visibility
+- **Frost Rounds** - Hits slow enemies to 40 % speed for 1.5 seconds
 - **Give Health Shot** - Provides you with health shots for healing
 - **Glider** - Hold USE in the air to glide down slowly, no fall damage
 - **Glow** - Makes you glow with a colored outline visible through walls
+- **Gun Game** - Every kill swaps your gun for the next one of a list
 - **Headshot Only** - you MUST make a headshot to actually deal damage
 - **Healing Smoke** - Teammates standing in your smoke heal
 - **Health Regeneration** - After a few seconds without damage you regenerate health
 - **Heartbeat Sensor** - Shows the distance to the nearest enemy (no direction) with a beep that speeds up
 - **High Gravity** - Increases gravity making you fall faster and jump lower
+- **Homing Grenades** - Your HE and fire grenades steer towards enemies in front of them
+- **Ice Skating** - You slide like on ice; stopping and turning take long
+- **Incendiary Rounds** - Hit enemies burn for 3 seconds
 - **Increase Health** - Boosts your health above the normal maximum
 - **Increase Money** - Adds extra money to your account for better equipment
 - **Increase Speed** - Makes you run significantly faster than normal
@@ -61,6 +70,9 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Invisible** - Makes you partially or fully invisible to enemies
 - **Jammer** - Disables your HUD
 - **Jetpack** - Hold jump in the air for thrust; fuel refills on the ground
+- **Joker** - One extra !rtd this match, even after you rolled this round
+- **Knockback Rounds** - Hits push enemies away, harder with more damage
+- **Laser Pointer** - A laser in team colour shows everyone where you aim
 - **Longer Flashes** - Gives the ability to flash longer
 - **Loud Steps** - Don't even try to crouch or walk
 - **Low Gravity** - Reduces gravity allowing you to jump higher and fall slower
@@ -69,13 +81,19 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Marking Rounds** - Enemies you hit glow through walls for your team for 5 seconds
 - **Martyrdom** - You drop a live HE grenade when you die
 - **Millionaire** - Gives you a lot of money to buy anything you can dream of
+- **Ninja Smoke** - Press USE for a smoke at your feet and a short speed boost (2 charges)
 - **No Explosives** - Replaces all your grenades with harmless vegetables and fruits
 - **No Headshot** - Headshots do not deal any damage
 - **No Recoil** - Removes weapon recoil for perfect accuracy
 - **One HP** - Sets your health to just 1 hit point - survive if you can!
 - **Overshield** - A 50-point shield takes damage before your health and recharges
 - **Play as Chicken** - Become a big chicken with a real chicken hitbox. Bok-Bok
+- **Play Dead** - Once below 50 HP you fake your death and are briefly invisible and nearly immune
+- **Proximity Mine** - Your HE stays put and blows when an enemy comes close
+- **Quick Reload** - Reloading takes only a fraction of the time
+- **Radar Scan** - Every 15 seconds your team sees all enemies on the radar for 3 seconds
 - **Random Weapon** - Gives a random weapon, either primary, secondary or both. Strips all other weapons.
+- **Recoil Propulsion** - Every shot pushes you against your view (shoot down to fly)
 - **Reset On Reload** - Respawns a player everytime he's reloading
 - **Respawn** - Brings you back to life after death with default weapons
 - **ReturnToSender** - Sends a player back to spawn when hit
@@ -85,6 +103,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Strip Weapons** - Removes all your weapons leaving you defenseless
 - **Suicide** - Instantly eliminates you from the round
 - **Third Person View** - Switches the camera to third person
+- **Thorns** - 30 % of the damage you take hits the attacker
 - **Throwing Knives** - Press USE with the knife drawn to throw a deadly knife (3, they come back)
 - **Toxic Smoke** - Enemies standing in your smoke take damage, and so do you
 - **Vampire** - Converts damage you deal to enemies into health for yourself
@@ -423,6 +442,13 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "warning_sound": "sounds/weapons/c4/c4_beep2.vsnd",
       "warning_range": 1500
     },
+    "black_hole": {
+      "enabled": true,
+      "radius": 400,
+      "pull_seconds": 3,
+      "pull_speed": 320,
+      "implosion_damage": 25
+    },
     "blink": {
       "enabled": true,
       "distance": 400,
@@ -451,6 +477,13 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "enabled": true,
       "chance": 0.15
     },
+    "chain_lightning": {
+      "enabled": true,
+      "jumps": 2,
+      "range": 400,
+      "damage": 50,
+      "bolt_seconds": 0.8
+    },
     "cluster_grenade": {
       "enabled": true,
       "bomblets": 4,
@@ -458,6 +491,12 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "delay_seconds": 1,
       "damage": 50,
       "radius": 220
+    },
+    "confetti_kills": {
+      "enabled": true,
+      "bursts": 8,
+      "sound": "sounds/physics/plastic/balloon_pop_01.vsnd",
+      "sound_range": 1500
     },
     "disarm": {
       "enabled": true,
@@ -482,15 +521,43 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "throws": 2,
       "health_cost": 5
     },
+    "explosive_rounds": {
+      "enabled": true,
+      "damage": 4,
+      "min_damage": 3,
+      "radius": 100,
+      "interval_seconds": 0.25,
+      "hurts_shooter": false
+    },
     "flash_rounds": {
       "enabled": true,
       "chance": 0.25,
       "blind_seconds": 0.7
     },
+    "frost_rounds": {
+      "enabled": true,
+      "slow_seconds": 1.5,
+      "speed_factor": 0.4
+    },
     "glider": {
       "enabled": true,
       "glide_fall_speed": 80,
       "min_forward_speed": 150
+    },
+    "gun_game": {
+      "enabled": true,
+      "weapons": [
+        "weapon_ak47",
+        "weapon_m4a1",
+        "weapon_famas",
+        "weapon_mp9",
+        "weapon_p90",
+        "weapon_nova",
+        "weapon_ssg08",
+        "weapon_deagle",
+        "weapon_p250",
+        "weapon_knife"
+      ]
     },
     "healing_smoke": {
       "enabled": true,
@@ -507,6 +574,22 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "range": 2000,
       "sound": "UIPanorama.container_weapon_ticker"
     },
+    "homing_grenades": {
+      "enabled": true,
+      "cone_degrees": 60,
+      "range": 1200,
+      "turn_rate": 0.15
+    },
+    "ice_skating": {
+      "enabled": true,
+      "friction": 0.1
+    },
+    "incendiary_rounds": {
+      "enabled": true,
+      "burn_seconds": 3,
+      "damage_per_tick": 4,
+      "tick_seconds": 0.5
+    },
     "infinite_zeus": {
       "enabled": true,
       "damage": 500,
@@ -520,6 +603,20 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "recharge_per_second": 1,
       "max_height": 300
     },
+    "joker": {
+      "enabled": true,
+      "max_jokers": 1
+    },
+    "knockback_rounds": {
+      "enabled": true,
+      "push_per_damage": 12,
+      "max_push": 700,
+      "lift": 180
+    },
+    "laser_pointer": {
+      "enabled": true,
+      "width": 0.5
+    },
     "marking_rounds": {
       "enabled": true,
       "seconds": 5
@@ -530,12 +627,50 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "damage": 99,
       "radius": 350
     },
+    "ninja_smoke": {
+      "enabled": true,
+      "charges": 2,
+      "boost_seconds": 2,
+      "speed_factor": 1.4,
+      "smoke_seconds": 15
+    },
     "overshield": {
       "enabled": true,
       "points": 50,
       "regen_delay_seconds": 4,
       "regen_per_second": 10,
       "break_sound": "sounds/weapons/clipempty_rifle.vsnd"
+    },
+    "play_dead": {
+      "enabled": true,
+      "health_threshold": 50,
+      "seconds": 3,
+      "damage_reduction": 0.9,
+      "speed_factor": 1.2,
+      "smoke_seconds": 2.5
+    },
+    "proximity_mine": {
+      "enabled": true,
+      "trigger_radius": 120,
+      "max_mines": 2,
+      "lifetime_seconds": 60,
+      "beep_sound": "UIPanorama.container_weapon_ticker"
+    },
+    "quick_reload": {
+      "enabled": true,
+      "reload_seconds": 0.9
+    },
+    "radar_scan": {
+      "enabled": true,
+      "interval_seconds": 15,
+      "scan_seconds": 3
+    },
+    "recoil_propulsion": {
+      "enabled": true,
+      "shotgun_force": 450,
+      "sniper_force": 350,
+      "default_force": 40,
+      "max_up_speed": 500
     },
     "slide": {
       "enabled": true,
@@ -551,6 +686,10 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "range": 600,
       "view_cone": 0.7,
       "blind_seconds": 3
+    },
+    "thorns": {
+      "enabled": true,
+      "reflect_share": 0.3
     },
     "throwing_knives": {
       "enabled": true,

@@ -567,6 +567,13 @@ Jetpack (1), Blink (3), Zeus-Railgun (13), Wurfmesser (15), Markierungsmunition 
 **Phase 2** (19):
 Rückstoß-Antrieb (8), Glatteis (12), Kettenblitz (14), Explosivmunition (18), Brandmunition (19), Frostmunition (20), Rückstoßmunition (22), Blitz-Nachladen (26), Gun Game (32), Dornen (35), Totstellen (37), Zielsuchende Granaten (42), Näherungsmine (45), Schwarzes Loch (46), Ninja-Rauchbombe (52), Radar-Scan (54), Laserpointer (58), Konfetti-Kills (65), Joker (67).
 
+**Stand Phase 2:** umgesetzt und im Spiel getestet (23.10.2026). Screenshots: [Ninja-Rauchbombe](screenshots/phase-2/ninja_smoke.jpg), [Schwarzes Loch](screenshots/phase-2/black_hole.jpg), [Kettenblitz](screenshots/phase-2/chain_lightning.jpg), [Laserpointer](screenshots/phase-2/laser_pointer.jpg), [grüner Rahmen der CS2-Smoke-Partikel](screenshots/phase-2/smoke_adaptive_green_box.jpg). Abweichungen von den Beschreibungen oben:
+- **Ninja-Rauchbombe und Totstellen:** Eine echte Smoke lässt sich nicht erzeugen. Eine selbst erzeugte Smoke-Granate zündet nicht, und eine in den Rauchzustand gezwungene hat den Server abstürzen lassen. Beide zeigen deshalb die Partikel-Rauchwolke der Smoke (`explosion_smokegrenade_fallback`). Sie verdeckt die Sicht, zählt für das Spiel aber nicht als Smoke (Bots sehen hindurch). Der Partikel mit dem Aussehen der CS2-Smoke (`explosion_smokegrenade_adaptive`) hinterlässt bei den Spielern einen grünen Drahtrahmen und ist darum nicht nutzbar. Totstellen bekommt zusätzlich zur Beschreibung einen kurzen Rauchstoß (2,5 s) am Ort des falschen Todes.
+- **Explosivmunition:** 4 Schaden in der Mitte, 3 am Rand (vom Team so festgelegt). Den Schaden teilt das Plugin selbst aus, weil ein `env_explosion` am Einschlagpunkt in der Wand startet und niemanden erreicht.
+- **Glatteis:** Senkt die Bodenreibung des Spielers (`m_flFriction`, 10 % der normalen). Beschleunigen bleibt normal, Bremsen und Lenken rutschen. Die Geschwindigkeit jeden Tick per Teleport zu setzen hebt den Spieler vom Boden ab (Luftsteuerung, sehr träge), direkt geschriebene Werte überschreibt die Engine.
+- **Konfetti-Kills:** 8 Konfetti-Stöße der Overpass-Ballons rund um das Opfer statt einem.
+- **Schwarzes Loch:** Sechs drehende violette Strahlen zeigen das Feld, jeder gezogene Gegner hängt an einem Strahl zur Mitte.
+
 **Phase 3** (6):
 Enterhaken (4), Rückspulen (11), Harpune (23), Superstern (38), Raketensprung (51), Spurenleser (56).
 
