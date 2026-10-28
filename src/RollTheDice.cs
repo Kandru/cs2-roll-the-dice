@@ -108,6 +108,8 @@ namespace RollTheDice
             // reset players that rolled the dice
             _playersThatRolledTheDice.Clear();
             _roundDice.Clear();
+            // mirror mode: perks owed from last round are dropped
+            ClearMirror();
             // the client rebuilt every layout from XML: close the info menu and write its defaults back
             Hud.InfoMenu.ResetRound();
             // blasts queued last round never reach their thrower in the new one
@@ -170,10 +172,13 @@ namespace RollTheDice
 
         private void RollTheDiceOnRoundStart(bool force = false)
         {
+            // mirror mode: everyone rolls at once, bots too, so both teams end up with the same perks
+            bool mirror = Config.Admin.MirrorTeams;
+            force |= mirror;
             // roll the dice for all players who requested it via "!rtd auto"
             foreach (CCSPlayerController entry in Utilities.GetPlayers()
                 .Where(p => !p.IsHLTV
-                    && !p.IsBot
+                    && (mirror || !p.IsBot)
                     && p.Pawn?.Value?.LifeState == (byte)LifeState_t.LIFE_ALIVE))
             {
                 // rtd for everyone if enabled or for specific players if they have it enabled
@@ -354,7 +359,7 @@ namespace RollTheDice
             // is given even when the admin menu took it out of the roll pool
             DiceBlueprint? dice = diceName != null
                 ? _dices.FirstOrDefault(d => string.Equals(d.ClassName, diceName, StringComparison.OrdinalIgnoreCase))
-                : GetWeightedRandomDice();
+                : PickRolledDice(player, source);
             if (dice == null)
             {
                 return (null, null);

@@ -654,5 +654,8 @@
     "admin.menu.player_unlocked": "{purple}[WürfelSpiel] {green}Du darfst wieder würfeln.",
     "admin.menu.dead": "{purple}[WürfelSpiel] {green}{player} {default}ist tot und bekommt keinen Würfel.",
     "admin.menu.nodices": "{purple}[WürfelSpiel] {default}Keine Würfel freigegeben: schalte Perks oder Kategorien an.",
-    "admin.menu.bot": "{purple}[WürfelSpiel] {default}Bots würfeln nicht selbst und lassen sich nicht sperren."
+    "admin.menu.bot": "{purple}[WürfelSpiel] {default}Bots würfeln nicht selbst und lassen sich nicht sperren.",
+    "info.admin.mirror": "Gleiche Perks für beide Teams",
+    "admin.menu.mirror_on": "{purple}[WürfelSpiel] {green}Spiegelmodus an: {default}beide Teams bekommen dieselben Perks, alle würfeln zum Rundenstart.",
+    "admin.menu.mirror_off": "{purple}[WürfelSpiel] {default}Spiegelmodus aus: jeder würfelt wieder für sich."
 }

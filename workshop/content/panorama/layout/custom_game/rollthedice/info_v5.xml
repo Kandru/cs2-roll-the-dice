@@ -2179,6 +2179,13 @@
 											<Panel class="RiSwitchKnob" hittest="false" />
 										</Panel>
 									</Button>
+									<Button id="ri-amirror" class="RiSwitch RaMirror">
+										<Label class="RiSwitchLabel stratum-bold-tf" hittest="false" text="{s:ri_amirror}" />
+										<Label class="RiSwitchState stratum-bold-tf" hittest="false" text="{s:ri_amirror_state}" />
+										<Panel class="RiSwitchTrack" hittest="false">
+											<Panel class="RiSwitchKnob" hittest="false" />
+										</Panel>
+									</Button>
 									<Panel class="RaTabs" hittest="false">
 										<Button id="ri-asec-0" class="RiChip is-active">
 											<Label class="RiChipLabel stratum-bold-tf" hittest="false" text="{s:ri_as0}" />

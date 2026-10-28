@@ -148,7 +148,7 @@ Opens (or closes) the info menu - a mouse-driven Panorama window in the player's
 - **My dice**: the player's last 12 dice (kept while the plugin is loaded).
 - **Perks**: every dice enabled on the current map with its category (very good / good / neutral / bad / very bad) and a short description. Filter by category (`++ + ± – ––`), sort by name or type, and search with `!dice info <text>` (for example `!dice info gravity`); the search is shown in the menu and can be cleared there.
 - **Commands**: the chat commands; admins (`@rollthedice/admin`) also see the admin chat commands.
-- **Admin** (only for `@rollthedice/admin`): lock rolling for everyone or single players, roll for one or all players (random or a chosen perk) and choose which perks a roll can draw - five category switches plus every perk on its own (default: all). Saved at once in the config section `admin`; the permission is checked on every click.
+- **Admin** (only for `@rollthedice/admin`): lock rolling for everyone or single players, switch on mirror mode (both teams get the same perks), roll for one or all players (random or a chosen perk) and choose which perks a roll can draw - five category switches plus every perk on its own (default: all). Saved at once in the config section `admin`; the permission is checked on every click.
 - **Settings**: auto roll on/off (same as `!dice auto`; locked when the server forces or disables it) and the language (Deutsch / English). The language is saved per player (`player_configs`) and set as the CounterStrikeSharp player language, so chat messages, the reel and the menu follow it.
 
 The menu closes on the close button, the same command, the player's death and round start. Requires the workshop addon (`info_v5` layout; `info_v4` stays in the addon for older plugin versions).
@@ -235,6 +235,7 @@ This plugin automatically creates a readable JSON configuration file. This confi
   "admin": {
     "rolls_locked": false,
     "locked_players": [],
+    "mirror_teams": false,
     "disabled_categories": [],
     "disabled_dices": []
   },
@@ -791,6 +792,7 @@ Set from the admin tab of `!dice info` and saved at once; can also be edited her
 
 - **rolls_locked**: Nobody can roll on their own (`!rtd`, auto roll, timed rolls). Admins can still hand out dices.
 - **locked_players**: SteamID64s that cannot roll on their own.
+- **mirror_teams**: Mirror mode - both teams get the same perks. A random perk rolled by one team is owed to the other team, whose next roll takes it instead of a random one (two rolls in a row on one side leave two perks owed). At the trigger event (`trigger.event`) everyone alive rolls at once, bots included. What a smaller team cannot take stays owed until the round ends; owed perks are dropped at round start. Admin hand-outs are not mirrored.
 - **disabled_categories**: Categories a roll never draws (`very_good`, `good`, `neutral`, `bad`, `very_bad`).
 - **disabled_dices**: Dice class names a roll never draws. A dice handed out by an admin with a chosen perk is given anyway.
 

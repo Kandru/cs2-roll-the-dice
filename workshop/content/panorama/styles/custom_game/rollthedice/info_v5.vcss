@@ -1009,7 +1009,8 @@ Label.RiTeamEmpty.is-off
 	flow-children: down;
 }
 
-.RiSwitch.RaSwitch
+.RiSwitch.RaSwitch,
+.RiSwitch.RaMirror
 {
 	height: 44px;
 	margin-bottom: 8px;

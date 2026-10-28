@@ -75,9 +75,9 @@ namespace RollTheDice.Hud
 
     /// <summary>
     /// Global admin state. <see cref="CategoryOn"/> follows <see cref="InfoMenu.Categories"/>; Rollable counts the perks
-    /// a roll can draw right now.
+    /// a roll can draw right now. <see cref="Mirror"/>: both teams get the same perks.
     /// </summary>
-    public readonly record struct AdminState(bool Locked, bool[] CategoryOn, int Rollable, int Total);
+    public readonly record struct AdminState(bool Locked, bool Mirror, bool[] CategoryOn, int Rollable, int Total);
 
     /// <summary>Data and actions behind the menu; implemented by the plugin.</summary>
     public interface IInfoMenuSource
@@ -94,6 +94,7 @@ namespace RollTheDice.Hud
         void FillAdminPlayers(CCSPlayerController viewer, List<AdminPlayerRow> rows);
         void FillAdminPerks(CCSPlayerController viewer, List<AdminPerkRow> rows);
         void ToggleRollLock(CCSPlayerController admin);
+        void ToggleMirror(CCSPlayerController admin);
         void ToggleCategory(CCSPlayerController admin, InfoTone tone);
         void TogglePerk(CCSPlayerController admin, string className);
         void TogglePlayerLock(CCSPlayerController admin, int userId);
@@ -181,6 +182,9 @@ namespace RollTheDice.Hud
         private static readonly ClassSlot _adminSection = _hud.Group(InfoMenuIds.RootId, InfoMenuIds.AdminSectionClasses, authored: 0);
         private static readonly ClassSlot[] _adminSectionActive = Flags(InfoMenuIds.AdminSectionIds, InfoMenuIds.ActiveClass, authoredOn: 0);
         private static readonly ClassSlot _adminLockOn = _hud.Flag(InfoMenuIds.AdminLockId, InfoMenuIds.OnClass);
+        private static readonly ClassSlot _adminMirrorOn = _hud.Flag(InfoMenuIds.AdminMirrorId, InfoMenuIds.OnClass);
+        private static readonly TextSlot _adminMirror = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminMirrorVar);
+        private static readonly TextSlot _adminMirrorState = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminMirrorStateVar);
         private static readonly ClassSlot _adminPicking = _hud.Flag(InfoMenuIds.AdminPerksId, InfoMenuIds.OpenClass);
         private static readonly ClassSlot[] _adminCategoryOn = Flags(InfoMenuIds.AdminCategoryIds, InfoMenuIds.OnClass, authoredOn: -2);
         private static readonly ClassSlot _adminPerkEmptyOff = _hud.Flag(InfoMenuIds.AdminPerkEmptyId, InfoMenuIds.OffClass, authoredOn: true);
@@ -588,6 +592,10 @@ namespace RollTheDice.Hud
                     source.ToggleRollLock(player);
                     MarkAllDirty();
                     return true;
+                case InfoMenuIds.AdminMirrorId:
+                    source.ToggleMirror(player);
+                    MarkAllDirty();
+                    return true;
                 case InfoMenuIds.AdminAllRollId:
                     source.AdminRoll(player, null, null);
                     return true;
@@ -815,6 +823,9 @@ namespace RollTheDice.Hud
             _hud.SetText(player, _adminLock, T("info.admin.lock"));
             _hud.SetText(player, _adminLockState, T(state.Locked ? "info.admin.locked" : "info.admin.unlocked"));
             _hud.SetFlag(player, _adminLockOn, state.Locked);
+            _hud.SetText(player, _adminMirror, T("info.admin.mirror"));
+            _hud.SetText(player, _adminMirrorState, T(state.Mirror ? "info.settings.on" : "info.settings.off"));
+            _hud.SetFlag(player, _adminMirrorOn, state.Mirror);
             _hud.SetText(player, _count, NumberText(state.Rollable) + " / " + NumberText(state.Total));
 
             // shared row words: one variable each on the root, read by every row
