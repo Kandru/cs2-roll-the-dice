@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Generate the info menu layout (info_v4.xml) and its theme rules in info_v4.vcss.
+"""Generate the info menu layout (info_v5.xml) and its theme rules in info_v5.vcss.
 
 The whole layout is generated: the row, tab, language and filter pools must match InfoMenuIds.cs
-(validated by validate_panorama.py), and hand-copied pool markup drifts.
+(validated by validate_panorama.py), and hand-copied pool markup drifts. info_v4.xml stays in the
+addon unchanged for servers that still load it.
 
 Usage: gen_info_panorama.py          rewrite the generated files/blocks
        gen_info_panorama.py --check  exit 1 if something is out of date
@@ -15,14 +16,14 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CONTENT = ROOT / "workshop" / "content" / "panorama"
-INFO_XML = CONTENT / "layout" / "custom_game" / "rollthedice" / "info_v4.xml"
-INFO_VCSS = CONTENT / "styles" / "custom_game" / "rollthedice" / "info_v4.vcss"
+INFO_XML = CONTENT / "layout" / "custom_game" / "rollthedice" / "info_v5.xml"
+INFO_VCSS = CONTENT / "styles" / "custom_game" / "rollthedice" / "info_v5.vcss"
 
 # Keep in sync with InfoMenuIds (validated by validate_panorama.py).
 ROWS = 112
-TABS = 5
+TABS = 6
 LANGUAGES = 2
-FILTERS = 4
+FILTERS = 6
 ROOT_ID = "ri-root"
 TAB_ID_PREFIX = "ri-tab-"
 LANG_ID_PREFIX = "ri-lang-"
@@ -31,6 +32,21 @@ FILTER_ID_PREFIX = "ri-flt-"
 # round view: one column per team, each with its own row pool
 TEAM_ROWS = 32
 TEAMS: list[tuple[str, str]] = [("ct", "ri-ctr-"), ("t", "ri-tr-")]  # (key, row id prefix); vars ri_<key>r<n>_a / _c
+# admin view (last tab, shown to admins only): player rows with three buttons, perk rows as buttons
+ADMIN_TAB = TABS - 1
+ADMIN_PLAYER_ROWS = 64
+ADMIN_PERK_ROWS = 112
+CATEGORIES = 5
+ADMIN_SECTIONS = 2
+ADMIN_PLAYER_ID_PREFIX = "ri-ap-"   # row; vars ri_ap<n>_t (team) / _a (name) / _c (dice)
+ADMIN_ROLL_ID_PREFIX = "ri-apr-"
+ADMIN_GIVE_ID_PREFIX = "ri-apg-"
+ADMIN_LOCK_ID_PREFIX = "ri-apl-"
+ADMIN_PERK_ID_PREFIX = "ri-ak-"     # row button; vars ri_ak<n>_a (name) / _b (category)
+ADMIN_CATEGORY_ID_PREFIX = "ri-acat-"  # vars ri_ac<n>
+ADMIN_SECTION_ID_PREFIX = "ri-asec-"   # vars ri_as<n>
+# category switches in rail order (InfoTone order of the filter chips after "all")
+TONE_CLASSES = ["very-good", "good", "neutral", "bad", "very-bad"]
 
 # name -> accent hex (rainbow order; keep in sync with HudTheme / validate_panorama.py).
 THEMES: list[tuple[str, str]] = [
@@ -108,8 +124,115 @@ def team_column_xml(key: str, prefix: str) -> list[str]:
     ]
 
 
+def mark_xml() -> list[str]:
+    return [
+        '<Panel class="RiMark" hittest="false">',
+        '\t<Panel class="RiMarkBox" hittest="false">',
+        '\t\t<Panel class="RiMarkTip" hittest="false" />',
+        "\t</Panel>",
+        "</Panel>",
+    ]
+
+
+def admin_button_xml(panel_id: str, extra: str, labels: list[tuple[str, str]]) -> list[str]:
+    return [
+        f'<Button id="{panel_id}" class="RaBtn{extra}">',
+        *[f'\t<Label class="RaBtnLabel{cls} stratum-bold-tf" hittest="false" text="{{s:{var}}}" />' for cls, var in labels],
+        "</Button>",
+    ]
+
+
+def admin_player_row_xml(i: int) -> list[str]:
+    """Team badge, name, current dice; roll / give a perk / lock (label follows is-on = locked)."""
+    return [
+        f'<Panel id="{ADMIN_PLAYER_ID_PREFIX}{i}" class="RaRow tone-none team-none is-off" hittest="false">',
+        *indent(mark_xml(), 1),
+        f'\t<Label class="RaTeam stratum-bold-tf" hittest="false" text="{{s:ri_ap{i}_t}}" />',
+        f'\t<Label class="RaName stratum-bold-tf" hittest="false" text="{{s:ri_ap{i}_a}}" />',
+        f'\t<Label class="RaDice stratum-medium-tf" hittest="false" text="{{s:ri_ap{i}_c}}" />',
+        *indent(admin_button_xml(f"{ADMIN_ROLL_ID_PREFIX}{i}", " RaBtnRoll", [("", "ri_ab_roll")]), 1),
+        *indent(admin_button_xml(f"{ADMIN_GIVE_ID_PREFIX}{i}", " RaBtnGive", [("", "ri_ab_give")]), 1),
+        *indent(admin_button_xml(f"{ADMIN_LOCK_ID_PREFIX}{i}", " RaBtnLock", [(" RaLockOff", "ri_ab_lock"), (" RaLockOn", "ri_ab_unlock")]), 1),
+        "</Panel>",
+    ]
+
+
+def admin_perk_row_xml(i: int) -> list[str]:
+    """The whole row is the button: toggles the perk, or gives it while a target is picked (is-open)."""
+    states = [("RaStateOff", "ri_ab_off"), ("RaStateOn", "ri_ab_on"), ("RaStateCat", "ri_ab_catoff"), ("RaStatePick", "ri_ab_pick")]
+    return [
+        f'<Button id="{ADMIN_PERK_ID_PREFIX}{i}" class="RaPerk tone-none is-on is-off">',
+        *indent(mark_xml(), 1),
+        f'\t<Label class="RaPerkName stratum-bold-tf" hittest="false" text="{{s:ri_ak{i}_a}}" />',
+        f'\t<Label class="RaPerkCat stratum-bold-tf" hittest="false" text="{{s:ri_ak{i}_b}}" />',
+        *[f'\t<Label class="RaState {cls} stratum-bold-tf" hittest="false" text="{{s:{var}}}" />' for cls, var in states],
+        "</Button>",
+    ]
+
+
+def admin_category_xml(i: int) -> list[str]:
+    return [
+        f'<Button id="{ADMIN_CATEGORY_ID_PREFIX}{i}" class="RaCat tone-{TONE_CLASSES[i]} is-on">',
+        f'\t<Label class="RaCatName stratum-bold-tf" hittest="false" text="{{s:ri_ac{i}}}" />',
+        '\t<Label class="RaCatState RaCatOn stratum-bold-tf" hittest="false" text="{s:ri_ab_on}" />',
+        '\t<Label class="RaCatState RaCatOff stratum-bold-tf" hittest="false" text="{s:ri_ab_off}" />',
+        "</Button>",
+    ]
+
+
+def admin_xml() -> list[str]:
+    sections = [
+        line
+        for i in range(ADMIN_SECTIONS)
+        for line in chip_xml(f"{ADMIN_SECTION_ID_PREFIX}{i}", f"ri_as{i}", " is-active" if i == 0 else "")
+    ]
+    players = [line for i in range(ADMIN_PLAYER_ROWS) for line in admin_player_row_xml(i)]
+    perks = [line for i in range(ADMIN_PERK_ROWS) for line in admin_perk_row_xml(i)]
+    categories = [line for i in range(CATEGORIES) for line in admin_category_xml(i)]
+    return [
+        '<Panel class="RiAdmin" hittest="false">',
+        '\t<Button id="ri-alock" class="RiSwitch RaSwitch">',
+        '\t\t<Label class="RiSwitchLabel stratum-bold-tf" hittest="false" text="{s:ri_alock}" />',
+        '\t\t<Label class="RiSwitchState stratum-bold-tf" hittest="false" text="{s:ri_alock_state}" />',
+        '\t\t<Panel class="RiSwitchTrack" hittest="false">',
+        '\t\t\t<Panel class="RiSwitchKnob" hittest="false" />',
+        "\t\t</Panel>",
+        "\t</Button>",
+        '\t<Panel class="RaTabs" hittest="false">',
+        *indent(sections, 2),
+        "\t</Panel>",
+        '\t<Panel class="RaPlayers" hittest="false">',
+        '\t\t<Panel class="RaActions" hittest="false">',
+        *indent(chip_xml("ri-aall-roll", "ri_aall_roll"), 3),
+        *indent(chip_xml("ri-aall-give", "ri_aall_give"), 3),
+        "\t\t</Panel>",
+        '\t\t<Panel class="RaList" hittest="false">',
+        *indent(players, 3),
+        "\t\t</Panel>",
+        "\t</Panel>",
+        '\t<Panel id="ri-aperks" class="RaPerks" hittest="false">',
+        '\t\t<Panel class="RaPick" hittest="false">',
+        '\t\t\t<Label class="RaPickLabel stratum-bold-tf" hittest="false" text="{s:ri_apick}" />',
+        '\t\t\t<Button id="ri-apick-x" class="RiSearchClear">',
+        '\t\t\t\t<Panel class="RiCloseX RiCloseA" hittest="false" />',
+        '\t\t\t\t<Panel class="RiCloseX RiCloseB" hittest="false" />',
+        "\t\t\t</Button>",
+        "\t\t</Panel>",
+        '\t\t<Panel class="RaCats" hittest="false">',
+        *indent(categories, 3),
+        "\t\t</Panel>",
+        '\t\t<Panel class="RaList" hittest="false">',
+        *indent(perks, 3),
+        '\t\t\t<Label id="ri-ak-empty" class="RiEmpty stratum-medium-tf is-off" hittest="false" text="{s:ri_ak_empty}" />',
+        "\t\t</Panel>",
+        "\t</Panel>",
+        "</Panel>",
+    ]
+
+
 def tab_xml(i: int) -> list[str]:
-    active = " is-active" if i == 0 else ""
+    # the admin tab is authored hidden: the server shows it to admins only
+    active = " is-active" if i == 0 else " is-off" if i == ADMIN_TAB else ""
     return [
         f'<Button id="{TAB_ID_PREFIX}{i}" class="RiNav{active}">',
         f'\t<Label class="RiNavLabel stratum-bold-tf" hittest="false" text="{{s:ri_t{i}}}" />',
@@ -153,13 +276,14 @@ def layout_xml() -> str:
         "<root>",
         "\t<styles>",
         '\t\t<include src="s2r://panorama/styles/csgostyles.vcss" />',
-        '\t\t<include src="s2r://panorama/styles/custom_game/rollthedice/info_v4.vcss" />',
+        '\t\t<include src="s2r://panorama/styles/custom_game/rollthedice/info_v5.vcss" />',
         "\t</styles>",
         "",
         "\t<!-- generated by tools/gen_info_panorama.py - do not edit by hand -->",
-        f"\t<!-- rollthedice:info v2 rows={ROWS} tabs={TABS} languages={LANGUAGES} filters={FILTERS} team_rows={TEAM_ROWS} - contract: src/Hud/InfoMenuIds.cs -->",
+        f"\t<!-- rollthedice:info v5 rows={ROWS} tabs={TABS} languages={LANGUAGES} filters={FILTERS} team_rows={TEAM_ROWS}"
+        f" admin_players={ADMIN_PLAYER_ROWS} admin_perks={ADMIN_PERK_ROWS} categories={CATEGORIES} - contract: src/Hud/InfoMenuIds.cs -->",
         '\t<Panel class="RiScreen" hittest="false">',
-        f'\t\t<Panel id="{ROOT_ID}" class="RiCard is-off view-round theme-gold" hittest="false">',
+        f'\t\t<Panel id="{ROOT_ID}" class="RiCard is-off view-round asec-players theme-gold" hittest="false">',
         '\t\t\t<Panel class="RiBg" hittest="false" />',
         '\t\t\t<Panel class="RiCorner RiCornerTL" hittest="false" />',
         '\t\t\t<Panel class="RiCorner RiCornerTR" hittest="false" />',
@@ -228,6 +352,7 @@ def layout_xml() -> str:
         '\t\t\t\t\t\t\t\t<Panel class="RiRound" hittest="false">',
         *indent(columns, 9),
         "\t\t\t\t\t\t\t\t</Panel>",
+        *indent(admin_xml(), 8),
         "\t\t\t\t\t\t\t</Panel>",
         '\t\t\t\t\t\t\t<Panel class="RiVPad" hittest="false" />',
         "\t\t\t\t\t\t</Panel>",
@@ -256,7 +381,7 @@ def themes_css() -> str:
         lines.append(f"{sel} .RiIdx {{ border-color: {accent}; }}")
         lines.append(f"{sel} .RiNav.is-active {{ background-color: {accent}1f; border-left: 3px solid {accent}; }}")
         lines.append(f"{sel} .RiChip.is-active, {sel} .RiLang.is-active, {sel} .RiRow.is-self, {sel} .RiTeamRow.is-self, {sel} .RiSearch {{ background-color: {accent}1f; border: 1px solid {accent}; }}")
-        lines.append(f"{sel} .RiChip:hover, {sel} .RiLang:hover {{ border: 1px solid {accent}66; }}")
+        lines.append(f"{sel} .RiChip:hover, {sel} .RiLang:hover, {sel} .RaBtn:hover, {sel} .RaPerk:hover, {sel} .RaCat:hover {{ border: 1px solid {accent}66; }}")
         lines.append(f"{sel} .RiSwitch.is-on .RiSwitchTrack {{ background-color: {accent}33; border: 1px solid {accent}; }}")
         lines.append(f"{sel} .RiSwitch.is-on .RiSwitchKnob {{ background-color: {accent}; }}")
         lines.append(f"{sel} .RiSwitch.is-on Label.RiSwitchState {{ color: {accent}; }}")

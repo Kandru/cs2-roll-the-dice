@@ -322,18 +322,14 @@ namespace RollTheDice
             return Text(player, "info.time.hours").Replace("{n}", ((int)age.TotalHours).ToString());
         }
 
-        private static string ToneKey(ReelTone tone) => tone switch
-        {
-            ReelTone.Good => "info.tone.good",
-            ReelTone.Bad => "info.tone.bad",
-            ReelTone.Neutral => "info.tone.neutral",
-            _ => "info.tone.neutral",
-        };
+        private static string ToneKey(ReelTone tone) => InfoMenu.ToneKey(ToInfoTone(tone));
 
         private static InfoTone ToInfoTone(ReelTone tone) => tone switch
         {
+            ReelTone.VeryGood => InfoTone.VeryGood,
             ReelTone.Good => InfoTone.Good,
             ReelTone.Bad => InfoTone.Bad,
+            ReelTone.VeryBad => InfoTone.VeryBad,
             ReelTone.Neutral => InfoTone.Neutral,
             _ => InfoTone.None,
         };

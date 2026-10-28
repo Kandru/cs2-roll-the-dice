@@ -328,12 +328,19 @@ Label.RrName
 	white-space: nowrap;
 }
 
+/* five categories: very good #2ee6a0, good #9ccf4f, neutral #5aa9e6, bad #ff8a3d, very bad #e05a5a */
+.tone-very-good .RrStripe, .Reel.win-very-good .RrWinRow .RrStripe { background-color: #2ee6a0; }
 .tone-good .RrStripe, .Reel.win-good .RrWinRow .RrStripe { background-color: #9ccf4f; }
-.tone-bad .RrStripe, .Reel.win-bad .RrWinRow .RrStripe { background-color: #e05a5a; }
+.tone-bad .RrStripe, .Reel.win-bad .RrWinRow .RrStripe { background-color: #ff8a3d; }
+.tone-very-bad .RrStripe, .Reel.win-very-bad .RrWinRow .RrStripe { background-color: #e05a5a; }
 .tone-neutral .RrStripe, .Reel.win-neutral .RrWinRow .RrStripe { background-color: #5aa9e6; }
+.tone-very-good .RrSymTip, .Reel.win-very-good .RrWinRow .RrSymTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #2ee6a0; }
 .tone-good .RrSymTip, .Reel.win-good .RrWinRow .RrSymTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #9ccf4f; }
-.tone-bad .RrSymTip, .Reel.win-bad .RrWinRow .RrSymTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #e05a5a; }
-.tone-bad .RrSymBox, .Reel.win-bad .RrWinRow .RrSymBox { transform: rotateZ( 180deg ); }.tone-neutral .RrSymTip, .Reel.win-neutral .RrWinRow .RrSymTip { width: 6px; height: 6px; margin-left: 5px; margin-top: 1px; background-color: #5aa9e6; }
+.tone-bad .RrSymTip, .Reel.win-bad .RrWinRow .RrSymTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #ff8a3d; }
+.tone-very-bad .RrSymTip, .Reel.win-very-bad .RrWinRow .RrSymTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #e05a5a; }
+.tone-bad .RrSymBox, .Reel.win-bad .RrWinRow .RrSymBox { transform: rotateZ( 180deg ); }
+.tone-very-bad .RrSymBox, .Reel.win-very-bad .RrWinRow .RrSymBox { transform: rotateZ( 180deg ); }
+.tone-neutral .RrSymTip, .Reel.win-neutral .RrWinRow .RrSymTip { width: 6px; height: 6px; margin-left: 5px; margin-top: 1px; background-color: #5aa9e6; }
 
 /* Drum illusion: overlays above the strip (later siblings draw on top). */
 .RrWinLine

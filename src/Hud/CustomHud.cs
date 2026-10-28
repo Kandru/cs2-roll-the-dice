@@ -245,6 +245,24 @@ namespace RollTheDice.Hud
             ClearSlot(player.Slot);
         }
 
+        /// <summary>
+        /// A player joined: the layout keeps per-slot state across connections, so hide every panel whatever the
+        /// slot's previous connection left there (a disconnect mid-roll kept the reel on screen for good).
+        /// </summary>
+        public static void ClaimSlot(CCSPlayerController? player)
+        {
+            if (!IsHumanViewer(player) || !HasLayout())
+            {
+                return;
+            }
+
+            // cached writes belong to the previous connection: without them every default below is written
+            ClearSlot(player!.Slot);
+            Banner.WriteDefaults(player);
+            Reel.WriteDefaults(player, force: true);
+            Reel.Forget(player);
+        }
+
         public static void Shutdown()
         {
             _visibleBySlot.Clear();
