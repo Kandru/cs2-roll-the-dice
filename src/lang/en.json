@@ -654,5 +654,8 @@
     "admin.menu.player_unlocked": "{purple}[RollTheDice] {green}You may roll again.",
     "admin.menu.dead": "{purple}[RollTheDice] {green}{player} {default}is dead and gets no dice.",
     "admin.menu.nodices": "{purple}[RollTheDice] {default}No dice enabled: switch perks or categories on.",
-    "admin.menu.bot": "{purple}[RollTheDice] {default}Bots do not roll themselves and cannot be locked."
+    "admin.menu.bot": "{purple}[RollTheDice] {default}Bots do not roll themselves and cannot be locked.",
+    "info.admin.mirror": "Same perks for both teams",
+    "admin.menu.mirror_on": "{purple}[RollTheDice] {green}Mirror mode on: {default}both teams get the same perks, everyone rolls at round start.",
+    "admin.menu.mirror_off": "{purple}[RollTheDice] {default}Mirror mode off: everyone rolls on their own again."
 }

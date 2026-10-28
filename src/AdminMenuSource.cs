@@ -42,7 +42,7 @@ namespace RollTheDice
             {
                 categories[i] = IsCategoryOn(ToReelTone(InfoMenu.Categories[i]));
             }
-            return new AdminState(Config.Admin.RollsLocked, categories, _dices.Count(IsRollable), _dices.Count);
+            return new AdminState(Config.Admin.RollsLocked, Config.Admin.MirrorTeams, categories, _dices.Count(IsRollable), _dices.Count);
         }
 
         /// <summary>Every player but HLTV (bots too: they can get a dice), CT first, then T, then the rest; by name.</summary>
@@ -113,7 +113,25 @@ namespace RollTheDice
 
             Config.Admin.RollsLocked = !Config.Admin.RollsLocked;
             SaveAdminConfig();
-            string key = Config.Admin.RollsLocked ? "admin.menu.locked_all" : "admin.menu.unlocked_all";
+            TellEveryone(Config.Admin.RollsLocked ? "admin.menu.locked_all" : "admin.menu.unlocked_all");
+        }
+
+        /// <summary>Mirror mode on/off; perks owed so far are dropped either way.</summary>
+        public void ToggleMirror(CCSPlayerController admin)
+        {
+            if (!IsAdmin(admin))
+            {
+                return;
+            }
+
+            Config.Admin.MirrorTeams = !Config.Admin.MirrorTeams;
+            ClearMirror();
+            SaveAdminConfig();
+            TellEveryone(Config.Admin.MirrorTeams ? "admin.menu.mirror_on" : "admin.menu.mirror_off");
+        }
+
+        private void TellEveryone(string key)
+        {
             foreach (CCSPlayerController player in Utilities.GetPlayers())
             {
                 if (player is { IsValid: true, IsBot: false, IsHLTV: false })

@@ -35,6 +35,7 @@ namespace RollTheDice.Hud
         public const string CtEmptyId = "ri-ct-empty";
         public const string TEmptyId = "ri-t-empty";
         public const string AdminLockId = "ri-alock";
+        public const string AdminMirrorId = "ri-amirror";
         public const string AdminAllRollId = "ri-aall-roll";
         public const string AdminAllGiveId = "ri-aall-give";
         public const string AdminPerksId = "ri-aperks";
@@ -82,6 +83,8 @@ namespace RollTheDice.Hud
         // admin view
         public const string AdminLockVar = "ri_alock";
         public const string AdminLockStateVar = "ri_alock_state";
+        public const string AdminMirrorVar = "ri_amirror";
+        public const string AdminMirrorStateVar = "ri_amirror_state";
         public const string AdminAllRollVar = "ri_aall_roll";
         public const string AdminAllGiveVar = "ri_aall_give";
         public const string AdminPickVar = "ri_apick";

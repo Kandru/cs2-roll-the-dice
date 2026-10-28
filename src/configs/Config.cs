@@ -180,6 +180,9 @@ namespace RollTheDice
         [JsonPropertyName("rolls_locked")] public bool RollsLocked { get; set; } = false;
         // SteamID64s that cannot roll
         [JsonPropertyName("locked_players")] public List<ulong> LockedPlayers { get; set; } = [];
+        // mirror mode: a random perk rolled by one team is owed to the other team's next roll (per round);
+        // everyone rolls at the trigger event of the round
+        [JsonPropertyName("mirror_teams")] public bool MirrorTeams { get; set; } = false;
         // categories a roll never draws: "very_good", "good", "neutral", "bad", "very_bad"
         [JsonPropertyName("disabled_categories")] public List<string> DisabledCategories { get; set; } = [];
         // dice class names a roll never draws (e.g. "Suicide")
