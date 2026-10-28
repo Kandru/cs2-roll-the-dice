@@ -14,9 +14,11 @@ LAYOUTS = CONTENT / "layout" / "custom_game" / "rollthedice"
 STYLES = CONTENT / "styles" / "custom_game" / "rollthedice"
 PREVIEW = ROOT / "workshop" / "preview"
 HUD_VCSS = STYLES / "hud.vcss"
-INFO_VCSS = STYLES / "info_v4.vcss"
+INFO_VCSS = STYLES / "info_v5.vcss"
 BANNER_XML = LAYOUTS / "banner.xml"
-INFO_XML = LAYOUTS / "info_v4.xml"
+INFO_XML = LAYOUTS / "info_v5.xml"
+# older layout versions stay in the addon for servers that still load them; frozen, no contract check
+RETIRED_LAYOUTS = {LAYOUTS / "info_v4.xml"}
 KIT_CSS = PREVIEW / "kit.css"
 BANNER_HTML = PREVIEW / "banner.html"
 REEL_HTML = PREVIEW / "reel.html"
@@ -215,6 +217,18 @@ def info_contract() -> tuple[set[str], set[str]]:
         fail("InfoMenuIds.cs id prefixes differ from tools/gen_info_panorama.py")
     if [name for name, _ in gen.THEMES] != THEME_NAMES or [a for _, a in gen.THEMES] != [a for _, a in THEMES]:
         fail("tools/gen_info_panorama.py THEMES must match the palette")
+    admin_players = int(cs_const(source, CS_INT_CONST_RE, "AdminPlayerRows", "InfoMenuIds.cs"))
+    admin_perks = int(cs_const(source, CS_INT_CONST_RE, "AdminPerkRows", "InfoMenuIds.cs"))
+    categories = int(cs_const(source, CS_INT_CONST_RE, "Categories", "InfoMenuIds.cs"))
+    sections = int(cs_const(source, CS_INT_CONST_RE, "AdminSections", "InfoMenuIds.cs"))
+    if (admin_players, admin_perks, categories, sections) != (gen.ADMIN_PLAYER_ROWS, gen.ADMIN_PERK_ROWS, gen.CATEGORIES, gen.ADMIN_SECTIONS):
+        fail("InfoMenuIds.cs AdminPlayerRows/AdminPerkRows/Categories/AdminSections differ from tools/gen_info_panorama.py")
+    admin_prefixes = ("AdminPlayerIdPrefix", "AdminRollIdPrefix", "AdminGiveIdPrefix", "AdminLockIdPrefix", "AdminPerkIdPrefix", "AdminCategoryIdPrefix", "AdminSectionIdPrefix")
+    if tuple(const(name) for name in admin_prefixes) != (
+        gen.ADMIN_PLAYER_ID_PREFIX, gen.ADMIN_ROLL_ID_PREFIX, gen.ADMIN_GIVE_ID_PREFIX, gen.ADMIN_LOCK_ID_PREFIX,
+        gen.ADMIN_PERK_ID_PREFIX, gen.ADMIN_CATEGORY_ID_PREFIX, gen.ADMIN_SECTION_ID_PREFIX,
+    ):
+        fail("InfoMenuIds.cs admin id prefixes differ from tools/gen_info_panorama.py")
     for path, text in gen.render().items():
         if not path.is_file() or path.read_text(encoding="utf-8") != text:
             fail(f"{path.name}: generated info menu out of date - run tools/gen_info_panorama.py")
@@ -237,6 +251,15 @@ def info_contract() -> tuple[set[str], set[str]]:
         for suffix in ("_a", "_c")
     }
     variables |= {f"{const('RowVarPrefix')}{i}{suffix}" for i in range(rows) for suffix in ("_i", "_a", "_b", "_c")}
+    for name in ("AdminPlayerIdPrefix", "AdminRollIdPrefix", "AdminGiveIdPrefix", "AdminLockIdPrefix"):
+        ids |= {f"{const(name)}{i}" for i in range(admin_players)}
+    ids |= {f"{const('AdminPerkIdPrefix')}{i}" for i in range(admin_perks)}
+    ids |= {f"{const('AdminCategoryIdPrefix')}{i}" for i in range(categories)}
+    ids |= {f"{const('AdminSectionIdPrefix')}{i}" for i in range(sections)}
+    variables |= {f"{const('AdminPlayerVarPrefix')}{i}{suffix}" for i in range(admin_players) for suffix in ("_t", "_a", "_c")}
+    variables |= {f"{const('AdminPerkVarPrefix')}{i}{suffix}" for i in range(admin_perks) for suffix in ("_a", "_b")}
+    variables |= {f"{const('AdminCategoryVarPrefix')}{i}" for i in range(categories)}
+    variables |= {f"{const('AdminSectionVarPrefix')}{i}" for i in range(sections)}
     return ids, variables
 
 
@@ -298,7 +321,7 @@ def main() -> None:
 
     xml_files = sorted(LAYOUTS.glob("*.xml"))
     known = {BANNER_XML, INFO_XML}
-    unknown = [p.name for p in xml_files if p not in known]
+    unknown = [p.name for p in xml_files if p not in known and p not in RETIRED_LAYOUTS]
     if unknown:
         fail(f"layouts without a contract check: {unknown}")
     for path in known:

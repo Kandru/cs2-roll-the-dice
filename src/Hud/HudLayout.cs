@@ -252,13 +252,15 @@ namespace RollTheDice.Hud
             return true;
         }
 
-        /// <summary>Disconnect: the next player in this slot starts from the XML defaults.</summary>
+        /// <summary>
+        /// Disconnect: hide the slot. The diff caches stay - the entity keeps each slot's state across connections, so
+        /// the next player in this slot inherits it (dropping the caches left stale rows and tones in the menu after a
+        /// reconnect). <see cref="RestoreDefaults"/> on connect writes the difference back.
+        /// </summary>
         public void Forget(int slot)
         {
             if ((uint)slot < MaxSlots)
             {
-                _text[slot] = null;
-                _class[slot] = null;
                 _visible[slot] = false;
                 _closingUntil[slot] = 0;
             }

@@ -157,18 +157,33 @@ namespace RollTheDice
         [JsonPropertyName("hold_seconds")] public float HoldSeconds { get; set; } = 1.5f;
         // sound per row passing the win line (sound event or "sounds/..." path, empty = off)
         [JsonPropertyName("tick_sound")] public string TickSound { get; set; } = "UIPanorama.container_weapon_ticker";
-        // marker per dice on the reel: "good", "bad" or "neutral" (missing dices use the built-in default)
+        // category per dice: "very_good", "good", "neutral", "bad" or "very_bad" (missing dices use the built-in default)
         [JsonPropertyName("tones")] public Dictionary<string, string> Tones { get; set; } = DefaultTones();
+        // set by the plugin: 2 = tones migrated to the five categories (missing in older configs = 0)
+        [JsonPropertyName("tones_version")] public int TonesVersion { get; set; }
 
         private static Dictionary<string, string> DefaultTones()
         {
             Dictionary<string, string> tones = [];
             foreach ((string dice, ReelTone tone) in Reel.DefaultTones)
             {
-                tones[dice] = tone.ToString().ToLowerInvariant();
+                tones[dice] = Reel.ToneName(tone);
             }
             return tones;
         }
+    }
+
+    /// <summary>Set from the admin tab of the info menu (saved at once); can also be edited here.</summary>
+    public class RollAdminConfig
+    {
+        // nobody can roll (command, auto roll, timed rolls); admins can still hand out dices
+        [JsonPropertyName("rolls_locked")] public bool RollsLocked { get; set; } = false;
+        // SteamID64s that cannot roll
+        [JsonPropertyName("locked_players")] public List<ulong> LockedPlayers { get; set; } = [];
+        // categories a roll never draws: "very_good", "good", "neutral", "bad", "very_bad"
+        [JsonPropertyName("disabled_categories")] public List<string> DisabledCategories { get; set; } = [];
+        // dice class names a roll never draws (e.g. "Suicide")
+        [JsonPropertyName("disabled_dices")] public List<string> DisabledDices { get; set; } = [];
     }
 
     public class PrecacheConfig
@@ -206,6 +221,8 @@ namespace RollTheDice
         [JsonPropertyName("panorama_theme")] public string PanoramaTheme { get; set; } = "gold";
         // slot-machine reel shown while the dice rolls (visual only)
         [JsonPropertyName("reel")] public ReelConfig Reel { get; set; } = new ReelConfig();
+        // roll locks and which dices a roll can draw (admin tab of "!dice info")
+        [JsonPropertyName("admin")] public RollAdminConfig Admin { get; set; } = new RollAdminConfig();
 
         // dices configuration
         [JsonPropertyName("dices")] public DicesConfig Dices { get; set; } = new DicesConfig();

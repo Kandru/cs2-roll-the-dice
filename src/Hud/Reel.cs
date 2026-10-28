@@ -14,11 +14,14 @@ namespace RollTheDice.Hud
         Admin,
     }
 
+    /// <summary>Perk category; also the index into the reel's tone classes (the strong tones came later).</summary>
     public enum ReelTone
     {
         Good,
         Bad,
         Neutral,
+        VeryGood,
+        VeryBad,
     }
 
     /// <summary>
@@ -60,8 +63,9 @@ namespace RollTheDice.Hud
         private const int AuthoredWin = (int)ReelTone.Neutral;
         private static readonly TimeSpan FadeGrace = TimeSpan.FromSeconds(0.25);
 
-        private static readonly string[] Tones = ["tone-good", "tone-bad", "tone-neutral"];
-        private static readonly string[] WinTones = ["win-good", "win-bad", "win-neutral"];
+        private const int CurrentTonesVersion = 2;
+        private static readonly string[] Tones = ["tone-good", "tone-bad", "tone-neutral", "tone-very-good", "tone-very-bad"];
+        private static readonly string[] WinTones = ["win-good", "win-bad", "win-neutral", "win-very-good", "win-very-bad"];
         private static readonly string[] Replays = ["replay-0", "replay-1"];
         private static readonly string[] SpinClasses = BuildSteps("spin-", 10, 50);
         private static readonly string[] HoldClasses = BuildSteps("hold-", 5, 50);
@@ -71,10 +75,10 @@ namespace RollTheDice.Hud
         /// <summary>Default tone per dice class; config <c>reel.tones</c> overrides single entries.</summary>
         public static readonly IReadOnlyDictionary<string, ReelTone> DefaultTones = new Dictionary<string, ReelTone>(StringComparer.Ordinal)
         {
-            ["Airstrike"] = ReelTone.Good,
-            ["Bankrupt"] = ReelTone.Bad,
+            ["Airstrike"] = ReelTone.VeryGood,
+            ["Bankrupt"] = ReelTone.VeryBad,
             ["BigTaserBattery"] = ReelTone.Good,
-            ["BlackHole"] = ReelTone.Good,
+            ["BlackHole"] = ReelTone.VeryGood,
             ["Blink"] = ReelTone.Good,
             ["BloodMagic"] = ReelTone.Neutral,
             ["Bouncy"] = ReelTone.Neutral,
@@ -85,7 +89,7 @@ namespace RollTheDice.Hud
             ["ChangePlayerModel"] = ReelTone.Good,
             ["ChangePlayerSize"] = ReelTone.Neutral,
             ["ChickenLeader"] = ReelTone.Neutral,
-            ["Cloak"] = ReelTone.Good,
+            ["Cloak"] = ReelTone.VeryGood,
             ["ClusterGrenade"] = ReelTone.Good,
             ["ConfettiKills"] = ReelTone.Neutral,
             ["Cutter"] = ReelTone.Good,
@@ -107,7 +111,7 @@ namespace RollTheDice.Hud
             ["Glider"] = ReelTone.Good,
             ["Glow"] = ReelTone.Bad,
             ["GunGame"] = ReelTone.Neutral,
-            ["HeadshotOnly"] = ReelTone.Bad,
+            ["HeadshotOnly"] = ReelTone.VeryBad,
             ["HealingSmoke"] = ReelTone.Good,
             ["HealthRegen"] = ReelTone.Good,
             ["HeartbeatSensor"] = ReelTone.Good,
@@ -118,12 +122,12 @@ namespace RollTheDice.Hud
             ["IncreaseHealth"] = ReelTone.Good,
             ["IncreaseMoney"] = ReelTone.Good,
             ["IncreaseSpeed"] = ReelTone.Good,
-            ["InfiniteAmmo"] = ReelTone.Good,
-            ["InfiniteZeus"] = ReelTone.Good,
-            ["Invisible"] = ReelTone.Good,
+            ["InfiniteAmmo"] = ReelTone.VeryGood,
+            ["InfiniteZeus"] = ReelTone.VeryGood,
+            ["Invisible"] = ReelTone.VeryGood,
             ["Jammer"] = ReelTone.Bad,
             ["Jetpack"] = ReelTone.Good,
-            ["Joker"] = ReelTone.Good,
+            ["Joker"] = ReelTone.VeryGood,
             ["KnockbackRounds"] = ReelTone.Good,
             ["LaserPointer"] = ReelTone.Bad,
             ["LongerFlashes"] = ReelTone.Good,
@@ -137,9 +141,9 @@ namespace RollTheDice.Hud
             ["NinjaSmoke"] = ReelTone.Good,
             ["NoExplosives"] = ReelTone.Bad,
             ["NoHeadshot"] = ReelTone.Bad,
-            ["NoRecoil"] = ReelTone.Good,
-            ["OneHP"] = ReelTone.Bad,
-            ["Overshield"] = ReelTone.Good,
+            ["NoRecoil"] = ReelTone.VeryGood,
+            ["OneHP"] = ReelTone.VeryBad,
+            ["Overshield"] = ReelTone.VeryGood,
             ["PlayAsChicken"] = ReelTone.Neutral,
             ["PlayDead"] = ReelTone.Good,
             ["PlayerHealthBar"] = ReelTone.Good,
@@ -149,17 +153,17 @@ namespace RollTheDice.Hud
             ["RandomWeapon"] = ReelTone.Neutral,
             ["RecoilPropulsion"] = ReelTone.Neutral,
             ["ResetOnReload"] = ReelTone.Bad,
-            ["Respawn"] = ReelTone.Good,
+            ["Respawn"] = ReelTone.VeryGood,
             ["ReturnToSender"] = ReelTone.Good,
             ["Slide"] = ReelTone.Good,
             ["SolarFlare"] = ReelTone.Good,
-            ["StripWeapons"] = ReelTone.Bad,
-            ["Suicide"] = ReelTone.Bad,
+            ["StripWeapons"] = ReelTone.VeryBad,
+            ["Suicide"] = ReelTone.VeryBad,
             ["ThirdPersonView"] = ReelTone.Neutral,
             ["Thorns"] = ReelTone.Good,
-            ["ThrowingKnives"] = ReelTone.Good,
+            ["ThrowingKnives"] = ReelTone.VeryGood,
             ["ToxicSmoke"] = ReelTone.Good,
-            ["Vampire"] = ReelTone.Good,
+            ["Vampire"] = ReelTone.VeryGood,
             ["VoodooDoll"] = ReelTone.Good,
             ["WeaponJam"] = ReelTone.Bad,
             ["WeirdGrenades"] = ReelTone.Neutral,
@@ -241,6 +245,8 @@ namespace RollTheDice.Hud
             _holdSeconds = 0.5f + (_holdClass * 0.5f);
             _ticks = BuildTicks(_spinSeconds);
             _tickSound = reel.TickSound ?? string.Empty;
+            // saved with the next Config.Update (ReloadConfigFromDisk)
+            _ = MigrateTones(reel);
             _toneOverrides = reel.Tones ?? [];
         }
 
@@ -452,13 +458,15 @@ namespace RollTheDice.Hud
                 return;
             }
 
+            // the player's own panel got its defaults from CustomHud; spectators of the player lose the reel
             int slot = player.Slot;
-            Cancel(slot, hide: false);
             int owner = _viewerOwner[slot];
             if (owner >= 0)
             {
                 _ = _viewers[owner]?.Remove(slot);
             }
+            _viewerOwner[slot] = -1;
+            Cancel(slot, hide: true);
             ResetViewer(slot);
         }
 
@@ -488,11 +496,14 @@ namespace RollTheDice.Hud
             _fillerWritten = false;
         }
 
-        /// <summary>Round restart rebuilds the client layout from XML: write the XML defaults back (touched viewers only).</summary>
-        public static void WriteDefaults(CCSPlayerController player)
+        /// <summary>
+        /// Round restart rebuilds the client layout from XML: write the XML defaults back (touched viewers only,
+        /// <paramref name="force"/> for a slot whose state may come from an earlier connection).
+        /// </summary>
+        public static void WriteDefaults(CCSPlayerController player, bool force = false)
         {
             int v = player.Slot;
-            if (v is < 0 or >= MaxSlots || !_touched[v])
+            if (v is < 0 or >= MaxSlots || (!_touched[v] && !force))
             {
                 return;
             }
@@ -943,13 +954,59 @@ namespace RollTheDice.Hud
 
         private static ReelTone ResolveTone(string className)
         {
-            if (_toneOverrides.TryGetValue(className, out string? value)
-                && Enum.TryParse(value, ignoreCase: true, out ReelTone tone)
-                && Enum.IsDefined(tone))
+            if (_toneOverrides.TryGetValue(className, out string? value) && TryParseTone(value, out ReelTone tone))
             {
                 return tone;
             }
             return DefaultTones.TryGetValue(className, out ReelTone fallback) ? fallback : ReelTone.Neutral;
+        }
+
+        /// <summary>Config spelling of a tone: good, bad, neutral, very_good, very_bad.</summary>
+        public static string ToneName(ReelTone tone) => tone switch
+        {
+            ReelTone.VeryGood => "very_good",
+            ReelTone.VeryBad => "very_bad",
+            _ => tone.ToString().ToLowerInvariant(),
+        };
+
+        /// <summary>Accepts the config spelling and the enum name ("very_good", "very-good", "VeryGood").</summary>
+        private static bool TryParseTone(string? value, out ReelTone tone)
+        {
+            string name = (value ?? string.Empty).Replace("_", string.Empty).Replace("-", string.Empty);
+            return Enum.TryParse(name, ignoreCase: true, out tone) && Enum.IsDefined(tone) && !int.TryParse(name, out _);
+        }
+
+        /// <summary>
+        /// Once per config: the five categories moved the strongest dice to very good / very bad. A config written
+        /// before that lists every dice with its old tone; entries still on that old tone follow the move. Returns true
+        /// when the config changed (the caller saves it).
+        /// </summary>
+        private static bool MigrateTones(ReelConfig reel)
+        {
+            if (reel.TonesVersion >= CurrentTonesVersion)
+            {
+                return false;
+            }
+
+            reel.Tones ??= [];
+            foreach ((string dice, ReelTone tone) in DefaultTones)
+            {
+                ReelTone previous = tone switch
+                {
+                    ReelTone.VeryGood => ReelTone.Good,
+                    ReelTone.VeryBad => ReelTone.Bad,
+                    _ => tone,
+                };
+                if (previous != tone
+                    && reel.Tones.TryGetValue(dice, out string? value)
+                    && TryParseTone(value, out ReelTone configured)
+                    && configured == previous)
+                {
+                    reel.Tones[dice] = ToneName(tone);
+                }
+            }
+            reel.TonesVersion = CurrentTonesVersion;
+            return true;
         }
 
         /// <summary>Times (s after open) when a row boundary passes the win line on the ease-out curve of rr-spin.</summary>

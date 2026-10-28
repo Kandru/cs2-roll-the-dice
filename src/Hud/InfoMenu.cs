@@ -12,15 +12,18 @@ namespace RollTheDice.Hud
         Perks,
         Commands,
         Settings,
+        Admin,
     }
 
-    /// <summary>Index into <see cref="InfoMenuIds.Tones"/>.</summary>
+    /// <summary>Index into <see cref="InfoMenuIds.Tones"/> (the two strong tones came later, hence the order).</summary>
     public enum InfoTone
     {
         None,
         Good,
         Bad,
         Neutral,
+        VeryGood,
+        VeryBad,
     }
 
     /// <summary>Index into <see cref="InfoMenuIds.Teams"/>.</summary>
@@ -56,6 +59,26 @@ namespace RollTheDice.Hud
     /// <summary>Settings view state. <see cref="Language"/> indexes the language buttons (-1 = none matches).</summary>
     public readonly record struct InfoSettings(bool AutoOn, bool AutoLocked, string AutoHint, int Language);
 
+    /// <summary>One player in the admin list. <see cref="UserId"/> identifies the target of a click.</summary>
+    public readonly record struct AdminPlayerRow(
+        int UserId,
+        string Name,
+        string Badge,
+        InfoTeam Team,
+        string Dice,
+        InfoTone Tone,
+        bool Alive,
+        bool Locked);
+
+    /// <summary>One perk in the admin list: own switch and whether its category is switched on.</summary>
+    public readonly record struct AdminPerkRow(string ClassName, string Title, string Category, InfoTone Tone, bool On, bool CategoryOn);
+
+    /// <summary>
+    /// Global admin state. <see cref="CategoryOn"/> follows <see cref="InfoMenu.Categories"/>; Rollable counts the perks
+    /// a roll can draw right now.
+    /// </summary>
+    public readonly record struct AdminState(bool Locked, bool[] CategoryOn, int Rollable, int Total);
+
     /// <summary>Data and actions behind the menu; implemented by the plugin.</summary>
     public interface IInfoMenuSource
     {
@@ -64,6 +87,18 @@ namespace RollTheDice.Hud
         void FillRows(CCSPlayerController player, InfoTab tab, List<InfoRow> rows);
         void ToggleAutoRoll(CCSPlayerController player);
         void SetLanguage(CCSPlayerController player, int language);
+
+        // admin tab: every call is checked against IsAdmin by the menu and again by the plugin
+        bool IsAdmin(CCSPlayerController player);
+        AdminState Admin();
+        void FillAdminPlayers(CCSPlayerController viewer, List<AdminPlayerRow> rows);
+        void FillAdminPerks(CCSPlayerController viewer, List<AdminPerkRow> rows);
+        void ToggleRollLock(CCSPlayerController admin);
+        void ToggleCategory(CCSPlayerController admin, InfoTone tone);
+        void TogglePerk(CCSPlayerController admin, string className);
+        void TogglePlayerLock(CCSPlayerController admin, int userId);
+        /// <summary>Rolls for one player (<paramref name="userId"/>) or every living player (null); a random allowed perk when <paramref name="className"/> is null.</summary>
+        void AdminRoll(CCSPlayerController admin, int? userId, string? className);
     }
 
     /// <summary>
@@ -88,9 +123,14 @@ namespace RollTheDice.Hud
         private const int MaxSlots = HudLayout.MaxSlots;
 
         private static readonly InfoTab[] ListTabs = [InfoTab.Round, InfoTab.History, InfoTab.Perks, InfoTab.Commands];
-        private static readonly string[] FilterKeys = ["info.filter.all", "info.filter.good", "info.filter.bad", "info.filter.neutral"];
+        /// <summary>The five perk categories from best to worst: filter chips after "all", admin category switches.</summary>
+        public static readonly InfoTone[] Categories = [InfoTone.VeryGood, InfoTone.Good, InfoTone.Neutral, InfoTone.Bad, InfoTone.VeryBad];
+        private static readonly string[] FilterKeys = ["info.filter.all", "info.filter.very_good", "info.filter.good", "info.filter.neutral", "info.filter.bad", "info.filter.very_bad"];
         // filter chip -> tone it keeps (None = all)
-        private static readonly InfoTone[] FilterTones = [InfoTone.None, InfoTone.Good, InfoTone.Bad, InfoTone.Neutral];
+        private static readonly InfoTone[] FilterTones = [InfoTone.None, .. Categories];
+        // admin pick target: none, or every living player (else a user id)
+        private const int NoPick = int.MinValue;
+        private const int PickAll = -1;
 
         private static readonly HudLayout _hud = new(InfoMenuIds.Resource, InfoMenuIds.RootId);
         private static readonly TextSlot _title = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.TitleVar);
@@ -134,6 +174,46 @@ namespace RollTheDice.Hud
         private static readonly ClassSlot[] _rowTone = Groups(InfoMenuIds.RowIds, InfoMenuIds.Tones, authored: (int)InfoTone.None);
         private static readonly ClassSlot[] _rowTeam = Groups(InfoMenuIds.RowIds, InfoMenuIds.Teams, authored: (int)InfoTeam.None);
         private static readonly ClassSlot[] _rowLife = Groups(InfoMenuIds.RowIds, InfoMenuIds.Lives, authored: (int)InfoLife.None);
+        // the admin tab is authored hidden
+        private static readonly ClassSlot _adminTabOff = _hud.Flag(InfoMenuIds.TabIds[(int)InfoTab.Admin], InfoMenuIds.OffClass, authoredOn: true);
+
+        // admin view: authored asec-players, section 0 active, lock off, every category on, no pick, rows off
+        private static readonly ClassSlot _adminSection = _hud.Group(InfoMenuIds.RootId, InfoMenuIds.AdminSectionClasses, authored: 0);
+        private static readonly ClassSlot[] _adminSectionActive = Flags(InfoMenuIds.AdminSectionIds, InfoMenuIds.ActiveClass, authoredOn: 0);
+        private static readonly ClassSlot _adminLockOn = _hud.Flag(InfoMenuIds.AdminLockId, InfoMenuIds.OnClass);
+        private static readonly ClassSlot _adminPicking = _hud.Flag(InfoMenuIds.AdminPerksId, InfoMenuIds.OpenClass);
+        private static readonly ClassSlot[] _adminCategoryOn = Flags(InfoMenuIds.AdminCategoryIds, InfoMenuIds.OnClass, authoredOn: -2);
+        private static readonly ClassSlot _adminPerkEmptyOff = _hud.Flag(InfoMenuIds.AdminPerkEmptyId, InfoMenuIds.OffClass, authoredOn: true);
+        private static readonly TextSlot _adminLock = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminLockVar);
+        private static readonly TextSlot _adminLockState = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminLockStateVar);
+        private static readonly TextSlot _adminAllRoll = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminAllRollVar);
+        private static readonly TextSlot _adminAllGive = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminAllGiveVar);
+        private static readonly TextSlot _adminPick = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminPickVar);
+        private static readonly TextSlot _adminPerkEmpty = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminPerkEmptyVar);
+        private static readonly TextSlot _adminRollLabel = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminRollLabelVar);
+        private static readonly TextSlot _adminGiveLabel = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminGiveLabelVar);
+        private static readonly TextSlot _adminLockLabel = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminLockLabelVar);
+        private static readonly TextSlot _adminUnlockLabel = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminUnlockLabelVar);
+        private static readonly TextSlot _adminOnLabel = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminOnVar);
+        private static readonly TextSlot _adminOffLabel = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminOffVar);
+        private static readonly TextSlot _adminCatOffLabel = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminCatOffVar);
+        private static readonly TextSlot _adminPickLabel = _hud.Text(InfoMenuIds.RootId, InfoMenuIds.AdminPickLabelVar);
+        private static readonly TextSlot[] _adminSectionLabel = Texts(InfoMenuIds.AdminSectionVars);
+        private static readonly TextSlot[] _adminCategoryLabel = Texts(InfoMenuIds.AdminCategoryVars);
+        private static readonly TextSlot[] _adminPlayerTeam = Texts(InfoMenuIds.AdminPlayerTeamVars);
+        private static readonly TextSlot[] _adminPlayerName = Texts(InfoMenuIds.AdminPlayerNameVars);
+        private static readonly TextSlot[] _adminPlayerDice = Texts(InfoMenuIds.AdminPlayerDiceVars);
+        private static readonly ClassSlot[] _adminPlayerOff = Flags(InfoMenuIds.AdminPlayerIds, InfoMenuIds.OffClass, authoredOn: -2);
+        private static readonly ClassSlot[] _adminPlayerLocked = Flags(InfoMenuIds.AdminPlayerIds, InfoMenuIds.OnClass, authoredOn: -1);
+        private static readonly ClassSlot[] _adminPlayerTone = Groups(InfoMenuIds.AdminPlayerIds, InfoMenuIds.Tones, authored: (int)InfoTone.None);
+        private static readonly ClassSlot[] _adminPlayerTeamClass = Groups(InfoMenuIds.AdminPlayerIds, InfoMenuIds.Teams, authored: (int)InfoTeam.None);
+        private static readonly ClassSlot[] _adminPlayerLife = Groups(InfoMenuIds.AdminPlayerIds, InfoMenuIds.Lives, authored: (int)InfoLife.None);
+        private static readonly TextSlot[] _adminPerkName = Texts(InfoMenuIds.AdminPerkNameVars);
+        private static readonly TextSlot[] _adminPerkCategory = Texts(InfoMenuIds.AdminPerkCategoryVars);
+        private static readonly ClassSlot[] _adminPerkOff = Flags(InfoMenuIds.AdminPerkIds, InfoMenuIds.OffClass, authoredOn: -2);
+        private static readonly ClassSlot[] _adminPerkOn = Flags(InfoMenuIds.AdminPerkIds, InfoMenuIds.OnClass, authoredOn: -2);
+        private static readonly ClassSlot[] _adminPerkCatOff = Flags(InfoMenuIds.AdminPerkIds, InfoMenuIds.CategoryOffClass, authoredOn: -1);
+        private static readonly ClassSlot[] _adminPerkTone = Groups(InfoMenuIds.AdminPerkIds, InfoMenuIds.Tones, authored: (int)InfoTone.None);
 
         /// <summary>Row pool of one team column in the round view (name, dice, tone, alive/dead, own row).</summary>
         private sealed class TeamPool(string[] rowIds, string[] nameVars, string[] diceVars, string emptyId, string headVar, string countVar, string emptyVar)
@@ -168,9 +248,17 @@ namespace RollTheDice.Hud
         private static readonly int[] _filter = new int[MaxSlots];
         private static readonly bool[] _sortByTone = new bool[MaxSlots];
         private static readonly string[] _searchText = Filled(string.Empty);
+        // admin view per viewer: section, pick target (NoPick, PickAll or a user id) and what each row painted last
+        private static readonly int[] _adminSectionIndex = new int[MaxSlots];
+        private static readonly int[] _pickTarget = FilledInt(NoPick);
+        private static readonly string[] _pickName = Filled(string.Empty);
+        private static readonly int[][] _adminPlayerKeys = Jagged<int>(InfoMenuIds.AdminPlayerRows);
+        private static readonly string?[][] _adminPerkKeys = Jagged<string?>(InfoMenuIds.AdminPerkRows);
+        private static readonly List<AdminPlayerRow> _adminPlayers = [];
+        private static readonly List<AdminPerkRow> _adminPerks = [];
         private static readonly List<InfoRow>[] _rows = BuildLists();
         private static readonly List<InfoRow> _shown = [];
-        private static readonly int[] _toneCount = new int[4];
+        private static readonly int[] _toneCount = new int[InfoMenuIds.Tones.Length];
         private static readonly string[] _indexText = BuildNumberText(99, "00");
         private static readonly string[] _numberText = BuildNumberText(999, "0");
 
@@ -285,7 +373,7 @@ namespace RollTheDice.Hud
                 _nextRefresh = now + 1f;
                 for (int slot = 0; slot < MaxSlots; slot++)
                 {
-                    _dirty[slot] |= _open[slot] && _tab[slot] is InfoTab.History or InfoTab.Round;
+                    _dirty[slot] |= _open[slot] && _tab[slot] is InfoTab.History or InfoTab.Round or InfoTab.Admin;
                 }
             }
 
@@ -354,6 +442,20 @@ namespace RollTheDice.Hud
             SetRestoring(slot, false);
             ResetState(slot);
             _hud.Forget(slot);
+        }
+
+        /// <summary>
+        /// A player joined: the slot may still carry the previous connection's menu state on the entity. Write the XML
+        /// defaults back over the next ticks (budgeted like a round start) before the menu is used.
+        /// </summary>
+        public static void Claim(CCSPlayerController? player)
+        {
+            if (!CustomHud.IsHumanViewer(player) || (uint)player!.Slot >= MaxSlots)
+            {
+                return;
+            }
+            ResetState(player.Slot);
+            SetRestoring(player.Slot, true);
         }
 
         /// <summary>Map start: the entity went with the old map; spawn the new one a moment in, never inside a command.</summary>
@@ -429,9 +531,23 @@ namespace RollTheDice.Hud
                     _searchText[slot] = string.Empty;
                     break;
                 default:
+                    if (id.StartsWith("ri-a", StringComparison.Ordinal))
+                    {
+                        // admin ids: the permission is checked on every click, a hidden tab protects nothing
+                        if (!_source!.IsAdmin(player) || !HandleAdminClick(player, id))
+                        {
+                            return;
+                        }
+                        break;
+                    }
+
                     int tab = Array.IndexOf(InfoMenuIds.TabIds, id);
                     int lang = Array.IndexOf(InfoMenuIds.LangIds, id);
                     int filter = Array.IndexOf(InfoMenuIds.FilterIds, id);
+                    if (tab == (int)InfoTab.Admin && !_source!.IsAdmin(player))
+                    {
+                        return;
+                    }
                     if (tab >= 0)
                     {
                         _tab[slot] = (InfoTab)tab;
@@ -461,6 +577,99 @@ namespace RollTheDice.Hud
             Paint(player);
         }
 
+        /// <summary>Admin view clicks (permission already checked). False: unknown id, nothing changed.</summary>
+        private static bool HandleAdminClick(CCSPlayerController player, string id)
+        {
+            IInfoMenuSource source = _source!;
+            int slot = player.Slot;
+            switch (id)
+            {
+                case InfoMenuIds.AdminLockId:
+                    source.ToggleRollLock(player);
+                    MarkAllDirty();
+                    return true;
+                case InfoMenuIds.AdminAllRollId:
+                    source.AdminRoll(player, null, null);
+                    return true;
+                case InfoMenuIds.AdminAllGiveId:
+                    StartPick(slot, PickAll, string.Empty);
+                    return true;
+                case InfoMenuIds.AdminPickCloseId:
+                    _pickTarget[slot] = NoPick;
+                    return true;
+                default:
+                    break;
+            }
+
+            int section = Array.IndexOf(InfoMenuIds.AdminSectionIds, id);
+            if (section >= 0)
+            {
+                _adminSectionIndex[slot] = section;
+                _pickTarget[slot] = NoPick;
+                return true;
+            }
+
+            int category = Array.IndexOf(InfoMenuIds.AdminCategoryIds, id);
+            if (category >= 0)
+            {
+                source.ToggleCategory(player, Categories[category]);
+                MarkAllDirty();
+                return true;
+            }
+
+            int perk = Array.IndexOf(InfoMenuIds.AdminPerkIds, id);
+            if (perk >= 0)
+            {
+                if (_adminPerkKeys[slot][perk] is not { } className)
+                {
+                    return false;
+                }
+                int target = _pickTarget[slot];
+                if (target == NoPick)
+                {
+                    source.TogglePerk(player, className);
+                    MarkAllDirty();
+                    return true;
+                }
+                source.AdminRoll(player, target == PickAll ? null : target, className);
+                _pickTarget[slot] = NoPick;
+                _adminSectionIndex[slot] = 0;
+                return true;
+            }
+
+            int row = Array.IndexOf(InfoMenuIds.AdminRollIds, id);
+            if (row >= 0)
+            {
+                source.AdminRoll(player, _adminPlayerKeys[slot][row], null);
+                return true;
+            }
+
+            row = Array.IndexOf(InfoMenuIds.AdminGiveIds, id);
+            if (row >= 0)
+            {
+                int userId = _adminPlayerKeys[slot][row];
+                StartPick(slot, userId, Utilities.GetPlayerFromUserid(userId) is { IsValid: true } target ? HudText.Clean(target.PlayerName, HudText.MaxNameLength) : string.Empty);
+                return true;
+            }
+
+            row = Array.IndexOf(InfoMenuIds.AdminLockIds, id);
+            if (row >= 0)
+            {
+                source.TogglePlayerLock(player, _adminPlayerKeys[slot][row]);
+                MarkAllDirty();
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>"Give a perk": the perk section opens in pick mode, the next perk click gives it.</summary>
+        private static void StartPick(int slot, int target, string name)
+        {
+            _pickTarget[slot] = target;
+            _pickName[slot] = name;
+            _adminSectionIndex[slot] = 1;
+        }
+
         private static void Paint(CCSPlayerController player)
         {
             IInfoMenuSource? source = _source;
@@ -474,7 +683,14 @@ namespace RollTheDice.Hud
 
             string T(string key) => source.Text(player, key);
 
+            // the admin tab follows the permission at every paint (rights can change while the menu is open)
+            bool admin = source.IsAdmin(player);
+            if (_tab[slot] == InfoTab.Admin && !admin)
+            {
+                _tab[slot] = InfoTab.Round;
+            }
             InfoTab tab = _tab[slot];
+            _hud.SetFlag(player, _adminTabOff, !admin);
             _hud.SetGroup(player, _theme, HudTheme.ActiveIndex);
             _hud.SetText(player, _title, T("info.title"));
             _hud.SetText(player, _sub, T("info.subtitle"));
@@ -494,7 +710,7 @@ namespace RollTheDice.Hud
             for (int t = 0; t < InfoMenuIds.Tabs; t++)
             {
                 _hud.SetText(player, _tabLabel[t], T($"info.tab.{TabKey((InfoTab)t)}"));
-                _hud.SetText(player, _tabCount[t], t == (int)InfoTab.Settings ? string.Empty : NumberText(_rows[t].Count));
+                _hud.SetText(player, _tabCount[t], t is (int)InfoTab.Settings or (int)InfoTab.Admin ? string.Empty : NumberText(_rows[t].Count));
             }
             _hud.SetExclusive(player, _tabActive, (int)tab);
 
@@ -507,6 +723,10 @@ namespace RollTheDice.Hud
                 case InfoTab.Settings:
                     _hud.SetGroup(player, _view, 3);
                     PaintSettings(player, source.Settings(player), T);
+                    break;
+                case InfoTab.Admin:
+                    _hud.SetGroup(player, _view, 4);
+                    PaintAdmin(player, source, T);
                     break;
                 case InfoTab.Perks:
                     _hud.SetGroup(player, _view, 2);
@@ -582,6 +802,133 @@ namespace RollTheDice.Hud
             _hud.SetText(player, _langLabel[0], T("info.settings.lang_de"));
             _hud.SetText(player, _langLabel[1], T("info.settings.lang_en"));
             _hud.SetExclusive(player, _langActive, settings.Language);
+        }
+
+        /// <summary>
+        /// Admin view: global lock, section chips, then the player list or the perk list (pick mode while a perk is
+        /// chosen for a player). Rows stop at <see cref="RowWriteBudget"/> writes like every list.
+        /// </summary>
+        private static void PaintAdmin(CCSPlayerController player, IInfoMenuSource source, Func<string, string> T)
+        {
+            int slot = player.Slot;
+            AdminState state = source.Admin();
+            _hud.SetText(player, _adminLock, T("info.admin.lock"));
+            _hud.SetText(player, _adminLockState, T(state.Locked ? "info.admin.locked" : "info.admin.unlocked"));
+            _hud.SetFlag(player, _adminLockOn, state.Locked);
+            _hud.SetText(player, _count, NumberText(state.Rollable) + " / " + NumberText(state.Total));
+
+            // shared row words: one variable each on the root, read by every row
+            _hud.SetText(player, _adminRollLabel, T("info.admin.roll"));
+            _hud.SetText(player, _adminGiveLabel, T("info.admin.give"));
+            _hud.SetText(player, _adminLockLabel, T("info.admin.lock_player"));
+            _hud.SetText(player, _adminUnlockLabel, T("info.admin.unlock_player"));
+            _hud.SetText(player, _adminOnLabel, T("info.settings.on"));
+            _hud.SetText(player, _adminOffLabel, T("info.settings.off"));
+            _hud.SetText(player, _adminCatOffLabel, T("info.admin.category_off"));
+            _hud.SetText(player, _adminPickLabel, T("info.admin.pick_row"));
+
+            _adminPlayers.Clear();
+            _adminPerks.Clear();
+            source.FillAdminPlayers(player, _adminPlayers);
+            source.FillAdminPerks(player, _adminPerks);
+            _hud.SetText(player, _adminSectionLabel[0], T("info.admin.players") + "  " + NumberText(_adminPlayers.Count));
+            _hud.SetText(player, _adminSectionLabel[1], T("info.admin.perks") + "  " + NumberText(state.Rollable));
+
+            // a picked player who left ends the pick
+            int target = _pickTarget[slot];
+            if (target >= 0 && Utilities.GetPlayerFromUserid(target) is not { IsValid: true })
+            {
+                _pickTarget[slot] = target = NoPick;
+            }
+            int section = _adminSectionIndex[slot];
+            _hud.SetGroup(player, _adminSection, section);
+            _hud.SetExclusive(player, _adminSectionActive, section);
+            _hud.SetFlag(player, _adminPicking, target != NoPick);
+            _hud.SetText(player, _adminPick, target == NoPick
+                ? string.Empty
+                : target == PickAll
+                    ? T("info.admin.pick_all")
+                    : T("info.admin.pick").Replace("{player}", _pickName[slot]));
+
+            if (section == 0)
+            {
+                _hud.SetText(player, _adminAllRoll, T("info.admin.roll_all"));
+                _hud.SetText(player, _adminAllGive, T("info.admin.give_all"));
+                PaintAdminPlayers(player);
+                return;
+            }
+
+            for (int c = 0; c < InfoMenuIds.Categories; c++)
+            {
+                _hud.SetText(player, _adminCategoryLabel[c], T(ToneKey(Categories[c])));
+                _hud.SetFlag(player, _adminCategoryOn[c], state.CategoryOn[c]);
+            }
+            _hud.SetText(player, _adminPerkEmpty, T("info.empty.perks"));
+            _hud.SetFlag(player, _adminPerkEmptyOff, _adminPerks.Count != 0);
+            PaintAdminPerks(player);
+        }
+
+        private static void PaintAdminPlayers(CCSPlayerController player)
+        {
+            int slot = player.Slot;
+            int[] keys = _adminPlayerKeys[slot];
+            long limit = _hud.Writes + RowWriteBudget;
+            for (int r = 0; r < InfoMenuIds.AdminPlayerRows; r++)
+            {
+                if (_hud.Writes >= limit)
+                {
+                    _dirty[slot] = true;
+                    return;
+                }
+
+                if (r >= _adminPlayers.Count)
+                {
+                    _hud.SetFlag(player, _adminPlayerOff[r], true);
+                    continue;
+                }
+
+                AdminPlayerRow row = _adminPlayers[r];
+                keys[r] = row.UserId;
+                _hud.SetText(player, _adminPlayerTeam[r], row.Badge);
+                _hud.SetText(player, _adminPlayerName[r], row.Name);
+                _hud.SetText(player, _adminPlayerDice[r], row.Dice);
+                _hud.SetGroup(player, _adminPlayerTone[r], (int)row.Tone);
+                _hud.SetGroup(player, _adminPlayerTeamClass[r], (int)row.Team);
+                _hud.SetGroup(player, _adminPlayerLife[r], (int)(row.Alive ? InfoLife.Alive : InfoLife.Dead));
+                _hud.SetFlag(player, _adminPlayerLocked[r], row.Locked);
+                _hud.SetFlag(player, _adminPlayerOff[r], false);
+            }
+        }
+
+        private static void PaintAdminPerks(CCSPlayerController player)
+        {
+            int slot = player.Slot;
+            string?[] keys = _adminPerkKeys[slot];
+            long limit = _hud.Writes + RowWriteBudget;
+            for (int r = 0; r < InfoMenuIds.AdminPerkRows; r++)
+            {
+                if (_hud.Writes >= limit)
+                {
+                    _dirty[slot] = true;
+                    return;
+                }
+
+                if (r >= _adminPerks.Count)
+                {
+                    keys[r] = null;
+                    _hud.SetFlag(player, _adminPerkOff[r], true);
+                    continue;
+                }
+
+                AdminPerkRow row = _adminPerks[r];
+                keys[r] = row.ClassName;
+                _hud.SetText(player, _adminPerkName[r], row.Title);
+                _hud.SetText(player, _adminPerkCategory[r], row.Category);
+                _hud.SetGroup(player, _adminPerkTone[r], (int)row.Tone);
+                _hud.SetFlag(player, _adminPerkOn[r], row.On);
+                _hud.SetFlag(player, _adminPerkCatOff[r], !row.CategoryOn);
+                _hud.SetFlag(player, _adminPerkOff[r], false);
+            }
         }
 
         /// <summary>
@@ -719,6 +1066,9 @@ namespace RollTheDice.Hud
             _filter[slot] = 0;
             _sortByTone[slot] = false;
             _searchText[slot] = string.Empty;
+            _adminSectionIndex[slot] = 0;
+            _pickTarget[slot] = NoPick;
+            _pickName[slot] = string.Empty;
         }
 
         private static void ForgetAll()
@@ -731,12 +1081,25 @@ namespace RollTheDice.Hud
             }
         }
 
-        private static int ToneOrder(InfoTone tone) => tone switch
+        /// <summary>Best to worst (sort by type, admin perk list).</summary>
+        public static int ToneOrder(InfoTone tone) => tone switch
         {
-            InfoTone.Good => 0,
-            InfoTone.Neutral => 1,
-            InfoTone.Bad => 2,
-            _ => 3,
+            InfoTone.VeryGood => 0,
+            InfoTone.Good => 1,
+            InfoTone.Neutral => 2,
+            InfoTone.Bad => 3,
+            InfoTone.VeryBad => 4,
+            _ => 5,
+        };
+
+        /// <summary>Language key of a category name.</summary>
+        public static string ToneKey(InfoTone tone) => tone switch
+        {
+            InfoTone.VeryGood => "info.tone.very_good",
+            InfoTone.Good => "info.tone.good",
+            InfoTone.Bad => "info.tone.bad",
+            InfoTone.VeryBad => "info.tone.very_bad",
+            _ => "info.tone.neutral",
         };
 
         private static string TabKey(InfoTab tab) => tab switch
@@ -746,6 +1109,7 @@ namespace RollTheDice.Hud
             InfoTab.Perks => "perks",
             InfoTab.Commands => "commands",
             InfoTab.Settings => "settings",
+            InfoTab.Admin => "admin",
             _ => "round",
         };
 
@@ -796,6 +1160,23 @@ namespace RollTheDice.Hud
         {
             string[] values = new string[MaxSlots];
             Array.Fill(values, value);
+            return values;
+        }
+
+        private static int[] FilledInt(int value)
+        {
+            int[] values = new int[MaxSlots];
+            Array.Fill(values, value);
+            return values;
+        }
+
+        private static T[][] Jagged<T>(int rows)
+        {
+            T[][] values = new T[MaxSlots][];
+            for (int i = 0; i < MaxSlots; i++)
+            {
+                values[i] = new T[rows];
+            }
             return values;
         }
 

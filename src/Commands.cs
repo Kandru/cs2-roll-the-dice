@@ -184,6 +184,19 @@ namespace RollTheDice
                 return;
             }
 
+            // admin locks (info menu, admin tab)
+            if (IsRollLocked(player))
+            {
+                command.ReplyToCommand(Text(player, Config.Admin.RollsLocked ? "command.rollthedice.locked" : "command.rollthedice.locked_player"));
+                return;
+            }
+            // every dice switched off in the admin menu: say so before anything is charged
+            if (!_dices.Exists(IsRollable))
+            {
+                command.ReplyToCommand(Text(player, "command.rollthedice.nodices"));
+                return;
+            }
+
             // check if warmup period
             if (!Config.AllowRtdDuringWarmup && GameRules.Get("WarmupPeriod") is true)
             {

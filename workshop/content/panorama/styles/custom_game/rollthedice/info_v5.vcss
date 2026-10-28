@@ -1,0 +1,1566 @@
+/* ============================================================================
+   Roll The Dice info menu v5 (info_v5.xml, contract: src/Hud/InfoMenuIds.cs).
+   Modal, centred, mouse driven ("!dice info"). Look follows the Challenges
+   "tactical" menu: square panel, accent corner brackets, "//" kicker, index
+   boxes, nav rail with active bar.
+   Hex colours only (no variables, no functional colours). Unitless font-size.
+
+   Tokens: panel #0a0d11eb  raised #ffffff08  hover #ffffff14  press #ffffff24
+           hairline #ffffff1f / #ffffff14  ink #f5f7fa  ink-soft #e8eef4
+           muted #a3acb6  accent = theme (gold #f0a531)  info #5aa9e6
+           success #9ccf4f  danger #e05a5a
+   Tones:  very-good #2ee6a0  good #9ccf4f  neutral #5aa9e6  bad #ff8a3d  very-bad #e05a5a
+   Root ri-root carries: is-off / is-fading, view-round | view-list | view-perks | view-settings | view-admin,
+           asec-players | asec-perks (admin section), theme-*.
+   Team rows ri-ctr-N / ri-tr-N carry: is-off, tone-*, life-alive|dead, is-self.
+   Rows ri-row-N carry: is-off, tone-none|good|bad|neutral|very-good|very-bad, team-none|ct|t, life-alive|dead, is-self.
+   Admin: ri-tab-5 is-off for non-admins; player rows ri-ap-N (is-off, tone-*, team-*, life-*,
+           is-on = locked); perk rows ri-ak-N (is-off, tone-*, is-on = enabled, cat-off);
+           category switches ri-acat-N (is-on); ri-aperks is-open while a perk is picked for a player.
+   Accent only for brackets, kicker, index boxes, active state and own entries;
+   semantic colours (tone, alive/dead) never follow the theme.
+   Spacing on a 4px grid; horizontal insets are RiPad spacers (width:100%
+   children ignore padding). Motion: hover 0.15s, card 0.25s in / 0.18s out.
+   ============================================================================ */
+
+/* Screen + card ---------------------------------------------------------------- */
+
+.RiScreen
+{
+	width: 100%;
+	height: 100%;
+	z-index: 99999;
+}
+
+.RiCard
+{
+	width: 960px;
+	height: 800px;
+	horizontal-align: center;
+	vertical-align: middle;
+	flow-children: none;
+	opacity: 1;
+	transform: translateY( 0px );
+	transition-property: opacity, transform;
+	transition-duration: 0.25s;
+	transition-timing-function: ease-out;
+}
+
+.RiCard.is-fading
+{
+	opacity: 0;
+	transform: translateY( 8px );
+	transition-duration: 0.18s;
+	transition-timing-function: ease-in;
+}
+
+.RiCard.is-off
+{
+	visibility: collapse;
+	opacity: 0;
+	transition-duration: 0s;
+}
+
+.RiBg
+{
+	width: 100%;
+	height: 100%;
+	background-color: #0a0d11eb;
+	border: 1px solid #ffffff1f;
+	box-shadow: #000000b0 0px 10px 32px 0px;
+	world-blur: gaussian( 2 );
+}
+
+.RiCorner
+{
+	width: 12px;
+	height: 12px;
+	border-top: 2px solid #f0a531;
+	border-left: 2px solid #f0a531;
+	z-index: 6;
+}
+
+.RiCornerTL { horizontal-align: left; vertical-align: top; }
+.RiCornerTR { horizontal-align: right; vertical-align: top; transform: rotateZ( 90deg ); }
+.RiCornerBR { horizontal-align: right; vertical-align: bottom; transform: rotateZ( 180deg ); }
+.RiCornerBL { horizontal-align: left; vertical-align: bottom; transform: rotateZ( 270deg ); }
+
+.RiContent
+{
+	width: 100%;
+	height: 100%;
+	flow-children: down;
+	z-index: 2;
+}
+
+.RiPad
+{
+	width: 16px;
+	height: 100%;
+}
+
+.RiVPad
+{
+	width: 100%;
+	height: 16px;
+}
+
+/* Head ------------------------------------------------------------------------- */
+
+.RiHead
+{
+	width: 100%;
+	height: 60px;
+	flow-children: right;
+	padding-left: 20px;
+	padding-right: 16px;
+	border-bottom: 1px solid #ffffff14;
+}
+
+Label.RiKicker
+{
+	vertical-align: middle;
+	margin-right: 12px;
+	font-size: 20;
+	letter-spacing: 1px;
+	color: #f0a531;
+}
+
+Label.RiTitle
+{
+	vertical-align: middle;
+	font-size: 24;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: #f5f7fa;
+}
+
+Label.RiSub
+{
+	width: fill-parent-flow( 1.0 );
+	vertical-align: middle;
+	margin-left: 16px;
+	font-size: 20;
+	letter-spacing: 1px;
+	color: #a3acb6;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.RiClose
+{
+	width: 38px;
+	height: 38px;
+	flow-children: none;
+	vertical-align: middle;
+	margin-left: 16px;
+	background-color: #ffffff08;
+	border: 1px solid #ffffff33;
+	wash-color: none;
+	transition-property: background-color;
+	transition-duration: 0.15s;
+}
+
+.RiClose:hover
+{
+	background-color: #e05a5a44;
+	border: 1px solid #e05a5a;
+	cursor: pointer;
+	sound: "UIPanorama.generic_button_rollover";
+}
+
+.RiClose:active
+{
+	background-color: #e05a5a88;
+	sound: "UIPanorama.generic_button_press";
+}
+
+.RiCloseX
+{
+	width: 16px;
+	height: 2px;
+	horizontal-align: center;
+	vertical-align: middle;
+	background-color: #f5f7fa;
+}
+
+.RiCloseA { transform: rotateZ( 45deg ); }
+.RiCloseB { transform: rotateZ( -45deg ); }
+
+/* Body: nav rail + main --------------------------------------------------------- */
+
+.RiBody
+{
+	width: 100%;
+	height: fill-parent-flow( 1.0 );
+	flow-children: right;
+}
+
+.RiRail
+{
+	width: 240px;
+	height: 100%;
+	flow-children: down;
+	padding-top: 16px;
+}
+
+Label.RiRailHead
+{
+	margin-left: 16px;
+	margin-bottom: 8px;
+	font-size: 16;
+	letter-spacing: 3px;
+	text-transform: uppercase;
+	color: #a3acb6;
+}
+
+.RiNav
+{
+	width: 100%;
+	height: 44px;
+	flow-children: right;
+	padding-left: 13px;
+	padding-right: 16px;
+	margin-bottom: 2px;
+	background-color: #00000000;
+	border-left: 3px solid #00000000;
+	wash-color: none;
+	transition-property: background-color;
+	transition-duration: 0.15s;
+}
+
+.RiNav:hover
+{
+	background-color: #ffffff0d;
+	cursor: pointer;
+	sound: "UIPanorama.generic_button_rollover";
+}
+
+.RiNav:active
+{
+	background-color: #ffffff1a;
+	sound: "UIPanorama.generic_button_press";
+}
+
+.RiNav.is-active
+{
+	background-color: #f0a5311f;
+	border-left: 3px solid #f0a531;
+}
+
+Label.RiNavLabel
+{
+	width: fill-parent-flow( 1.0 );
+	vertical-align: middle;
+	font-size: 18;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	color: #e8eef4;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+Label.RiNavCount
+{
+	vertical-align: middle;
+	margin-left: 8px;
+	font-size: 18;
+	color: #a3acb6;
+}
+
+.RiNav.is-off
+{
+	visibility: collapse;
+}
+
+.RiNav.is-active Label.RiNavLabel { color: #f5f7fa; }
+.RiNav.is-active Label.RiNavCount { color: #f0a531; }
+
+.RiMain
+{
+	width: fill-parent-flow( 1.0 );
+	height: 100%;
+	flow-children: right;
+	border-left: 1px solid #ffffff14;
+}
+
+.RiInner
+{
+	width: fill-parent-flow( 1.0 );
+	height: 100%;
+	flow-children: down;
+}
+
+/* Section bar: title left, count right ------------------------------------------ */
+
+.RiBar
+{
+	width: 100%;
+	height: 36px;
+	flow-children: right;
+	margin-bottom: 8px;
+}
+
+Label.RiSection
+{
+	width: fill-parent-flow( 1.0 );
+	vertical-align: middle;
+	font-size: 16;
+	letter-spacing: 3px;
+	text-transform: uppercase;
+	color: #a3acb6;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+Label.RiCount
+{
+	vertical-align: middle;
+	margin-left: 12px;
+	font-size: 18;
+	letter-spacing: 1px;
+	color: #f0a531;
+}
+
+/* Perk tools: tone filter chips, sort chip, search line --------------------------- */
+
+.RiTools
+{
+	width: 100%;
+	height: 34px;
+	flow-children: right;
+	margin-bottom: 8px;
+}
+
+.RiFilters
+{
+	width: fill-parent-flow( 1.0 );
+	height: 100%;
+	flow-children: right;
+}
+
+.RiChip
+{
+	height: 34px;
+	flow-children: none;
+	padding-left: 12px;
+	padding-right: 12px;
+	margin-right: 6px;
+	background-color: #ffffff08;
+	border: 1px solid #ffffff1f;
+	wash-color: none;
+	transition-property: background-color;
+	transition-duration: 0.15s;
+}
+
+.RiChip:hover
+{
+	background-color: #ffffff14;
+	border: 1px solid #f0a53166;
+	cursor: pointer;
+	sound: "UIPanorama.generic_button_rollover";
+}
+
+.RiChip:active
+{
+	background-color: #ffffff24;
+	sound: "UIPanorama.generic_button_press";
+}
+
+.RiChip.is-active
+{
+	background-color: #f0a5311f;
+	border: 1px solid #f0a531;
+}
+
+.RiChip.RiSort
+{
+	margin-right: 0px;
+}
+
+Label.RiChipLabel
+{
+	vertical-align: middle;
+	font-size: 15;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	color: #e8eef4;
+}
+
+.RiChip.is-active Label.RiChipLabel { color: #f5f7fa; }
+
+.RiSearchBar
+{
+	width: 100%;
+	height: 32px;
+	flow-children: right;
+	margin-bottom: 8px;
+}
+
+.RiSearch
+{
+	height: 32px;
+	flow-children: right;
+	padding-left: 10px;
+	margin-right: 12px;
+	background-color: #f0a5311f;
+	border: 1px solid #f0a531;
+}
+
+.RiSearch.is-off
+{
+	visibility: collapse;
+}
+
+Label.RiSearchLabel
+{
+	vertical-align: middle;
+	margin-right: 8px;
+	font-size: 15;
+	color: #f5f7fa;
+}
+
+.RiSearchClear
+{
+	width: 30px;
+	height: 30px;
+	flow-children: none;
+	vertical-align: middle;
+	background-color: #00000000;
+	wash-color: none;
+	transition-property: background-color;
+	transition-duration: 0.15s;
+}
+
+.RiSearchClear:hover
+{
+	background-color: #e05a5a44;
+	cursor: pointer;
+	sound: "UIPanorama.generic_button_rollover";
+}
+
+.RiSearchClear:active
+{
+	background-color: #e05a5a88;
+	sound: "UIPanorama.generic_button_press";
+}
+
+.RiSearchClear .RiCloseX
+{
+	width: 12px;
+}
+
+Label.RiSearchHint
+{
+	width: fill-parent-flow( 1.0 );
+	vertical-align: middle;
+	font-size: 15;
+	color: #a3acb6;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Views: the root class picks settings, a plain list or the perk list ----------- */
+
+.RiViews
+{
+	width: 100%;
+	height: fill-parent-flow( 1.0 );
+	flow-children: none;
+}
+
+.RiCard.view-round .RiSettings,
+.RiCard.view-round .RiList,
+.RiCard.view-round .RiTools,
+.RiCard.view-round .RiSearchBar,
+.RiCard.view-list .RiSettings,
+.RiCard.view-list .RiTools,
+.RiCard.view-list .RiSearchBar,
+.RiCard.view-list .RiRound,
+.RiCard.view-perks .RiSettings,
+.RiCard.view-perks .RiRound,
+.RiCard.view-settings .RiList,
+.RiCard.view-settings .RiTools,
+.RiCard.view-settings .RiSearchBar,
+.RiCard.view-settings .RiRound,
+.RiCard.view-settings Label.RiCount,
+.RiCard.view-round .RiAdmin,
+.RiCard.view-list .RiAdmin,
+.RiCard.view-perks .RiAdmin,
+.RiCard.view-settings .RiAdmin,
+.RiCard.view-admin .RiSettings,
+.RiCard.view-admin .RiList,
+.RiCard.view-admin .RiTools,
+.RiCard.view-admin .RiSearchBar,
+.RiCard.view-admin .RiRound
+{
+	visibility: collapse;
+}
+
+/* Settings view ------------------------------------------------------------------ */
+
+.RiSettings
+{
+	width: 100%;
+	height: 100%;
+	flow-children: down;
+}
+
+Label.RiGroup
+{
+	margin-top: 24px;
+	margin-bottom: 8px;
+	font-size: 16;
+	letter-spacing: 3px;
+	text-transform: uppercase;
+	color: #a3acb6;
+}
+
+Label.RiGroup.RiGroupFirst
+{
+	margin-top: 0px;
+}
+
+.RiSwitch
+{
+	width: 100%;
+	height: 56px;
+	flow-children: right;
+	padding-left: 16px;
+	padding-right: 16px;
+	background-color: #ffffff08;
+	border: 1px solid #ffffff1f;
+	wash-color: none;
+	transition-property: background-color;
+	transition-duration: 0.15s;
+}
+
+.RiSwitch:hover
+{
+	background-color: #ffffff14;
+	cursor: pointer;
+	sound: "UIPanorama.generic_button_rollover";
+}
+
+.RiSwitch:active
+{
+	background-color: #ffffff24;
+	sound: "UIPanorama.generic_button_press";
+}
+
+.RiSwitch.is-disabled,
+.RiSwitch.is-disabled:hover
+{
+	opacity: 0.35;
+	background-color: #ffffff08;
+	cursor: default;
+	sound: "";
+}
+
+Label.RiSwitchLabel
+{
+	width: fill-parent-flow( 1.0 );
+	vertical-align: middle;
+	font-size: 20;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	color: #f5f7fa;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+Label.RiSwitchState
+{
+	vertical-align: middle;
+	margin-right: 16px;
+	font-size: 18;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: #a3acb6;
+}
+
+.RiSwitch.is-on Label.RiSwitchState { color: #f0a531; }
+
+.RiSwitchTrack
+{
+	width: 48px;
+	height: 24px;
+	flow-children: none;
+	vertical-align: middle;
+	background-color: #ffffff14;
+	border: 1px solid #ffffff33;
+	transition-property: background-color;
+	transition-duration: 0.15s;
+}
+
+.RiSwitch.is-on .RiSwitchTrack
+{
+	background-color: #f0a53133;
+	border: 1px solid #f0a531;
+}
+
+.RiSwitchKnob
+{
+	width: 16px;
+	height: 16px;
+	margin-left: 3px;
+	vertical-align: middle;
+	background-color: #a3acb6;
+	transform: translateX( 0px );
+	transition-property: transform, background-color;
+	transition-duration: 0.15s;
+	transition-timing-function: ease-out;
+}
+
+.RiSwitch.is-on .RiSwitchKnob
+{
+	background-color: #f0a531;
+	transform: translateX( 24px );
+}
+
+/* explicit height: fit-children around buttons is not reliable in Panorama */
+.RiLangs
+{
+	width: 100%;
+	height: 44px;
+	flow-children: right;
+}
+
+.RiLang
+{
+	width: 200px;
+	height: 44px;
+	flow-children: none;
+	margin-right: 8px;
+	background-color: #ffffff08;
+	border: 1px solid #ffffff1f;
+	wash-color: none;
+	transition-property: background-color;
+	transition-duration: 0.15s;
+}
+
+.RiLang:hover
+{
+	background-color: #ffffff14;
+	border: 1px solid #f0a53166;
+	cursor: pointer;
+	sound: "UIPanorama.generic_button_rollover";
+}
+
+.RiLang:active
+{
+	background-color: #ffffff24;
+	sound: "UIPanorama.generic_button_press";
+}
+
+.RiLang.is-active
+{
+	background-color: #f0a5311f;
+	border: 1px solid #f0a531;
+}
+
+Label.RiLangLabel
+{
+	width: 100%;
+	horizontal-align: center;
+	vertical-align: middle;
+	text-align: center;
+	font-size: 18;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	color: #e8eef4;
+}
+
+.RiLang.is-active Label.RiLangLabel { color: #f5f7fa; }
+
+Label.RiHint
+{
+	width: 100%;
+	margin-top: 8px;
+	font-size: 16;
+	color: #a3acb6;
+}
+
+/* above the language buttons: a hint after them left a large gap in game */
+Label.RiHint.RiHintAbove
+{
+	margin-top: 0px;
+	margin-bottom: 10px;
+}
+
+/* List: one scrollable page over a fixed pool of single-line rows ----------------
+   The client scrolls (mouse wheel while input capture is on); the server never
+   reads or sets the position. Rows have a fixed width so the scroll bar has room. */
+
+.RiList
+{
+	width: 100%;
+	height: 100%;
+	flow-children: down;
+	overflow: squish scroll;
+}
+
+.RiRow
+{
+	width: 668px;
+	height: 40px;
+	flow-children: right;
+	margin-bottom: 4px;
+	padding-left: 8px;
+	padding-right: 12px;
+	background-color: #ffffff08;
+	border: 1px solid #ffffff1f;
+}
+
+.RiRow.is-off
+{
+	visibility: collapse;
+}
+
+.RiRow.is-self
+{
+	background-color: #f0a5311f;
+	border: 1px solid #f0a531;
+}
+
+.RiIdx
+{
+	width: 40px;
+	height: 26px;
+	flow-children: none;
+	vertical-align: middle;
+	margin-right: 10px;
+	border: 1px solid #f0a531;
+}
+
+Label.RiIdxLabel
+{
+	width: 100%;
+	horizontal-align: center;
+	vertical-align: middle;
+	text-align: center;
+	font-size: 15;
+	letter-spacing: 1px;
+	color: #f0a531;
+}
+
+/* Team badge in the index box (round list): the text says CT / T, the colour helps.
+   Extra ancestors: outranks the theme rules below. */
+.RiCard .RiList .RiRow.team-ct .RiIdx { border-color: #96c8fa; background-color: #96c8fa1f; }
+.RiCard .RiList .RiRow.team-t .RiIdx { border-color: #eabe54; background-color: #eabe541f; }
+.RiCard .RiList .RiRow.team-ct Label.RiIdxLabel { color: #96c8fa; }
+.RiCard .RiList .RiRow.team-t Label.RiIdxLabel { color: #eabe54; }
+
+/* Tone shape (same as the reel): a rotated square clipped to its top half
+   (good, ▲), the same box turned by 180deg (bad, ▼) or shown small
+   (neutral, ◆). The word in the meta column carries the meaning as text. */
+.RiMark
+{
+	width: 22px;
+	height: 100%;
+}
+
+.RiRow.tone-none .RiMark
+{
+	visibility: collapse;
+}
+
+.RiMarkBox
+{
+	width: 17px;
+	height: 9px;
+	horizontal-align: left;
+	vertical-align: middle;
+	overflow: clip clip;
+}
+
+.RiMarkTip
+{
+	width: 6px;
+	height: 6px;
+	margin-left: 5px;
+	margin-top: 1px;
+	background-color: #5aa9e6;
+	transform: rotateZ( 45deg );
+}
+
+.RiRow.tone-very-good .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #2ee6a0; }
+.RiRow.tone-good .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #9ccf4f; }
+.RiRow.tone-bad .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #ff8a3d; }
+.RiRow.tone-very-bad .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #e05a5a; }
+.RiRow.tone-bad .RiMarkBox { transform: rotateZ( 180deg ); }
+.RiRow.tone-very-bad .RiMarkBox { transform: rotateZ( 180deg ); }
+
+/* Titles are commands and player names too: no uppercase transform. */
+Label.RiRowTitle
+{
+	width: 180px;
+	vertical-align: middle;
+	font-size: 17;
+	letter-spacing: 0.5px;
+	color: #f5f7fa;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+Label.RiRowDesc
+{
+	width: fill-parent-flow( 1.0 );
+	vertical-align: middle;
+	margin-left: 12px;
+	font-size: 15;
+	color: #c9d2dc;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+Label.RiRowMeta
+{
+	width: 90px;
+	vertical-align: middle;
+	margin-left: 12px;
+	font-size: 15;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	text-align: right;
+	color: #a3acb6;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.RiRow.tone-very-good Label.RiRowMeta { color: #2ee6a0; }
+.RiRow.tone-good Label.RiRowMeta { color: #9ccf4f; }
+.RiRow.tone-bad Label.RiRowMeta { color: #ff8a3d; }
+.RiRow.tone-very-bad Label.RiRowMeta { color: #e05a5a; }
+.RiRow.tone-neutral Label.RiRowMeta { color: #5aa9e6; }
+/* Dead players (round list): red frame, greyed text - no status label. Extra ancestors:
+   outranks is-self and the theme rules, so an own dead row is red as well. */
+.RiCard .RiList .RiRow.life-dead { background-color: #e05a5a14; border: 1px solid #e05a5a; }
+.RiCard .RiList .RiRow.life-dead Label.RiRowTitle,
+.RiCard .RiList .RiRow.life-dead Label.RiRowDesc { color: #6b737c; }
+.RiCard .RiList .RiRow.life-dead .RiIdx,
+.RiCard .RiList .RiRow.life-dead .RiMark { opacity: 0.45; }
+
+Label.RiEmpty
+{
+	width: 100%;
+	height: 56px;
+	font-size: 18;
+	text-align: center;
+	color: #a3acb6;
+}
+
+Label.RiEmpty.is-off
+{
+	visibility: collapse;
+}
+
+/* Round view: CT and T side by side, each column its own scrolled row pool ---------- */
+
+.RiRound
+{
+	width: 100%;
+	height: 100%;
+	flow-children: right;
+}
+
+.RiTeamCol
+{
+	width: 336px;
+	height: 100%;
+	flow-children: down;
+}
+
+.RiTeamColCT
+{
+	margin-right: 14px;
+}
+
+.RiTeamHead
+{
+	width: 100%;
+	height: 34px;
+	flow-children: right;
+	margin-bottom: 8px;
+	padding-left: 10px;
+	padding-right: 12px;
+	background-color: #ffffff08;
+	border-top: 2px solid #ffffff33;
+}
+
+.RiTeamColCT .RiTeamHead { border-top: 2px solid #96c8fa; background-color: #96c8fa14; }
+.RiTeamColT .RiTeamHead { border-top: 2px solid #eabe54; background-color: #eabe5414; }
+
+Label.RiTeamTitle
+{
+	width: fill-parent-flow( 1.0 );
+	vertical-align: middle;
+	font-size: 16;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: #f5f7fa;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+Label.RiTeamCount
+{
+	vertical-align: middle;
+	font-size: 16;
+	color: #a3acb6;
+}
+
+.RiTeamColCT Label.RiTeamTitle, .RiTeamColCT Label.RiTeamCount { color: #96c8fa; }
+.RiTeamColT Label.RiTeamTitle, .RiTeamColT Label.RiTeamCount { color: #eabe54; }
+
+.RiTeamList
+{
+	width: 100%;
+	height: fill-parent-flow( 1.0 );
+	flow-children: down;
+	overflow: squish scroll;
+}
+
+/* fixed width: room for the scroll bar on the right */
+.RiTeamRow
+{
+	width: 322px;
+	height: 40px;
+	flow-children: right;
+	margin-bottom: 4px;
+	padding-left: 8px;
+	padding-right: 10px;
+	background-color: #ffffff08;
+	border: 1px solid #ffffff1f;
+}
+
+.RiTeamRow.is-off
+{
+	visibility: collapse;
+}
+
+.RiTeamRow.is-self
+{
+	background-color: #f0a5311f;
+	border: 1px solid #f0a531;
+}
+
+.RiTeamRow.tone-none .RiMark
+{
+	visibility: collapse;
+}
+
+.RiTeamRow.tone-very-good .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #2ee6a0; }
+.RiTeamRow.tone-good .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #9ccf4f; }
+.RiTeamRow.tone-bad .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #ff8a3d; }
+.RiTeamRow.tone-very-bad .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #e05a5a; }
+.RiTeamRow.tone-bad .RiMarkBox { transform: rotateZ( 180deg ); }
+.RiTeamRow.tone-very-bad .RiMarkBox { transform: rotateZ( 180deg ); }
+
+Label.RiTeamName
+{
+	width: 130px;
+	vertical-align: middle;
+	font-size: 16;
+	color: #f5f7fa;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+Label.RiTeamDice
+{
+	width: fill-parent-flow( 1.0 );
+	vertical-align: middle;
+	margin-left: 10px;
+	font-size: 15;
+	color: #c9d2dc;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Dead players: red frame, greyed text - no status label. Extra ancestors:
+   outranks is-self and the theme rules, so an own dead row is red as well. */
+.RiCard .RiRound .RiTeamRow.life-dead { background-color: #e05a5a14; border: 1px solid #e05a5a; }
+.RiCard .RiRound .RiTeamRow.life-dead Label.RiTeamName,
+.RiCard .RiRound .RiTeamRow.life-dead Label.RiTeamDice { color: #6b737c; }
+.RiCard .RiRound .RiTeamRow.life-dead .RiMark { opacity: 0.45; }
+
+Label.RiTeamEmpty
+{
+	width: 100%;
+	height: 40px;
+	font-size: 16;
+	text-align: center;
+	color: #a3acb6;
+}
+
+Label.RiTeamEmpty.is-off
+{
+	visibility: collapse;
+}
+
+/* Admin view: lock switch, section chips, player list or perk list ----------------
+   Shown only through the admin tab; the server checks the permission on every click. */
+
+.RiAdmin
+{
+	width: 100%;
+	height: 100%;
+	flow-children: down;
+}
+
+.RiSwitch.RaSwitch
+{
+	height: 44px;
+	margin-bottom: 8px;
+}
+
+/* locked is a warning, not a theme colour: frame here, track/knob/state after the theme block */
+.RiCard .RiAdmin .RaSwitch.is-on { background-color: #e05a5a14; border: 1px solid #e05a5a; }
+
+.RaTabs,
+.RaActions
+{
+	width: 100%;
+	height: 34px;
+	flow-children: right;
+	margin-bottom: 8px;
+}
+
+.RaPlayers,
+.RaPerks
+{
+	width: 100%;
+	height: fill-parent-flow( 1.0 );
+	flow-children: down;
+}
+
+.RiCard.asec-players .RaPerks,
+.RiCard.asec-perks .RaPlayers
+{
+	visibility: collapse;
+}
+
+.RaList
+{
+	width: 100%;
+	height: fill-parent-flow( 1.0 );
+	flow-children: down;
+	overflow: squish scroll;
+}
+
+/* Player rows: badge, name, dice, three buttons. Fixed width: room for the scroll bar. */
+.RaRow
+{
+	width: 668px;
+	height: 40px;
+	flow-children: right;
+	margin-bottom: 4px;
+	padding-left: 8px;
+	padding-right: 4px;
+	background-color: #ffffff08;
+	border: 1px solid #ffffff1f;
+}
+
+.RaRow.is-off
+{
+	visibility: collapse;
+}
+
+/* locked player: red frame; the lock button says "unlock" */
+.RaRow.is-on
+{
+	background-color: #e05a5a14;
+	border: 1px solid #e05a5a;
+}
+
+/* invisible but keeps its width: names stay in one column whether a dice is shown or not */
+.RaRow.tone-none .RiMark
+{
+	opacity: 0;
+}
+
+.RaRow.tone-very-good .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #2ee6a0; }
+.RaRow.tone-good .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #9ccf4f; }
+.RaRow.tone-bad .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #ff8a3d; }
+.RaRow.tone-very-bad .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #e05a5a; }
+.RaRow.tone-bad .RiMarkBox { transform: rotateZ( 180deg ); }
+.RaRow.tone-very-bad .RiMarkBox { transform: rotateZ( 180deg ); }
+
+Label.RaTeam
+{
+	width: 36px;
+	vertical-align: middle;
+	margin-right: 8px;
+	font-size: 15;
+	text-align: center;
+	color: #a3acb6;
+}
+
+.RaRow.team-ct Label.RaTeam { color: #96c8fa; }
+.RaRow.team-t Label.RaTeam { color: #eabe54; }
+
+Label.RaName
+{
+	width: 150px;
+	vertical-align: middle;
+	font-size: 16;
+	color: #f5f7fa;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+Label.RaDice
+{
+	width: fill-parent-flow( 1.0 );
+	vertical-align: middle;
+	margin-left: 8px;
+	font-size: 15;
+	color: #c9d2dc;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.RaRow.life-dead Label.RaName,
+.RaRow.life-dead Label.RaDice { color: #6b737c; }
+
+.RaBtn
+{
+	width: 92px;
+	height: 30px;
+	flow-children: none;
+	vertical-align: middle;
+	margin-left: 4px;
+	background-color: #ffffff08;
+	border: 1px solid #ffffff1f;
+	wash-color: none;
+	transition-property: background-color;
+	transition-duration: 0.15s;
+}
+
+.RaBtn.RaBtnLock
+{
+	width: 104px;
+}
+
+.RaBtn:hover
+{
+	background-color: #ffffff14;
+	cursor: pointer;
+	sound: "UIPanorama.generic_button_rollover";
+}
+
+.RaBtn:active
+{
+	background-color: #ffffff24;
+	sound: "UIPanorama.generic_button_press";
+}
+
+/* dead players cannot get a dice: the server ignores these clicks */
+.RaRow.life-dead .RaBtnRoll,
+.RaRow.life-dead .RaBtnGive,
+.RaRow.life-dead .RaBtnRoll:hover,
+.RaRow.life-dead .RaBtnGive:hover
+{
+	opacity: 0.35;
+	background-color: #ffffff08;
+	cursor: default;
+	sound: "";
+}
+
+Label.RaBtnLabel
+{
+	width: 100%;
+	vertical-align: middle;
+	font-size: 14;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	text-align: center;
+	color: #e8eef4;
+}
+
+Label.RaBtnLabel.RaLockOn { visibility: collapse; color: #e05a5a; }
+.RaRow.is-on Label.RaBtnLabel.RaLockOn { visibility: visible; }
+.RaRow.is-on Label.RaBtnLabel.RaLockOff { visibility: collapse; }
+
+/* Perk section: pick line (giving a perk to a player), category switches, perk rows */
+.RaPick
+{
+	width: 100%;
+	height: 34px;
+	flow-children: right;
+	margin-bottom: 8px;
+	padding-left: 10px;
+	background-color: #f0a5311f;
+	border: 1px solid #f0a531;
+	visibility: collapse;
+}
+
+.RaPerks.is-open .RaPick { visibility: visible; }
+
+Label.RaPickLabel
+{
+	width: fill-parent-flow( 1.0 );
+	vertical-align: middle;
+	font-size: 15;
+	color: #f5f7fa;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.RaCats
+{
+	width: 100%;
+	height: 52px;
+	flow-children: right;
+	margin-bottom: 8px;
+}
+
+.RaPerks.is-open .RaCats { visibility: collapse; }
+
+.RaCat
+{
+	width: 130px;
+	height: 52px;
+	flow-children: down;
+	margin-right: 6px;
+	padding-top: 6px;
+	background-color: #ffffff08;
+	border: 1px solid #ffffff1f;
+	border-top: 3px solid #6b737c;
+	wash-color: none;
+	transition-property: background-color;
+	transition-duration: 0.15s;
+}
+
+.RaCat:hover
+{
+	background-color: #ffffff14;
+	cursor: pointer;
+	sound: "UIPanorama.generic_button_rollover";
+}
+
+.RaCat:active
+{
+	background-color: #ffffff24;
+	sound: "UIPanorama.generic_button_press";
+}
+
+.RaCat.is-on.tone-very-good { border-top: 3px solid #2ee6a0; }
+.RaCat.is-on.tone-good { border-top: 3px solid #9ccf4f; }
+.RaCat.is-on.tone-neutral { border-top: 3px solid #5aa9e6; }
+.RaCat.is-on.tone-bad { border-top: 3px solid #ff8a3d; }
+.RaCat.is-on.tone-very-bad { border-top: 3px solid #e05a5a; }
+
+Label.RaCatName
+{
+	width: 100%;
+	font-size: 14;
+	letter-spacing: 0.5px;
+	text-transform: uppercase;
+	text-align: center;
+	color: #a3acb6;
+}
+
+.RaCat.is-on Label.RaCatName { color: #f5f7fa; }
+
+Label.RaCatState
+{
+	width: 100%;
+	font-size: 14;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	text-align: center;
+	color: #6b737c;
+}
+
+Label.RaCatState.RaCatOn { visibility: collapse; color: #9ccf4f; }
+.RaCat.is-on Label.RaCatState.RaCatOn { visibility: visible; }
+.RaCat.is-on Label.RaCatState.RaCatOff { visibility: collapse; }
+
+.RaPerk
+{
+	width: 668px;
+	height: 40px;
+	flow-children: right;
+	margin-bottom: 4px;
+	padding-left: 8px;
+	padding-right: 12px;
+	background-color: #ffffff08;
+	border: 1px solid #ffffff1f;
+	wash-color: none;
+	transition-property: background-color;
+	transition-duration: 0.15s;
+}
+
+.RaPerk:hover
+{
+	background-color: #ffffff14;
+	cursor: pointer;
+	sound: "UIPanorama.generic_button_rollover";
+}
+
+.RaPerk:active
+{
+	background-color: #ffffff24;
+	sound: "UIPanorama.generic_button_press";
+}
+
+.RaPerk.is-off
+{
+	visibility: collapse;
+}
+
+.RaPerk.tone-none .RiMark
+{
+	visibility: collapse;
+}
+
+.RaPerk.tone-very-good .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #2ee6a0; }
+.RaPerk.tone-good .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #9ccf4f; }
+.RaPerk.tone-bad .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #ff8a3d; }
+.RaPerk.tone-very-bad .RiMarkTip { width: 12px; height: 12px; margin-left: 2px; margin-top: 3px; background-color: #e05a5a; }
+.RaPerk.tone-bad .RiMarkBox { transform: rotateZ( 180deg ); }
+.RaPerk.tone-very-bad .RiMarkBox { transform: rotateZ( 180deg ); }
+
+Label.RaPerkName
+{
+	width: 260px;
+	vertical-align: middle;
+	font-size: 16;
+	color: #a3acb6;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+Label.RaPerkCat
+{
+	width: fill-parent-flow( 1.0 );
+	vertical-align: middle;
+	margin-left: 12px;
+	font-size: 15;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	color: #a3acb6;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.RaPerk.tone-very-good Label.RaPerkCat { color: #2ee6a0; }
+.RaPerk.tone-good Label.RaPerkCat { color: #9ccf4f; }
+.RaPerk.tone-neutral Label.RaPerkCat { color: #5aa9e6; }
+.RaPerk.tone-bad Label.RaPerkCat { color: #ff8a3d; }
+.RaPerk.tone-very-bad Label.RaPerkCat { color: #e05a5a; }
+
+/* State column: one of four labels, picked by classes (no server text per row).
+   off by default; on = is-on; a switched off category wins; picking shows "give". */
+Label.RaState
+{
+	width: 150px;
+	vertical-align: middle;
+	margin-left: 12px;
+	font-size: 15;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	text-align: right;
+	color: #6b737c;
+	visibility: collapse;
+}
+
+Label.RaState.RaStateOff { visibility: visible; }
+.RaPerk.is-on Label.RaState.RaStateOff { visibility: collapse; }
+.RaPerk.is-on Label.RaState.RaStateOn { visibility: visible; color: #9ccf4f; }
+.RaPerk.cat-off Label.RaState.RaStateOff,
+.RaPerk.cat-off Label.RaState.RaStateOn { visibility: collapse; }
+.RaPerk.cat-off Label.RaState.RaStateCat { visibility: visible; }
+/* extra ancestors: outrank the state rules above */
+.RiCard .RiAdmin .RaPerks.is-open Label.RaState { visibility: collapse; }
+.RiCard .RiAdmin .RaPerks.is-open Label.RaState.RaStatePick { visibility: visible; color: #f0a531; }
+
+/* a perk that cannot be rolled is dimmed, but stays clickable */
+.RaPerk.is-on Label.RaPerkName { color: #f5f7fa; }
+.RaPerk.cat-off Label.RaPerkName,
+.RaPerk.cat-off Label.RaPerkCat { color: #6b737c; }
+
+/* Foot -------------------------------------------------------------------------- */
+
+.RiFoot
+{
+	width: 100%;
+	height: 44px;
+	flow-children: none;
+	padding-left: 20px;
+	padding-right: 20px;
+	border-top: 1px solid #ffffff14;
+}
+
+Label.RiFootHint
+{
+	horizontal-align: left;
+	vertical-align: middle;
+	font-size: 16;
+	letter-spacing: 1px;
+	color: #e8eef4;
+}
+
+Label.RiCredit
+{
+	horizontal-align: right;
+	vertical-align: middle;
+	font-size: 16;
+	letter-spacing: 1px;
+	color: #a3acb6;
+}
+
+/* info themes: generated by tools/gen_info_panorama.py - do not edit by hand */
+.RiCard.theme-red .RiCorner { border-color: #e05a5a; }
+.RiCard.theme-red Label.RiKicker, .RiCard.theme-red Label.RiIdxLabel, .RiCard.theme-red .RiNav.is-active Label.RiNavCount, .RiCard.theme-red Label.RiCount { color: #e05a5a; }
+.RiCard.theme-red .RiIdx { border-color: #e05a5a; }
+.RiCard.theme-red .RiNav.is-active { background-color: #e05a5a1f; border-left: 3px solid #e05a5a; }
+.RiCard.theme-red .RiChip.is-active, .RiCard.theme-red .RiLang.is-active, .RiCard.theme-red .RiRow.is-self, .RiCard.theme-red .RiTeamRow.is-self, .RiCard.theme-red .RiSearch { background-color: #e05a5a1f; border: 1px solid #e05a5a; }
+.RiCard.theme-red .RiChip:hover, .RiCard.theme-red .RiLang:hover, .RiCard.theme-red .RaBtn:hover, .RiCard.theme-red .RaPerk:hover, .RiCard.theme-red .RaCat:hover { border: 1px solid #e05a5a66; }
+.RiCard.theme-red .RiSwitch.is-on .RiSwitchTrack { background-color: #e05a5a33; border: 1px solid #e05a5a; }
+.RiCard.theme-red .RiSwitch.is-on .RiSwitchKnob { background-color: #e05a5a; }
+.RiCard.theme-red .RiSwitch.is-on Label.RiSwitchState { color: #e05a5a; }
+.RiCard.theme-coral .RiCorner { border-color: #ff7a59; }
+.RiCard.theme-coral Label.RiKicker, .RiCard.theme-coral Label.RiIdxLabel, .RiCard.theme-coral .RiNav.is-active Label.RiNavCount, .RiCard.theme-coral Label.RiCount { color: #ff7a59; }
+.RiCard.theme-coral .RiIdx { border-color: #ff7a59; }
+.RiCard.theme-coral .RiNav.is-active { background-color: #ff7a591f; border-left: 3px solid #ff7a59; }
+.RiCard.theme-coral .RiChip.is-active, .RiCard.theme-coral .RiLang.is-active, .RiCard.theme-coral .RiRow.is-self, .RiCard.theme-coral .RiTeamRow.is-self, .RiCard.theme-coral .RiSearch { background-color: #ff7a591f; border: 1px solid #ff7a59; }
+.RiCard.theme-coral .RiChip:hover, .RiCard.theme-coral .RiLang:hover, .RiCard.theme-coral .RaBtn:hover, .RiCard.theme-coral .RaPerk:hover, .RiCard.theme-coral .RaCat:hover { border: 1px solid #ff7a5966; }
+.RiCard.theme-coral .RiSwitch.is-on .RiSwitchTrack { background-color: #ff7a5933; border: 1px solid #ff7a59; }
+.RiCard.theme-coral .RiSwitch.is-on .RiSwitchKnob { background-color: #ff7a59; }
+.RiCard.theme-coral .RiSwitch.is-on Label.RiSwitchState { color: #ff7a59; }
+.RiCard.theme-orange .RiCorner { border-color: #ff8a3d; }
+.RiCard.theme-orange Label.RiKicker, .RiCard.theme-orange Label.RiIdxLabel, .RiCard.theme-orange .RiNav.is-active Label.RiNavCount, .RiCard.theme-orange Label.RiCount { color: #ff8a3d; }
+.RiCard.theme-orange .RiIdx { border-color: #ff8a3d; }
+.RiCard.theme-orange .RiNav.is-active { background-color: #ff8a3d1f; border-left: 3px solid #ff8a3d; }
+.RiCard.theme-orange .RiChip.is-active, .RiCard.theme-orange .RiLang.is-active, .RiCard.theme-orange .RiRow.is-self, .RiCard.theme-orange .RiTeamRow.is-self, .RiCard.theme-orange .RiSearch { background-color: #ff8a3d1f; border: 1px solid #ff8a3d; }
+.RiCard.theme-orange .RiChip:hover, .RiCard.theme-orange .RiLang:hover, .RiCard.theme-orange .RaBtn:hover, .RiCard.theme-orange .RaPerk:hover, .RiCard.theme-orange .RaCat:hover { border: 1px solid #ff8a3d66; }
+.RiCard.theme-orange .RiSwitch.is-on .RiSwitchTrack { background-color: #ff8a3d33; border: 1px solid #ff8a3d; }
+.RiCard.theme-orange .RiSwitch.is-on .RiSwitchKnob { background-color: #ff8a3d; }
+.RiCard.theme-orange .RiSwitch.is-on Label.RiSwitchState { color: #ff8a3d; }
+.RiCard.theme-copper .RiCorner { border-color: #e08a5a; }
+.RiCard.theme-copper Label.RiKicker, .RiCard.theme-copper Label.RiIdxLabel, .RiCard.theme-copper .RiNav.is-active Label.RiNavCount, .RiCard.theme-copper Label.RiCount { color: #e08a5a; }
+.RiCard.theme-copper .RiIdx { border-color: #e08a5a; }
+.RiCard.theme-copper .RiNav.is-active { background-color: #e08a5a1f; border-left: 3px solid #e08a5a; }
+.RiCard.theme-copper .RiChip.is-active, .RiCard.theme-copper .RiLang.is-active, .RiCard.theme-copper .RiRow.is-self, .RiCard.theme-copper .RiTeamRow.is-self, .RiCard.theme-copper .RiSearch { background-color: #e08a5a1f; border: 1px solid #e08a5a; }
+.RiCard.theme-copper .RiChip:hover, .RiCard.theme-copper .RiLang:hover, .RiCard.theme-copper .RaBtn:hover, .RiCard.theme-copper .RaPerk:hover, .RiCard.theme-copper .RaCat:hover { border: 1px solid #e08a5a66; }
+.RiCard.theme-copper .RiSwitch.is-on .RiSwitchTrack { background-color: #e08a5a33; border: 1px solid #e08a5a; }
+.RiCard.theme-copper .RiSwitch.is-on .RiSwitchKnob { background-color: #e08a5a; }
+.RiCard.theme-copper .RiSwitch.is-on Label.RiSwitchState { color: #e08a5a; }
+.RiCard.theme-gold .RiCorner { border-color: #f0a531; }
+.RiCard.theme-gold Label.RiKicker, .RiCard.theme-gold Label.RiIdxLabel, .RiCard.theme-gold .RiNav.is-active Label.RiNavCount, .RiCard.theme-gold Label.RiCount { color: #f0a531; }
+.RiCard.theme-gold .RiIdx { border-color: #f0a531; }
+.RiCard.theme-gold .RiNav.is-active { background-color: #f0a5311f; border-left: 3px solid #f0a531; }
+.RiCard.theme-gold .RiChip.is-active, .RiCard.theme-gold .RiLang.is-active, .RiCard.theme-gold .RiRow.is-self, .RiCard.theme-gold .RiTeamRow.is-self, .RiCard.theme-gold .RiSearch { background-color: #f0a5311f; border: 1px solid #f0a531; }
+.RiCard.theme-gold .RiChip:hover, .RiCard.theme-gold .RiLang:hover, .RiCard.theme-gold .RaBtn:hover, .RiCard.theme-gold .RaPerk:hover, .RiCard.theme-gold .RaCat:hover { border: 1px solid #f0a53166; }
+.RiCard.theme-gold .RiSwitch.is-on .RiSwitchTrack { background-color: #f0a53133; border: 1px solid #f0a531; }
+.RiCard.theme-gold .RiSwitch.is-on .RiSwitchKnob { background-color: #f0a531; }
+.RiCard.theme-gold .RiSwitch.is-on Label.RiSwitchState { color: #f0a531; }
+.RiCard.theme-t .RiCorner { border-color: #eabe54; }
+.RiCard.theme-t Label.RiKicker, .RiCard.theme-t Label.RiIdxLabel, .RiCard.theme-t .RiNav.is-active Label.RiNavCount, .RiCard.theme-t Label.RiCount { color: #eabe54; }
+.RiCard.theme-t .RiIdx { border-color: #eabe54; }
+.RiCard.theme-t .RiNav.is-active { background-color: #eabe541f; border-left: 3px solid #eabe54; }
+.RiCard.theme-t .RiChip.is-active, .RiCard.theme-t .RiLang.is-active, .RiCard.theme-t .RiRow.is-self, .RiCard.theme-t .RiTeamRow.is-self, .RiCard.theme-t .RiSearch { background-color: #eabe541f; border: 1px solid #eabe54; }
+.RiCard.theme-t .RiChip:hover, .RiCard.theme-t .RiLang:hover, .RiCard.theme-t .RaBtn:hover, .RiCard.theme-t .RaPerk:hover, .RiCard.theme-t .RaCat:hover { border: 1px solid #eabe5466; }
+.RiCard.theme-t .RiSwitch.is-on .RiSwitchTrack { background-color: #eabe5433; border: 1px solid #eabe54; }
+.RiCard.theme-t .RiSwitch.is-on .RiSwitchKnob { background-color: #eabe54; }
+.RiCard.theme-t .RiSwitch.is-on Label.RiSwitchState { color: #eabe54; }
+.RiCard.theme-lime .RiCorner { border-color: #c6f04a; }
+.RiCard.theme-lime Label.RiKicker, .RiCard.theme-lime Label.RiIdxLabel, .RiCard.theme-lime .RiNav.is-active Label.RiNavCount, .RiCard.theme-lime Label.RiCount { color: #c6f04a; }
+.RiCard.theme-lime .RiIdx { border-color: #c6f04a; }
+.RiCard.theme-lime .RiNav.is-active { background-color: #c6f04a1f; border-left: 3px solid #c6f04a; }
+.RiCard.theme-lime .RiChip.is-active, .RiCard.theme-lime .RiLang.is-active, .RiCard.theme-lime .RiRow.is-self, .RiCard.theme-lime .RiTeamRow.is-self, .RiCard.theme-lime .RiSearch { background-color: #c6f04a1f; border: 1px solid #c6f04a; }
+.RiCard.theme-lime .RiChip:hover, .RiCard.theme-lime .RiLang:hover, .RiCard.theme-lime .RaBtn:hover, .RiCard.theme-lime .RaPerk:hover, .RiCard.theme-lime .RaCat:hover { border: 1px solid #c6f04a66; }
+.RiCard.theme-lime .RiSwitch.is-on .RiSwitchTrack { background-color: #c6f04a33; border: 1px solid #c6f04a; }
+.RiCard.theme-lime .RiSwitch.is-on .RiSwitchKnob { background-color: #c6f04a; }
+.RiCard.theme-lime .RiSwitch.is-on Label.RiSwitchState { color: #c6f04a; }
+.RiCard.theme-green .RiCorner { border-color: #6fdc78; }
+.RiCard.theme-green Label.RiKicker, .RiCard.theme-green Label.RiIdxLabel, .RiCard.theme-green .RiNav.is-active Label.RiNavCount, .RiCard.theme-green Label.RiCount { color: #6fdc78; }
+.RiCard.theme-green .RiIdx { border-color: #6fdc78; }
+.RiCard.theme-green .RiNav.is-active { background-color: #6fdc781f; border-left: 3px solid #6fdc78; }
+.RiCard.theme-green .RiChip.is-active, .RiCard.theme-green .RiLang.is-active, .RiCard.theme-green .RiRow.is-self, .RiCard.theme-green .RiTeamRow.is-self, .RiCard.theme-green .RiSearch { background-color: #6fdc781f; border: 1px solid #6fdc78; }
+.RiCard.theme-green .RiChip:hover, .RiCard.theme-green .RiLang:hover, .RiCard.theme-green .RaBtn:hover, .RiCard.theme-green .RaPerk:hover, .RiCard.theme-green .RaCat:hover { border: 1px solid #6fdc7866; }
+.RiCard.theme-green .RiSwitch.is-on .RiSwitchTrack { background-color: #6fdc7833; border: 1px solid #6fdc78; }
+.RiCard.theme-green .RiSwitch.is-on .RiSwitchKnob { background-color: #6fdc78; }
+.RiCard.theme-green .RiSwitch.is-on Label.RiSwitchState { color: #6fdc78; }
+.RiCard.theme-teal .RiCorner { border-color: #2ec9a6; }
+.RiCard.theme-teal Label.RiKicker, .RiCard.theme-teal Label.RiIdxLabel, .RiCard.theme-teal .RiNav.is-active Label.RiNavCount, .RiCard.theme-teal Label.RiCount { color: #2ec9a6; }
+.RiCard.theme-teal .RiIdx { border-color: #2ec9a6; }
+.RiCard.theme-teal .RiNav.is-active { background-color: #2ec9a61f; border-left: 3px solid #2ec9a6; }
+.RiCard.theme-teal .RiChip.is-active, .RiCard.theme-teal .RiLang.is-active, .RiCard.theme-teal .RiRow.is-self, .RiCard.theme-teal .RiTeamRow.is-self, .RiCard.theme-teal .RiSearch { background-color: #2ec9a61f; border: 1px solid #2ec9a6; }
+.RiCard.theme-teal .RiChip:hover, .RiCard.theme-teal .RiLang:hover, .RiCard.theme-teal .RaBtn:hover, .RiCard.theme-teal .RaPerk:hover, .RiCard.theme-teal .RaCat:hover { border: 1px solid #2ec9a666; }
+.RiCard.theme-teal .RiSwitch.is-on .RiSwitchTrack { background-color: #2ec9a633; border: 1px solid #2ec9a6; }
+.RiCard.theme-teal .RiSwitch.is-on .RiSwitchKnob { background-color: #2ec9a6; }
+.RiCard.theme-teal .RiSwitch.is-on Label.RiSwitchState { color: #2ec9a6; }
+.RiCard.theme-cyan .RiCorner { border-color: #3ee0f0; }
+.RiCard.theme-cyan Label.RiKicker, .RiCard.theme-cyan Label.RiIdxLabel, .RiCard.theme-cyan .RiNav.is-active Label.RiNavCount, .RiCard.theme-cyan Label.RiCount { color: #3ee0f0; }
+.RiCard.theme-cyan .RiIdx { border-color: #3ee0f0; }
+.RiCard.theme-cyan .RiNav.is-active { background-color: #3ee0f01f; border-left: 3px solid #3ee0f0; }
+.RiCard.theme-cyan .RiChip.is-active, .RiCard.theme-cyan .RiLang.is-active, .RiCard.theme-cyan .RiRow.is-self, .RiCard.theme-cyan .RiTeamRow.is-self, .RiCard.theme-cyan .RiSearch { background-color: #3ee0f01f; border: 1px solid #3ee0f0; }
+.RiCard.theme-cyan .RiChip:hover, .RiCard.theme-cyan .RiLang:hover, .RiCard.theme-cyan .RaBtn:hover, .RiCard.theme-cyan .RaPerk:hover, .RiCard.theme-cyan .RaCat:hover { border: 1px solid #3ee0f066; }
+.RiCard.theme-cyan .RiSwitch.is-on .RiSwitchTrack { background-color: #3ee0f033; border: 1px solid #3ee0f0; }
+.RiCard.theme-cyan .RiSwitch.is-on .RiSwitchKnob { background-color: #3ee0f0; }
+.RiCard.theme-cyan .RiSwitch.is-on Label.RiSwitchState { color: #3ee0f0; }
+.RiCard.theme-blue .RiCorner { border-color: #5b8cff; }
+.RiCard.theme-blue Label.RiKicker, .RiCard.theme-blue Label.RiIdxLabel, .RiCard.theme-blue .RiNav.is-active Label.RiNavCount, .RiCard.theme-blue Label.RiCount { color: #5b8cff; }
+.RiCard.theme-blue .RiIdx { border-color: #5b8cff; }
+.RiCard.theme-blue .RiNav.is-active { background-color: #5b8cff1f; border-left: 3px solid #5b8cff; }
+.RiCard.theme-blue .RiChip.is-active, .RiCard.theme-blue .RiLang.is-active, .RiCard.theme-blue .RiRow.is-self, .RiCard.theme-blue .RiTeamRow.is-self, .RiCard.theme-blue .RiSearch { background-color: #5b8cff1f; border: 1px solid #5b8cff; }
+.RiCard.theme-blue .RiChip:hover, .RiCard.theme-blue .RiLang:hover, .RiCard.theme-blue .RaBtn:hover, .RiCard.theme-blue .RaPerk:hover, .RiCard.theme-blue .RaCat:hover { border: 1px solid #5b8cff66; }
+.RiCard.theme-blue .RiSwitch.is-on .RiSwitchTrack { background-color: #5b8cff33; border: 1px solid #5b8cff; }
+.RiCard.theme-blue .RiSwitch.is-on .RiSwitchKnob { background-color: #5b8cff; }
+.RiCard.theme-blue .RiSwitch.is-on Label.RiSwitchState { color: #5b8cff; }
+.RiCard.theme-ct .RiCorner { border-color: #96c8fa; }
+.RiCard.theme-ct Label.RiKicker, .RiCard.theme-ct Label.RiIdxLabel, .RiCard.theme-ct .RiNav.is-active Label.RiNavCount, .RiCard.theme-ct Label.RiCount { color: #96c8fa; }
+.RiCard.theme-ct .RiIdx { border-color: #96c8fa; }
+.RiCard.theme-ct .RiNav.is-active { background-color: #96c8fa1f; border-left: 3px solid #96c8fa; }
+.RiCard.theme-ct .RiChip.is-active, .RiCard.theme-ct .RiLang.is-active, .RiCard.theme-ct .RiRow.is-self, .RiCard.theme-ct .RiTeamRow.is-self, .RiCard.theme-ct .RiSearch { background-color: #96c8fa1f; border: 1px solid #96c8fa; }
+.RiCard.theme-ct .RiChip:hover, .RiCard.theme-ct .RiLang:hover, .RiCard.theme-ct .RaBtn:hover, .RiCard.theme-ct .RaPerk:hover, .RiCard.theme-ct .RaCat:hover { border: 1px solid #96c8fa66; }
+.RiCard.theme-ct .RiSwitch.is-on .RiSwitchTrack { background-color: #96c8fa33; border: 1px solid #96c8fa; }
+.RiCard.theme-ct .RiSwitch.is-on .RiSwitchKnob { background-color: #96c8fa; }
+.RiCard.theme-ct .RiSwitch.is-on Label.RiSwitchState { color: #96c8fa; }
+.RiCard.theme-purple .RiCorner { border-color: #b07cff; }
+.RiCard.theme-purple Label.RiKicker, .RiCard.theme-purple Label.RiIdxLabel, .RiCard.theme-purple .RiNav.is-active Label.RiNavCount, .RiCard.theme-purple Label.RiCount { color: #b07cff; }
+.RiCard.theme-purple .RiIdx { border-color: #b07cff; }
+.RiCard.theme-purple .RiNav.is-active { background-color: #b07cff1f; border-left: 3px solid #b07cff; }
+.RiCard.theme-purple .RiChip.is-active, .RiCard.theme-purple .RiLang.is-active, .RiCard.theme-purple .RiRow.is-self, .RiCard.theme-purple .RiTeamRow.is-self, .RiCard.theme-purple .RiSearch { background-color: #b07cff1f; border: 1px solid #b07cff; }
+.RiCard.theme-purple .RiChip:hover, .RiCard.theme-purple .RiLang:hover, .RiCard.theme-purple .RaBtn:hover, .RiCard.theme-purple .RaPerk:hover, .RiCard.theme-purple .RaCat:hover { border: 1px solid #b07cff66; }
+.RiCard.theme-purple .RiSwitch.is-on .RiSwitchTrack { background-color: #b07cff33; border: 1px solid #b07cff; }
+.RiCard.theme-purple .RiSwitch.is-on .RiSwitchKnob { background-color: #b07cff; }
+.RiCard.theme-purple .RiSwitch.is-on Label.RiSwitchState { color: #b07cff; }
+.RiCard.theme-magenta .RiCorner { border-color: #e85dff; }
+.RiCard.theme-magenta Label.RiKicker, .RiCard.theme-magenta Label.RiIdxLabel, .RiCard.theme-magenta .RiNav.is-active Label.RiNavCount, .RiCard.theme-magenta Label.RiCount { color: #e85dff; }
+.RiCard.theme-magenta .RiIdx { border-color: #e85dff; }
+.RiCard.theme-magenta .RiNav.is-active { background-color: #e85dff1f; border-left: 3px solid #e85dff; }
+.RiCard.theme-magenta .RiChip.is-active, .RiCard.theme-magenta .RiLang.is-active, .RiCard.theme-magenta .RiRow.is-self, .RiCard.theme-magenta .RiTeamRow.is-self, .RiCard.theme-magenta .RiSearch { background-color: #e85dff1f; border: 1px solid #e85dff; }
+.RiCard.theme-magenta .RiChip:hover, .RiCard.theme-magenta .RiLang:hover, .RiCard.theme-magenta .RaBtn:hover, .RiCard.theme-magenta .RaPerk:hover, .RiCard.theme-magenta .RaCat:hover { border: 1px solid #e85dff66; }
+.RiCard.theme-magenta .RiSwitch.is-on .RiSwitchTrack { background-color: #e85dff33; border: 1px solid #e85dff; }
+.RiCard.theme-magenta .RiSwitch.is-on .RiSwitchKnob { background-color: #e85dff; }
+.RiCard.theme-magenta .RiSwitch.is-on Label.RiSwitchState { color: #e85dff; }
+.RiCard.theme-pink .RiCorner { border-color: #ff6b9a; }
+.RiCard.theme-pink Label.RiKicker, .RiCard.theme-pink Label.RiIdxLabel, .RiCard.theme-pink .RiNav.is-active Label.RiNavCount, .RiCard.theme-pink Label.RiCount { color: #ff6b9a; }
+.RiCard.theme-pink .RiIdx { border-color: #ff6b9a; }
+.RiCard.theme-pink .RiNav.is-active { background-color: #ff6b9a1f; border-left: 3px solid #ff6b9a; }
+.RiCard.theme-pink .RiChip.is-active, .RiCard.theme-pink .RiLang.is-active, .RiCard.theme-pink .RiRow.is-self, .RiCard.theme-pink .RiTeamRow.is-self, .RiCard.theme-pink .RiSearch { background-color: #ff6b9a1f; border: 1px solid #ff6b9a; }
+.RiCard.theme-pink .RiChip:hover, .RiCard.theme-pink .RiLang:hover, .RiCard.theme-pink .RaBtn:hover, .RiCard.theme-pink .RaPerk:hover, .RiCard.theme-pink .RaCat:hover { border: 1px solid #ff6b9a66; }
+.RiCard.theme-pink .RiSwitch.is-on .RiSwitchTrack { background-color: #ff6b9a33; border: 1px solid #ff6b9a; }
+.RiCard.theme-pink .RiSwitch.is-on .RiSwitchKnob { background-color: #ff6b9a; }
+.RiCard.theme-pink .RiSwitch.is-on Label.RiSwitchState { color: #ff6b9a; }
+.RiCard.theme-silver .RiCorner { border-color: #c9d2dc; }
+.RiCard.theme-silver Label.RiKicker, .RiCard.theme-silver Label.RiIdxLabel, .RiCard.theme-silver .RiNav.is-active Label.RiNavCount, .RiCard.theme-silver Label.RiCount { color: #c9d2dc; }
+.RiCard.theme-silver .RiIdx { border-color: #c9d2dc; }
+.RiCard.theme-silver .RiNav.is-active { background-color: #c9d2dc1f; border-left: 3px solid #c9d2dc; }
+.RiCard.theme-silver .RiChip.is-active, .RiCard.theme-silver .RiLang.is-active, .RiCard.theme-silver .RiRow.is-self, .RiCard.theme-silver .RiTeamRow.is-self, .RiCard.theme-silver .RiSearch { background-color: #c9d2dc1f; border: 1px solid #c9d2dc; }
+.RiCard.theme-silver .RiChip:hover, .RiCard.theme-silver .RiLang:hover, .RiCard.theme-silver .RaBtn:hover, .RiCard.theme-silver .RaPerk:hover, .RiCard.theme-silver .RaCat:hover { border: 1px solid #c9d2dc66; }
+.RiCard.theme-silver .RiSwitch.is-on .RiSwitchTrack { background-color: #c9d2dc33; border: 1px solid #c9d2dc; }
+.RiCard.theme-silver .RiSwitch.is-on .RiSwitchKnob { background-color: #c9d2dc; }
+.RiCard.theme-silver .RiSwitch.is-on Label.RiSwitchState { color: #c9d2dc; }
+/* /info themes */
+
+/* Admin lock switch: after the theme block - in game the theme rules won over more specific
+   selectors placed before them (seen with theme-gold), so the warning colour comes last. */
+.RiCard .RiAdmin .RaSwitch.is-on .RiSwitchTrack { background-color: #e05a5a33; border: 1px solid #e05a5a; }
+.RiCard .RiAdmin .RaSwitch.is-on .RiSwitchKnob { background-color: #e05a5a; }
+.RiCard .RiAdmin .RaSwitch.is-on Label.RiSwitchState { color: #e05a5a; }

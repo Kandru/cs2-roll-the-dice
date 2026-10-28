@@ -186,7 +186,8 @@ namespace RollTheDice
                     {
                         if (entry == null
                             || !entry.IsValid
-                            || _playersThatRolledTheDice.ContainsKey(entry))
+                            || _playersThatRolledTheDice.ContainsKey(entry)
+                            || IsRollLocked(entry))
                         {
                             return;
                         }
@@ -224,7 +225,8 @@ namespace RollTheDice
                 foreach (CCSPlayerController entry in Utilities.GetPlayers()
                     .Where(p => !p.IsHLTV
                         && !p.IsBot
-                        && p.Pawn?.Value?.LifeState == (byte)LifeState_t.LIFE_ALIVE))
+                        && p.Pawn?.Value?.LifeState == (byte)LifeState_t.LIFE_ALIVE
+                        && !IsRollLocked(p)))
                 {
                     RemoveDiceForPlayer(entry, reason: DiceRemoveReason.NewDice);
                     _ = RollTheDiceForPlayer(entry, source: Hud.ReelSource.Auto);
@@ -289,9 +291,11 @@ namespace RollTheDice
         private HookResult OnPlayerDisconnect(EventPlayerDisconnect @event, GameEventInfo info)
         {
             RemoveDiceForPlayer(@event.Userid, DiceRemoveReason.Disconnect);
-            Hud.Reel.Forget(@event.Userid);
             Hud.Banner.Release(@event.Userid);
+            // writes the slot's defaults while the reel still knows its classes; Forget would drop that knowledge
+            // and leave the reel shown in the layout state for whoever joins the slot next
             Hud.CustomHud.ReleasePlayer(@event.Userid);
+            Hud.Reel.Forget(@event.Userid);
             if (@event.Userid is { IsValid: true } player)
             {
                 _ = _roundDice.Remove(player);
@@ -304,6 +308,8 @@ namespace RollTheDice
         private HookResult OnPlayerConnectFull(EventPlayerConnectFull @event, GameEventInfo info)
         {
             ApplySavedLanguage(@event.Userid);
+            Hud.CustomHud.ClaimSlot(@event.Userid);
+            Hud.InfoMenu.Claim(@event.Userid);
             return HookResult.Continue;
         }
 
@@ -344,9 +350,8 @@ namespace RollTheDice
                 return (null, null);
             }
 
-            RemoveDiceForPlayer(player, DiceRemoveReason.NewDice);
-
-            // diceName is expected to be an exact ClassName when provided (resolved by !givedice)
+            // diceName is expected to be an exact ClassName when provided (resolved by !givedice / the admin menu) and
+            // is given even when the admin menu took it out of the roll pool
             DiceBlueprint? dice = diceName != null
                 ? _dices.FirstOrDefault(d => string.Equals(d.ClassName, diceName, StringComparison.OrdinalIgnoreCase))
                 : GetWeightedRandomDice();
@@ -354,6 +359,9 @@ namespace RollTheDice
             {
                 return (null, null);
             }
+
+            // only now: without a dice to give (everything switched off) the current one stays
+            RemoveDiceForPlayer(player, DiceRemoveReason.NewDice);
 
             // visual only: the reel shows the dice chosen above and holds back its notifications until it stops
             _ = Hud.Reel.Begin(player, dice.ClassName, source);
@@ -364,31 +372,33 @@ namespace RollTheDice
             return (dice.ClassName, dice.Description);
         }
 
-        private DiceBlueprint GetWeightedRandomDice()
+        /// <summary>A random dice among the least used of those a roll may draw (admin menu); null when none may.</summary>
+        private DiceBlueprint? GetWeightedRandomDice()
         {
-            // find the minimum usage count
-            int minUsage = _diceUsageCount.Count > 0 ? _diceUsageCount.Values.Min() : 0;
+            // the least used among the allowed dices only: a switched off dice keeps its old count
+            int minUsage = int.MaxValue;
+            foreach (DiceBlueprint dice in _dices)
+            {
+                if (IsRollable(dice))
+                {
+                    minUsage = Math.Min(minUsage, _diceUsageCount.GetValueOrDefault(dice));
+                }
+            }
+            if (minUsage == int.MaxValue)
+            {
+                return null;
+            }
 
             // create a pool of least-used dices
             List<DiceBlueprint> leastUsedDices = [];
             foreach (DiceBlueprint dice in _dices)
             {
-                int usage = _diceUsageCount.ContainsKey(dice) ? _diceUsageCount[dice] : 0;
-                // only add dices that have been used the minimum amount or less
-                if (usage <= minUsage)
+                if (IsRollable(dice) && _diceUsageCount.GetValueOrDefault(dice) <= minUsage)
                 {
                     leastUsedDices.Add(dice);
                 }
             }
-
-            // if we have least-used dices, pick randomly from them
-            if (leastUsedDices.Count > 0)
-            {
-                return leastUsedDices[_random.Next(leastUsedDices.Count)];
-            }
-
-            // fallback to pure random (should rarely happen)
-            return _dices[_random.Next(_dices.Count)];
+            return leastUsedDices[_random.Next(leastUsedDices.Count)];
         }
 
         private void RemoveDiceForPlayer(CCSPlayerController? player, DiceRemoveReason reason)

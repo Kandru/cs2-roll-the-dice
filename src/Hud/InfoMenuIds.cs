@@ -1,18 +1,22 @@
 namespace RollTheDice.Hud
 {
     /// <summary>
-    /// Contract of info_v4.xml: the only place its ids, dialog variables and classes are spelled.
+    /// Contract of info_v5.xml: the only place its ids, dialog variables and classes are spelled.
     /// Pool sizes and prefixes must match tools/gen_info_panorama.py (validated by make panorama).
     /// </summary>
     public static class InfoMenuIds
     {
-        public const string Resource = "panorama/layout/custom_game/rollthedice/info_v4.vxml_c";
+        public const string Resource = "panorama/layout/custom_game/rollthedice/info_v5.vxml_c";
 
         public const int Rows = 112;
-        public const int Tabs = 5;
+        public const int Tabs = 6;
         public const int Languages = 2;
-        public const int Filters = 4;
+        public const int Filters = 6;
         public const int TeamRows = 32;
+        public const int AdminPlayerRows = 64;
+        public const int AdminPerkRows = 112;
+        public const int Categories = 5;
+        public const int AdminSections = 2;
 
         // panel ids
         public const string RootId = "ri-root";
@@ -30,6 +34,19 @@ namespace RollTheDice.Hud
         public const string TRowIdPrefix = "ri-tr-";
         public const string CtEmptyId = "ri-ct-empty";
         public const string TEmptyId = "ri-t-empty";
+        public const string AdminLockId = "ri-alock";
+        public const string AdminAllRollId = "ri-aall-roll";
+        public const string AdminAllGiveId = "ri-aall-give";
+        public const string AdminPerksId = "ri-aperks";
+        public const string AdminPickCloseId = "ri-apick-x";
+        public const string AdminPerkEmptyId = "ri-ak-empty";
+        public const string AdminPlayerIdPrefix = "ri-ap-";
+        public const string AdminRollIdPrefix = "ri-apr-";
+        public const string AdminGiveIdPrefix = "ri-apg-";
+        public const string AdminLockIdPrefix = "ri-apl-";
+        public const string AdminPerkIdPrefix = "ri-ak-";
+        public const string AdminCategoryIdPrefix = "ri-acat-";
+        public const string AdminSectionIdPrefix = "ri-asec-";
 
         // dialog variables (all on the root)
         public const string TitleVar = "ri_title";
@@ -62,15 +79,39 @@ namespace RollTheDice.Hud
         public const string TEmptyVar = "ri_t_empty";
         public const string CtRowVarPrefix = "ri_ctr";    // ri_ctr<n>_a (name) / _c (dice)
         public const string TRowVarPrefix = "ri_tr";      // ri_tr<n>_a / _c
+        // admin view
+        public const string AdminLockVar = "ri_alock";
+        public const string AdminLockStateVar = "ri_alock_state";
+        public const string AdminAllRollVar = "ri_aall_roll";
+        public const string AdminAllGiveVar = "ri_aall_give";
+        public const string AdminPickVar = "ri_apick";
+        public const string AdminPerkEmptyVar = "ri_ak_empty";
+        // button and state words shared by every admin row (one variable on the root)
+        public const string AdminRollLabelVar = "ri_ab_roll";
+        public const string AdminGiveLabelVar = "ri_ab_give";
+        public const string AdminLockLabelVar = "ri_ab_lock";
+        public const string AdminUnlockLabelVar = "ri_ab_unlock";
+        public const string AdminOnVar = "ri_ab_on";
+        public const string AdminOffVar = "ri_ab_off";
+        public const string AdminCatOffVar = "ri_ab_catoff";
+        public const string AdminPickLabelVar = "ri_ab_pick";
+        public const string AdminPlayerVarPrefix = "ri_ap";     // ri_ap<n>_t (team) / _a (name) / _c (dice)
+        public const string AdminPerkVarPrefix = "ri_ak";       // ri_ak<n>_a (name) / _b (category)
+        public const string AdminCategoryVarPrefix = "ri_ac";   // ri_ac<n>
+        public const string AdminSectionVarPrefix = "ri_as";    // ri_as<n>
 
         // classes
         public const string ActiveClass = "is-active";
         public const string DisabledClass = "is-disabled";
         public const string OnClass = "is-on";
         public const string OffClass = "is-off";
+        public const string OpenClass = "is-open";
         public const string SelfClass = "is-self";
-        public static readonly string[] Views = ["view-round", "view-list", "view-perks", "view-settings"];
-        public static readonly string[] Tones = ["tone-none", "tone-good", "tone-bad", "tone-neutral"];
+        public const string CategoryOffClass = "cat-off";
+        public static readonly string[] Views = ["view-round", "view-list", "view-perks", "view-settings", "view-admin"];
+        public static readonly string[] AdminSectionClasses = ["asec-players", "asec-perks"];
+        // index = InfoTone
+        public static readonly string[] Tones = ["tone-none", "tone-good", "tone-bad", "tone-neutral", "tone-very-good", "tone-very-bad"];
         public static readonly string[] Teams = ["team-none", "team-ct", "team-t"];
         public static readonly string[] Lives = ["life-alive", "life-dead"];
 
@@ -92,6 +133,20 @@ namespace RollTheDice.Hud
         public static readonly string[] CtRowDiceVars = Indexed(CtRowVarPrefix, TeamRows, "_c");
         public static readonly string[] TRowNameVars = Indexed(TRowVarPrefix, TeamRows, "_a");
         public static readonly string[] TRowDiceVars = Indexed(TRowVarPrefix, TeamRows, "_c");
+        public static readonly string[] AdminPlayerIds = Indexed(AdminPlayerIdPrefix, AdminPlayerRows, string.Empty);
+        public static readonly string[] AdminRollIds = Indexed(AdminRollIdPrefix, AdminPlayerRows, string.Empty);
+        public static readonly string[] AdminGiveIds = Indexed(AdminGiveIdPrefix, AdminPlayerRows, string.Empty);
+        public static readonly string[] AdminLockIds = Indexed(AdminLockIdPrefix, AdminPlayerRows, string.Empty);
+        public static readonly string[] AdminPerkIds = Indexed(AdminPerkIdPrefix, AdminPerkRows, string.Empty);
+        public static readonly string[] AdminCategoryIds = Indexed(AdminCategoryIdPrefix, Categories, string.Empty);
+        public static readonly string[] AdminSectionIds = Indexed(AdminSectionIdPrefix, AdminSections, string.Empty);
+        public static readonly string[] AdminPlayerTeamVars = Indexed(AdminPlayerVarPrefix, AdminPlayerRows, "_t");
+        public static readonly string[] AdminPlayerNameVars = Indexed(AdminPlayerVarPrefix, AdminPlayerRows, "_a");
+        public static readonly string[] AdminPlayerDiceVars = Indexed(AdminPlayerVarPrefix, AdminPlayerRows, "_c");
+        public static readonly string[] AdminPerkNameVars = Indexed(AdminPerkVarPrefix, AdminPerkRows, "_a");
+        public static readonly string[] AdminPerkCategoryVars = Indexed(AdminPerkVarPrefix, AdminPerkRows, "_b");
+        public static readonly string[] AdminCategoryVars = Indexed(AdminCategoryVarPrefix, Categories, string.Empty);
+        public static readonly string[] AdminSectionVars = Indexed(AdminSectionVarPrefix, AdminSections, string.Empty);
 
         private static string[] Indexed(string prefix, int count, string suffix)
         {

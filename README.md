@@ -146,11 +146,12 @@ Opens (or closes) the info menu - a mouse-driven Panorama window in the player's
 
 - **This round** (start page): every dice rolled this round, CT and T side by side, alive players first, with the dice; dead players are framed red and greyed out.
 - **My dice**: the player's last 12 dice (kept while the plugin is loaded).
-- **Perks**: every dice enabled on the current map with its good / bad / neutral marker and a short description. Filter by type, sort by name or type, and search with `!dice info <text>` (for example `!dice info gravity`); the search is shown in the menu and can be cleared there.
+- **Perks**: every dice enabled on the current map with its category (very good / good / neutral / bad / very bad) and a short description. Filter by category (`++ + ± – ––`), sort by name or type, and search with `!dice info <text>` (for example `!dice info gravity`); the search is shown in the menu and can be cleared there.
 - **Commands**: the chat commands; admins (`@rollthedice/admin`) also see the admin chat commands.
+- **Admin** (only for `@rollthedice/admin`): lock rolling for everyone or single players, roll for one or all players (random or a chosen perk) and choose which perks a roll can draw - five category switches plus every perk on its own (default: all). Saved at once in the config section `admin`; the permission is checked on every click.
 - **Settings**: auto roll on/off (same as `!dice auto`; locked when the server forces or disables it) and the language (Deutsch / English). The language is saved per player (`player_configs`) and set as the CounterStrikeSharp player language, so chat messages, the reel and the menu follow it.
 
-The menu closes on the close button, the same command, the player's death and round start. Requires the workshop addon (`info_v4` layout).
+The menu closes on the close button, the same command, the player's death and round start. Requires the workshop addon (`info_v5` layout; `info_v4` stays in the addon for older plugin versions).
 
 ### !givedice (@rollthedice/admin)
 This admin command allows administrators to force dice rolls for players (including bots, for debugging). Bots do not roll on their own. Requires the @rollthedice/admin permission. Dice names correspond to the class names in the [dices folder](src/dices/) and are case-insensitive; ambiguous matches list the options instead of guessing.
@@ -223,10 +224,19 @@ This plugin automatically creates a readable JSON configuration file. This confi
     "hold_seconds": 1.5,
     "tick_sound": "UIPanorama.container_weapon_ticker",
     "tones": {
-      "Bankrupt": "bad",
+      "Airstrike": "very_good",
+      "Bankrupt": "very_bad",
       "BigTaserBattery": "good",
-      "ChangeName": "neutral"
-    }
+      "ChangeName": "neutral",
+      "Drunk": "bad"
+    },
+    "tones_version": 2
+  },
+  "admin": {
+    "rolls_locked": false,
+    "locked_players": [],
+    "disabled_categories": [],
+    "disabled_dices": []
   },
   "dices": {
     "big_taser_battery": {
@@ -510,11 +520,10 @@ This plugin automatically creates a readable JSON configuration file. This confi
     },
     "drunk": {
       "enabled": true,
-      "sway_degrees": 2.5,
-      "min_interval_seconds": 0.3,
-      "max_interval_seconds": 0.6,
-      "stumble_chance": 0.15,
-      "stumble_speed": 180
+      "sway_degrees": 4,
+      "sway_seconds": 3,
+      "stumble_chance": 0.25,
+      "stumble_speed": 120
     },
     "ender_pearl": {
       "enabled": true,
@@ -773,7 +782,17 @@ Slot-machine reel shown in the screen centre (below the crosshair) whenever a di
 - **spin_seconds**: Spin duration, 1.0 - 5.0 in steps of 0.5.
 - **hold_seconds**: How long the result stays before the reel fades out, 0.5 - 5.0 in steps of 0.5.
 - **tick_sound**: Played for each row passing the win line (sound event or `sounds/...` path, empty = off). A `sounds/...` path may only contain letters, digits and `_ - . /` (it is played with the client command `play`); other paths are ignored with a console message.
-- **tones**: Marker per dice class shown on the reel: `good` (▲), `bad` (▼) or `neutral` (◆). Dices missing here use the built-in default.
+- **tones**: Category per dice class, shown on the reel and in the info menu: `very_good`, `good` (▲), `neutral` (◆), `bad`, `very_bad` (▼). Dices missing here use the built-in default.
+- **tones_version**: Written by the plugin. Configs from before the five categories list every dice with its old tone; on the first start the dices that moved to `very_good` / `very_bad` follow the move if they still have their old tone, then the version is set to 2.
+
+### admin
+
+Set from the admin tab of `!dice info` and saved at once; can also be edited here.
+
+- **rolls_locked**: Nobody can roll on their own (`!rtd`, auto roll, timed rolls). Admins can still hand out dices.
+- **locked_players**: SteamID64s that cannot roll on their own.
+- **disabled_categories**: Categories a roll never draws (`very_good`, `good`, `neutral`, `bad`, `very_bad`).
+- **disabled_dices**: Dice class names a roll never draws. A dice handed out by an admin with a chosen perk is given anyway.
 
 ### dices
 
