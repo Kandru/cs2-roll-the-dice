@@ -1,3 +1,4 @@
+using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Localization;
@@ -47,40 +48,67 @@ namespace RollTheDice.Dices
                 return HookResult.Continue;
             }
 
-            ChainLightningConfig config = _config.Dices.ChainLightning;
-            CCSPlayerPawn? attacker = holder.PlayerPawn.Value is { IsValid: true } p ? p : null;
-            HashSet<CCSPlayerController> struck = [first];
-            CCSPlayerPawn from = firstPawn;
-            for (int jump = 0; jump < config.Jumps; jump++)
-            {
-                (CCSPlayerController Player, CCSPlayerPawn Pawn)? next = Nearest(holder, from, struck, config.Range);
-                if (next is not { } target)
-                {
-                    break;
-                }
-                _ = struck.Add(target.Player);
-                Beam.Flash(Body(from), Body(target.Pawn), config.BoltSeconds, Beam.Lightning, BoltWidth);
-                int before = target.Pawn.Health;
-                Damage.Deal(target.Pawn, attacker, config.Damage, DamageTypes_t.DMG_SHOCK);
-                Debug($"{holder.PlayerName} chain lightning jumps to {target.Player.PlayerName} ({before} -> {target.Pawn.Health} HP)");
-                from = target.Pawn;
-            }
+            // player_hurt fires inside the Zeus hit's TakeDamage: chain damage dealt right here would nest (see Thorns)
+            Vector start = Body(firstPawn);
+            Debug($"{holder.PlayerName} Zeus hit {first.PlayerName}, chain starts");
+            Server.NextFrame(() => Chain(holder, first, firstPawn, start));
             return HookResult.Continue;
         }
 
-        private static (CCSPlayerController, CCSPlayerPawn)? Nearest(CCSPlayerController holder, CCSPlayerPawn from, HashSet<CCSPlayerController> struck, float range)
+        /// <summary>The first jump starts where the Zeus victim stood when hit (it is usually dead by now).</summary>
+        private void Chain(CCSPlayerController holder, CCSPlayerController first, CCSPlayerPawn firstPawn, Vector start)
+        {
+            if (!holder.IsValid)
+            {
+                return;
+            }
+
+            ChainLightningConfig config = _config.Dices.ChainLightning;
+            CCSPlayerPawn? attacker = holder.PlayerPawn.Value is { IsValid: true } p ? p : null;
+            HashSet<CCSPlayerController> struck = [first];
+            CCSPlayerPawn? from = firstPawn.IsValid ? firstPawn : null;
+            for (int jump = 0; jump < config.Jumps; jump++)
+            {
+                (CCSPlayerController Player, CCSPlayerPawn Pawn)? next = Nearest(holder, start, from, struck, config.Range);
+                if (next is not { } target)
+                {
+                    if (jump == 0)
+                    {
+                        Debug($"{holder.PlayerName} chain lightning finds no enemy in sight within {config.Range:0}");
+                    }
+                    break;
+                }
+                _ = struck.Add(target.Player);
+                Vector end = Body(target.Pawn);
+                Beam.Flash(start, end, config.BoltSeconds, Beam.Lightning, BoltWidth);
+                int before = target.Pawn.Health;
+                Damage.Deal(target.Pawn, attacker, config.Damage, DamageTypes_t.DMG_SHOCK);
+                Debug($"{holder.PlayerName} chain lightning jumps to {target.Player.PlayerName} ({before} -> {target.Pawn.Health} HP)");
+                start = end;
+                from = target.Pawn.IsValid ? target.Pawn : null;
+            }
+        }
+
+        private static (CCSPlayerController, CCSPlayerPawn)? Nearest(CCSPlayerController holder, Vector start, CCSPlayerPawn? from, HashSet<CCSPlayerController> struck, float range)
         {
             (CCSPlayerController, CCSPlayerPawn)? best = null;
             float bestDistance = float.MaxValue;
-            foreach ((CCSPlayerController player, CCSPlayerPawn pawn, float distance) in Targets.Around(Body(from), range))
+            foreach ((CCSPlayerController player, CCSPlayerPawn pawn, float distance) in Targets.Around(start, range))
             {
-                if (distance < bestDistance && !struck.Contains(player) && Targets.IsEnemy(holder, player) && Targets.CanSee(from, pawn))
+                if (distance < bestDistance && !struck.Contains(player) && Targets.IsEnemy(holder, player) && CanSee(start, from, pawn))
                 {
                     best = (player, pawn);
                     bestDistance = distance;
                 }
             }
             return best;
+        }
+
+        /// <summary>Nothing solid between the jump's start and the target's body (the last victim is ignored).</summary>
+        private static bool CanSee(Vector start, CCSPlayerPawn? from, CCSPlayerPawn to)
+        {
+            TraceResult trace = RayTrace.TraceLine(start, Body(to), from);
+            return !trace.DidHit() || trace.Fraction > 0.97f || (trace.HitEntity() is { } hit && hit.Handle == to.Handle);
         }
 
         private static Vector Body(CCSPlayerPawn pawn)
