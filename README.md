@@ -671,7 +671,7 @@ This plugin automatically creates a readable JSON configuration file. This confi
     },
     "quick_reload": {
       "enabled": true,
-      "reload_seconds": 0.9
+      "reload_speed": 2.5
     },
     "radar_scan": {
       "enabled": true,

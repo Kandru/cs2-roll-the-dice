@@ -296,7 +296,7 @@ Diese Regeln gelten für jeden neuen Perk:
 ### 26. Blitz-Nachladen 🟢 · M
 *Inspiration:* CoD (Sleight of Hand)
 - **Effekt:** Nachladen dauert nur noch rund 40 % der normalen Zeit.
-- **Umsetzung:** `EventWeaponReload` → Timer nach x s: `Clip1` auf Magazingröße setzen, `ReserveAmmo` um die Differenz verringern, Reload-Status beenden, `NextPrimaryAttackTick = jetzt`. Die Animation darf abbrechen.
+- **Umsetzung:** `EventWeaponReload` → `m_flWeaponActionPlaybackRate` der Waffe auf `reload_speed` (2,5) setzen, damit die Animation schneller läuft. Das normale Reload-Ende steht in `NextPrimaryAttackTick`; geteilt durch die Rate ergibt es das Ende der schnellen Animation. Lädt die Engine bis dahin nicht selbst fertig, füllt das Plugin das Magazin (zählt die Waffe ihre Reserve in Magazinen, `ReserveAmmoAsClips`, kostet das ein Magazin, sonst die nachgeladenen Patronen). In beiden Fällen wird die Schusssperre aufgehoben, und eine späte zweite Umbuchung der Engine wird 6 s lang rückgängig gemacht. Danach geht die Rate zurück auf 1.
 - **Abgrenzung:** Infinite Ammo hebt den Munitionsverbrauch auf. Hier bleibt die Munition begrenzt, nur das Nachladen wird schneller.
 
 ### 27. Ladehemmung 🔴 · S
