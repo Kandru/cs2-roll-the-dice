@@ -27,7 +27,7 @@ This plugin transforms the traditional competitive nature of Counter-Strike 2 in
 - **Bouncy** - Hard landings bounce you back up (hold crouch to land normally), no fall damage
 - **Brittle Bones** - Fall damage x4, even small drops hurt
 - **Butterfingers** - Hitting an enemy can make you drop your own gun
-- **Chain Lightning** - A Zeus hit jumps on to 2 more enemies in sight
+- **Chain Lightning** - A Zeus hit jumps on to 2 more enemies in sight: lethal within 15 m, 75 % of their health up to 20 m, 50 % up to 25 m
 - **Change Name** - Randomly changes your player name to confuse opponents
 - **Change Player Model** - Disguises you as an enemy team player model
 - **Change Player Size** - Scales your player model size randomly (smaller or larger)
@@ -491,8 +491,11 @@ This plugin automatically creates a readable JSON configuration file. This confi
     "chain_lightning": {
       "enabled": true,
       "jumps": 2,
-      "jump_range": 800,
-      "damage": 50,
+      "damage_bands": [
+        { "range": 600, "damage_percent": 100 },
+        { "range": 800, "damage_percent": 75 },
+        { "range": 1000, "damage_percent": 50 }
+      ],
       "bolt_seconds": 0.8
     },
     "cluster_grenade": {

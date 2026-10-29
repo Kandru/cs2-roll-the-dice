@@ -11,10 +11,14 @@ namespace RollTheDice.Utils
         };
 
         // world and props only: players never block (sight lines from one player to another). Map walls are Solid;
-        // WorldGeometry alone does not stop at them.
+        // WorldGeometry alone does not stop at them. Player hulls also carry Solid, so they are excluded by their
+        // own layers, together with ragdolls (Debris), carried weapons and dropped weapons (Pickup: a killed player
+        // drops them right where a chain jump starts, and they are Solid physics props).
         private static readonly TraceOptions WorldOptions = new()
         {
             InteractsWith = Contents.Solid | Contents.Window | Contents.PhysicsProp | Contents.WorldGeometry,
+            InteractsExclude = Contents.Player | Contents.Npc | Contents.Hitbox | Contents.CsgoTeam1 | Contents.CsgoTeam2
+                | Contents.Debris | Contents.CarriedWeapon | Contents.Pickup | Contents.Pushaway,
         };
 
         public static TraceResult TraceLine(Vector start, Vector end, CBaseEntity? ignore = null)

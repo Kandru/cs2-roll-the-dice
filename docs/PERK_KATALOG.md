@@ -230,7 +230,7 @@ Diese Regeln gelten für jeden neuen Perk:
 
 ### 14. Kettenblitz 🟢 · M
 *Inspiration:* Diablo, Warcraft III
-- **Effekt:** Ein Zeus-Treffer springt auf bis zu 2 weitere Gegner im Umkreis von 400 Einheiten über (je 50 Schaden).
+- **Effekt:** Ein Zeus-Treffer springt auf bis zu 2 weitere Gegner mit Sichtlinie über. Der Schaden hängt vom Abstand zum vorherigen Opfer ab: bis 15 m tödlich, bis 20 m 75 %, bis 25 m 50 % der maximalen HP (`damage_bands`).
 - **Umsetzung:** `EventPlayerHurt` (Waffe `taser`, Angreifer = Würfelnder) → die nächsten Gegner mit Sichtlinie (Trace) suchen, DealDamage, Beam-Effekt zwischen den Opfern. Kettenschaden über Marker vom erneuten Auslösen ausschließen.
 
 ### 15. Wurfmesser 🟢 · L

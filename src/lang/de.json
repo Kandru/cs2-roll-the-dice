@@ -592,7 +592,7 @@
     "dice_Overshield_info": "50-Punkte-Schild vor deinen HP, lädt nach 4 s wieder auf.",
     "dice_ThrowingKnives_info": "E mit dem Messer: tödliches Wurfmesser, 3 Stück.",
     "dice_BlackHole_info": "Deine Decoy zieht Gegner 3 s zur Mitte, dann implodiert sie.",
-    "dice_ChainLightning_info": "Ein Zeus-Treffer springt auf 2 weitere Gegner über.",
+    "dice_ChainLightning_info": "Ein Zeus-Treffer springt auf 2 weitere Gegner über: bis 15 m tödlich, bis 20 m 75 %, bis 25 m 50 %.",
     "dice_ConfettiKills_info": "Deine Opfer zerplatzen laut in Konfetti.",
     "dice_ExplosiveRounds_info": "Kugeln erzeugen kleine Explosionen am Einschlag.",
     "dice_FrostRounds_info": "Treffer verlangsamen Gegner 1,5 s auf 40 %.",
