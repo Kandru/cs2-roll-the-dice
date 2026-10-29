@@ -491,7 +491,7 @@ This plugin automatically creates a readable JSON configuration file. This confi
     "chain_lightning": {
       "enabled": true,
       "jumps": 2,
-      "range": 400,
+      "jump_range": 800,
       "damage": 50,
       "bolt_seconds": 0.8
     },
@@ -523,6 +523,7 @@ This plugin automatically creates a readable JSON configuration file. This confi
       "enabled": true,
       "sway_degrees": 4,
       "sway_seconds": 3,
+      "tilt_share": 0.6,
       "stumble_chance": 0.25,
       "stumble_speed": 120
     },
