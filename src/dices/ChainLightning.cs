@@ -64,16 +64,17 @@ namespace RollTheDice.Dices
             }
 
             ChainLightningConfig config = _config.Dices.ChainLightning;
+            float reach = config.Reach;
             CCSPlayerPawn? attacker = holder.PlayerPawn.Value is { IsValid: true } p ? p : null;
             HashSet<CCSPlayerController> struck = [first];
             for (int jump = 0; jump < config.Jumps; jump++)
             {
-                (CCSPlayerController Player, CCSPlayerPawn Pawn)? next = Nearest(holder, start, struck, config.Range);
+                (CCSPlayerController Player, CCSPlayerPawn Pawn, float Distance)? next = Nearest(holder, start, struck, reach);
                 if (next is not { } target)
                 {
                     if (jump == 0)
                     {
-                        Debug($"{holder.PlayerName} chain lightning finds no enemy in sight within {config.Range:0}: {DescribeNearest(holder, start, struck)}");
+                        Debug($"{holder.PlayerName} chain lightning finds no enemy in sight within {reach:0}: {DescribeNearest(holder, start, struck)}");
                     }
                     break;
                 }
@@ -81,21 +82,24 @@ namespace RollTheDice.Dices
                 Vector end = Body(target.Pawn);
                 Beam.Flash(start, end, config.BoltSeconds, Beam.Lightning, BoltWidth);
                 int before = target.Pawn.Health;
-                Damage.Deal(target.Pawn, attacker, config.Damage, DamageTypes_t.DMG_SHOCK);
-                Debug($"{holder.PlayerName} chain lightning jumps to {target.Player.PlayerName} ({before} -> {target.Pawn.Health} HP)");
+                float percent = config.DamagePercentAt(target.Distance);
+                // a share of the larger of max and current health: 100 % is lethal even above max health
+                float amount = Math.Max(target.Pawn.MaxHealth, target.Pawn.Health) * percent / 100f;
+                Damage.Deal(target.Pawn, attacker, amount, DamageTypes_t.DMG_SHOCK);
+                Debug($"{holder.PlayerName} chain lightning jumps {target.Distance:0} to {target.Player.PlayerName}, {percent:0} % ({before} -> {target.Pawn.Health} HP)");
                 start = end;
             }
         }
 
-        private static (CCSPlayerController, CCSPlayerPawn)? Nearest(CCSPlayerController holder, Vector start, HashSet<CCSPlayerController> struck, float range)
+        private static (CCSPlayerController, CCSPlayerPawn, float)? Nearest(CCSPlayerController holder, Vector start, HashSet<CCSPlayerController> struck, float range)
         {
-            (CCSPlayerController, CCSPlayerPawn)? best = null;
+            (CCSPlayerController, CCSPlayerPawn, float)? best = null;
             float bestDistance = float.MaxValue;
             foreach ((CCSPlayerController player, CCSPlayerPawn pawn, float distance) in Targets.Around(start, range))
             {
                 if (distance < bestDistance && !struck.Contains(player) && Targets.IsEnemy(holder, player) && CanSee(start, pawn))
                 {
-                    best = (player, pawn);
+                    best = (player, pawn, distance);
                     bestDistance = distance;
                 }
             }
@@ -115,17 +119,26 @@ namespace RollTheDice.Dices
         /// <summary>Debug: the nearest living enemy at any range and why it was not taken.</summary>
         private static string DescribeNearest(CCSPlayerController holder, Vector start, HashSet<CCSPlayerController> struck)
         {
-            (string Name, float Distance, bool Sight)? nearest = null;
+            (string Name, float Distance, CCSPlayerPawn Pawn)? nearest = null;
             foreach ((CCSPlayerController player, CCSPlayerPawn pawn, float distance) in Targets.Around(start, float.MaxValue))
             {
                 if (!struck.Contains(player) && Targets.IsEnemy(holder, player) && (nearest is not { } n || distance < n.Distance))
                 {
-                    nearest = (player.PlayerName, distance, CanSee(start, pawn));
+                    nearest = (player.PlayerName, distance, pawn);
                 }
             }
-            return nearest is { } found
-                ? $"nearest enemy {found.Name} at {found.Distance:0}, {(found.Sight ? "in sight" : "a wall in between")}"
-                : "no other living enemy";
+            if (nearest is not { } found)
+            {
+                return "no other living enemy";
+            }
+            if (CanSee(start, found.Pawn))
+            {
+                return $"nearest enemy {found.Name} at {found.Distance:0}, in sight";
+            }
+            TraceResult trace = RayTrace.TraceWorld(start, Body(found.Pawn), found.Pawn);
+            string blocker = trace.HitEntity()?.DesignerName ?? "?";
+            return $"nearest enemy {found.Name} at {found.Distance:0}, blocked by {blocker} (contents {trace.Contents}) "
+                + $"at {trace.Fraction:0.00} of the way{(trace.IsAllSolid ? ", starts inside it" : "")}";
         }
 
         private static Vector Body(CCSPlayerPawn pawn)
@@ -143,10 +156,33 @@ namespace RollTheDice.Configs
         [JsonPropertyName("enabled")] public bool Enabled { get; set; } = true;
         // further enemies a Zeus hit jumps to
         [JsonPropertyName("jumps")] public int Jumps { get; set; } = 2;
-        // how far a jump reaches from the last victim, in units (1 unit ≈ 2.5 cm: 800 ≈ 20 m); renamed from "range"
-        // when the default went from 400 to 800, so older configs pick up the new reach
-        [JsonPropertyName("jump_range")] public float Range { get; set; } = 800f;
-        [JsonPropertyName("damage")] public float Damage { get; set; } = 50f;
+        // damage by distance from the player the bolt jumps from (1 unit ≈ 2.5 cm): up to "range" units it deals
+        // "damage_percent" of the target's max health (100 = lethal). The widest band is the jump's reach.
+        // Default: 15 m lethal, 20 m 75 %, 25 m 50 %
+        [JsonPropertyName("damage_bands")]
+        public List<ChainLightningBand> DamageBands { get; set; } =
+        [
+            new() { Range = 600f, DamagePercent = 100f },
+            new() { Range = 800f, DamagePercent = 75f },
+            new() { Range = 1000f, DamagePercent = 50f },
+        ];
         [JsonPropertyName("bolt_seconds")] public float BoltSeconds { get; set; } = 0.8f;
+
+        [JsonIgnore] public float Reach => DamageBands.Count == 0 ? 0f : DamageBands.Max(static b => b.Range);
+
+        /// <summary>The percent of the nearest band that reaches <paramref name="distance"/>; 0 beyond all bands.</summary>
+        public float DamagePercentAt(float distance)
+        {
+            ChainLightningBand? band = DamageBands
+                .Where(b => distance <= b.Range)
+                .MinBy(static b => b.Range);
+            return band?.DamagePercent ?? 0f;
+        }
+    }
+
+    public class ChainLightningBand
+    {
+        [JsonPropertyName("range")] public float Range { get; set; }
+        [JsonPropertyName("damage_percent")] public float DamagePercent { get; set; }
     }
 }

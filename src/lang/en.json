@@ -592,7 +592,7 @@
     "dice_Overshield_info": "50-point shield over your health, recharges after 4 s.",
     "dice_ThrowingKnives_info": "E with the knife: a deadly throwing knife, 3 of them.",
     "dice_BlackHole_info": "Your decoy pulls enemies in for 3 s, then implodes.",
-    "dice_ChainLightning_info": "A Zeus hit jumps on to 2 more enemies.",
+    "dice_ChainLightning_info": "A Zeus hit jumps on to 2 more enemies: lethal within 15 m, 75 % up to 20 m, 50 % up to 25 m.",
     "dice_ConfettiKills_info": "Your victims burst into confetti with a pop.",
     "dice_ExplosiveRounds_info": "Bullets cause small blasts where they hit.",
     "dice_FrostRounds_info": "Hits slow enemies to 40 % for 1.5 s.",
